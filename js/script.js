@@ -411,6 +411,12 @@ function chat() {
             //top_p: 1
         })
     };
+    if(!endpoint){
+        setOptions();
+        toggleAnimation();
+        document.querySelector(".message:nth-last-of-type(1)").remove();
+        return false;
+    }
 
     fetch(endpoint, requestOptions)
         .then(response => response.json())
@@ -770,18 +776,19 @@ function setApiKey() {
         if (api_key.length > 10) {
             localStorage.setItem(`${chosen_platform}.api_key`, api_key)
             closeDialogs();
-            createDialog('Saved with success!', 5);
+            createDialog('Saved with success!', 4);
         }
     }
 }
 
 function setApiKeyDialog() {
+    let platform_name = PLATFORM_DATA[chosen_platform].name;
     let cnt =
-        `<div>Enter your API key!</div>
+        `<div>Enter your API key for <strong>${platform_name}</strong>!</div>
          <input id="set_api_key" type="password" name="api_key" placeholder="Your API key">
          <button onclick="setApiKey()">Save</button>
-         <div>If you don't have an API key yet, get it here 
-         <a target="_blank" href="https://cloud.cerebras.ai/">https://cloud.cerebras.ai/</a>
+         <div>
+         <p>You can get free API Key from Google Gemini and Groq Inc.</p>
          </div>`;
     createDialog(cnt, 0, 'setApiDialog');
 }
@@ -792,17 +799,29 @@ function setOptions() {
     if (!system_prompt) {
         system_prompt = '';
     }
+
+    let platform_info = '';
+    let platform_name = '';
+    if(chosen_platform){
+        platform_name = PLATFORM_DATA[chosen_platform].name ?? '';
+        platform_info = `<p>Active:<b> ${model}</b> from <b>${platform_name}</b></p>`;
+    }
     let platform_options = '<div><p>Choose a Model</p><select name="platform">';
+    let mark_as_select = '';
     Object.keys(PLATFORM_DATA).forEach(platform => {
         let list_models = PLATFORM_DATA[platform].models;
         let platform_name = PLATFORM_DATA[platform].name;
         platform_options += `<optgroup label="${platform_name}">`;
-        list_models.forEach(model => {
-            platform_options += `<option data-platform="${platform}" value="${model}">${model}</option>`;
+        list_models.forEach(model_name => {
+            if(model_name === model){
+                mark_as_select = "selected='selected'";
+            }
+            platform_options += `<option ${mark_as_select} data-platform="${platform}" value="${model_name}">${model_name}</option>`;
+            mark_as_select = '';
         })
         platform_options += `</optgroup>`;
     })
-    platform_options += "</select></div>";
+    platform_options += `</select></div>`;
 
     let cnt =
         `<div>${platform_options}
@@ -811,6 +830,7 @@ function setOptions() {
          <div><strong>System Prompt</strong>
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
          <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
+         ${platform_info}
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
 
@@ -838,6 +858,7 @@ function savePrompt() {
     if (sys_prompt.length) {
         localStorage.setItem('system_prompt', sys_prompt);
     }
+    saveModel();
     closeDialogs();
 }
 
