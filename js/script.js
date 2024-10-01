@@ -520,7 +520,7 @@ function toggleAnimation() {
 }
 
 chat_textarea.onkeyup = (event) => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
         startChat();
     }
 }
