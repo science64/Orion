@@ -8,7 +8,7 @@ let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
 let endpoint = localStorage.getItem('endpoint')
 
 
-let SITE_TITLE = "OneChat";
+let SITE_TITLE = "OrionChat";
 
 let PLATFORM_DATA = {
     openai: {
