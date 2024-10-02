@@ -5,6 +5,10 @@ html, body {
     background-color: #fbfbfb;
 }
 
+.cl_justify{
+    text-align: justify !important;
+}
+
 /**Reset hljs**/
 pre code.hljs{
     padding: 6px;

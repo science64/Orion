@@ -63,6 +63,12 @@ let PLATFORM_DATA = {
         ],
         name: "Anthropic",
         endpoint: "https://api.anthropic.com/v1/messages"
+    },
+    ollama: {
+        models: [],
+        name: "Ollama",
+        get_models_endpoint: "http://localhost:11434/v1/models",
+        endpoint: "http://localhost:11434/v1/chat/completions"
     }
 }
 //console.log(PLATFORM_DATA);
@@ -392,7 +398,7 @@ function chat() {
     let system_prompt_text = getSystemPrompt();
     if (system_prompt_text) {
         let system_prompt = {content: system_prompt_text, 'role': 'system'};
-        if(chosen_platform !== 'anthropic'){
+        if (chosen_platform !== 'anthropic') {
             all_parts.push(system_prompt);
         }
     }
@@ -424,20 +430,24 @@ function chat() {
             //seed: 0,
             //top_p: 1
         }
-    if(chosen_platform ==='anthropic'){
-        data.system= system_prompt_text;
+    if (chosen_platform === 'anthropic') {
+        data.system = system_prompt_text;
         data.max_tokens = 4096
     }
 
+    let HTTP_HEADERS = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${api_key}`,
+        'x-api-key': `${api_key}`, // for Anthropic
+        "anthropic-version": "2023-06-01", // for Anthropic
+        "anthropic-dangerous-direct-browser-access": "true"
+    };
+    if (chosen_platform === 'ollama') {
+        HTTP_HEADERS = {};
+    }
     const requestOptions = {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${api_key}`,
-            'x-api-key': `${api_key}`, // for Anthropic
-            "anthropic-version": "2023-06-01", // for Anthropic
-            "anthropic-dangerous-direct-browser-access": "true"
-        },
+        headers: HTTP_HEADERS,
         body: JSON.stringify(data)
     };
     if (!endpoint) {
@@ -451,15 +461,15 @@ function chat() {
         .then(response => response.json())
         .then(data => {
             let response_cnt = data.choices?.[0]?.message.content ?? '';
-            if(!response_cnt){
+            if (!response_cnt) {
                 response_cnt = data.content?.[0]?.text ?? ''; // anthropic
             }
             if (!response_cnt) {
                 if (data.code === "wrong_api_key" || data.error.code === "invalid_api_key" || data.error.message === "invalid x-api-key") {
                     invalid_key = true;
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         addWarning(data, false)
-                    },1000)
+                    }, 1000)
                 } else {
                     addWarning(data, false);
                 }
@@ -605,7 +615,7 @@ function closeDialogs() {
 }
 
 
-function enableCopyForCode() {
+function enableCopyForCode(enable_down_too = true) {
     document.querySelectorAll('code.hljs').forEach(block => {
         if (!block.querySelector(".copy-btn")) {   // to not be added more the one time
             const button = document.createElement('button');
@@ -617,7 +627,9 @@ function enableCopyForCode() {
             btn_down.className = 'down-btn';
             btn_down.innerText = 'Down';
             div_ele.append(button);
-            div_ele.append(btn_down);
+            if(enable_down_too){
+                div_ele.append(btn_down);
+            }
             block.parentElement.append(div_ele);
             button.addEventListener('click', () => {
                 const codeText = block.innerText.replace('Copy', '');
@@ -630,7 +642,11 @@ function enableCopyForCode() {
             });
         }
     });
-    enableCodeDownload();
+
+   if(enable_down_too){
+       console.log('ss'+enable_down_too)
+       enableCodeDownload();
+   }
 }
 
 
@@ -917,7 +933,6 @@ function saveModel() {
     let selected_platform = selected_option.getAttribute('data-platform');
     let input_api_key = document.querySelector("input[name=api_key]").value.trim();
     if (input_api_key) {
-        console.log('input key')
         api_key = input_api_key; /// need to be like that
     }
     localStorage.setItem('chosen_platform', selected_platform);
@@ -926,12 +941,13 @@ function saveModel() {
     endpoint = PLATFORM_DATA[selected_platform].endpoint;
     localStorage.setItem('endpoint', endpoint)
     if (input_api_key) {
-        console.log('input key 2')
         localStorage.setItem(`${chosen_platform}.api_key`, api_key)
     } else {
-        console.log('no no input key')
         api_key = localStorage.getItem(`${chosen_platform}.api_key`)
-        console.log(api_key + ' to ' + chosen_platform);
+    }
+    if(!api_key && chosen_platform ==='ollama'){
+        api_key = 'i_love_ollama_'.repeat(3);
+        localStorage.setItem(`${chosen_platform}.api_key`, api_key);
     }
     let platform_info = document.querySelector(".platform_info");
     if (platform_info) {
@@ -962,3 +978,109 @@ if (current_chat) {
 }
 
 orderTopics();
+
+
+function ollamaGuide() {
+    let guide = `<div>
+  <p>If you want to use Ollama, you may need to make some configurations in your local Ollama setup.</p>
+  <p>Please take a look at the Ollama docs:</p>
+  <p>See these links:<br>
+    -> <a target="_blank" href="https://github.com/ollama/ollama/blob/main/docs/faq.md#how-can-i-allow-additional-web-origins-to-access-ollama">Additional web origins</a><br>
+    -> <a target="_blank" href="https://github.com/ollama/ollama/blob/main/docs/faq.md#setting-environment-variables-on-linux">Setting environment variables</a>
+  </p>
+  <p>Linux CLI example:</p>
+  <pre><code>systemctl edit ollama.service</code></pre>
+  <p>Add the following:</p>
+  <pre><code>[Service]
+Environment=OLLAMA_ORIGINS=https://eliaspereirah.github.io</code></pre>
+  <p><br>This will allow <strong>https://eliaspereirah.github.io</strong> to access http://localhost:11434/</p>
+</div>`
+
+createDialog(guide,0,'cl_justify')
+    hljs.highlightAll();
+    setTimeout(()=>{
+        enableCopyForCode(false);
+    },500)
+
+}
+
+
+function getOllamaModels() {
+    let ollama_models_endpoint = PLATFORM_DATA.ollama.get_models_endpoint;
+    //  ollama_models_endpoint = 'http://localhost:333/v1/models';
+    let optgroup_ollama = document.querySelector("select[name=platform] [label=Ollama]")
+    let start_time = new Date().getTime();
+    fetch(ollama_models_endpoint)
+        .then(response => {
+            return response.json();
+        })
+        .then(data => {
+            let end_time = new Date().getTime()
+            let past_time = end_time - start_time;
+            console.log(past_time)
+            data = data.data ?? [];
+            data.forEach(ollama_model => {
+                let option_element = document.createElement('option');
+                option_element.setAttribute("data-platform", "ollama");
+                option_element.value = ollama_model.id;
+                option_element.innerText = ollama_model.id;
+                if(optgroup_ollama){
+                    optgroup_ollama.append(option_element)
+                }
+                PLATFORM_DATA.ollama.models.push(ollama_model.id);
+            })
+        }).catch(error => {
+            console.error('Error: ' + error)
+            let end_time = new Date().getTime()
+            let past_time = end_time - start_time;
+            console.log(past_time)
+            if (past_time > 1200) {
+                console.log("user don't seems to have ollama running");
+            } else {
+                console.log('user seems to have ollama running with cors policy')
+                let guide_warnings = localStorage.getItem('guide_warnings');
+                if(!guide_warnings){
+                    guide_warnings = 0;
+                }
+                guide_warnings = parseInt(guide_warnings);
+                guide_warnings++
+                if(guide_warnings <= 4){
+                    ollamaGuide();
+                }
+                localStorage.setItem('guide_warnings', guide_warnings.toString());
+            }
+        }
+    )
+}
+
+getOllamaModels();
+
+//ollamaGuide();
+//
+
+
+// Ollama
+//
+// fetch('http://localhost:11434/v1/chat/completions', {
+//     method: 'POST',
+//     headers: {
+//         'Content-Type': 'application/json',
+//         //'Barear' : 'opasd'
+//     },
+//     body: JSON.stringify({
+//         model: 'smollm:135m',
+//         messages: [
+//             {
+//                 role: 'system',
+//                 content: 'You are a helpful assistant.'
+//             },
+//             {
+//                 role: 'user',
+//                 content: 'Hello!'
+//             }
+//         ]
+//     })
+// })
+//     .then(response => response.json())
+//     .then(data => console.log(data))
+//     .catch(error => console.error('Error:', error));
