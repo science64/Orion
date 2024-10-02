@@ -1,19 +1,42 @@
 # OrionChat
 
-OrionChat is a web interface designed to facilitate interactions with multiple AI models, including:
+OrionChat is a *free* web-based chat interface that simplifies interactions with multiple AI model providers.
+It provides a unified platform for chatting and exploring multiple large language models (LLMs), including:
 
-- **OpenAI Models**
-- **Groq Inc.**
-- **Cerebras**
+- **Ollama** – An open-source tool for running LLMs locally
+- **OpenAI**
 - **Google Gemini**
-- **Claude 3.5 Sonnet from Anthropic**
+- **Claude (Anthropic)**
+- **Groq Inc.** – Optimized for fast inference
+- **Cerebras** – Optimized for fast inference
 
-This project provides a unified platform, allowing users to explore the capabilities and limitations of each AI model seamlessly. The interface is built to be intuitive and user-friendly, making it easy to ask questions and receive quick responses from the AI models.
+With OrionChat, users can easily navigate and assess the strengths and limitations of different AI models through an intuitive,
+user-friendly interface.
 
-### Key Features:
+## Key Features
 
-- Support for multiple AI models
-- Simple and user-friendly web interface
-- Code syntax highlighting
-- Code download with one click
-- System prompt
+- **Seamless integration** with multiple AI models
+- **Clean and responsive** web interface
+- **Syntax highlighting** for code snippets
+- **One-click download** for AI-generated code outputs
+- **Customizable system prompts** to tailor responses
+
+## API Key Management
+
+Your API keys are stored locally using `localStorage`, and requests are sent directly to the official provider's API
+(OpenAI, Anthropic, Google, Groq, Cerebras) without routing through any external proxy, ensuring security and privacy.
+
+### Free API Keys
+
+- **Google Gemini:** [Get your key](https://aistudio.google.com/app/apikey)
+- **Cerebras:** [Sign up for an API key](https://cloud.cerebras.ai/platform/)
+- **Groq:** [Request a key](https://console.groq.com/keys)
+
+### Paid API Keys
+
+- **OpenAI:** [Get your key](https://platform.openai.com/api-keys)
+- **Anthropic:** [Sign up for an API key](https://console.anthropic.com/settings/keys)
+
+## License
+
+This project is open-source and available under the [MIT license](LICENSE).
