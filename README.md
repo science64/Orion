@@ -10,11 +10,15 @@ It provides a unified platform for chatting and exploring multiple large languag
 - **Groq Inc.** – Optimized for fast inference
 - **Cerebras** – Optimized for fast inference
 
+![OrionChat Screenshot](imgs/screenshot.png "OrionChat Screenshot")
+
+
 With OrionChat, users can easily navigate and assess the strengths and limitations of different AI models through an intuitive,
 user-friendly interface.
 
 ## Key Features
 
+- **Browser** - No need to download anything
 - **Seamless integration** with multiple AI models
 - **Clean and responsive** web interface
 - **Syntax highlighting** for code snippets
