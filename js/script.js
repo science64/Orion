@@ -858,6 +858,7 @@ function setApiKeyDialog() {
 
 
 function setOptions() {
+    closeDialogs(); // close opened dialogs before show options dialog
     let system_prompt = getSystemPrompt();
     if (!system_prompt) {
         system_prompt = '';
