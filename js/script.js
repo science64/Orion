@@ -804,7 +804,7 @@ function setOptions() {
     let platform_name = '';
     if(chosen_platform){
         platform_name = PLATFORM_DATA[chosen_platform].name ?? '';
-        platform_info = `<p>Active:<b> ${model}</b> from <b>${platform_name}</b></p>`;
+        platform_info = `<p class="platform_info">Active:<b> ${model}</b> from <b>${platform_name}</b></p>`;
     }
     let platform_options = '<div><p>Choose a Model</p><select name="platform">';
     let mark_as_select = '';
@@ -874,12 +874,17 @@ function saveModel() {
     }
     localStorage.setItem('chosen_platform', selected_platform);
     chosen_platform = selected_platform;
+    let platform_name = PLATFORM_DATA[chosen_platform].name;
     endpoint = PLATFORM_DATA[selected_platform].endpoint;
     localStorage.setItem('endpoint', endpoint)
     if (input_api_key) {
         localStorage.setItem(`${chosen_platform}.api_key`, api_key)
     }
-
+    let platform_info = document.querySelector(".platform_info");
+    if(platform_info){
+        platform_info.innerHTML = `Active: <b>${model}</b> from <b>${platform_name}</b>`;
+    }
+    createDialog('Saved with success!',3)
 
 }
 
