@@ -62,7 +62,7 @@ let PLATFORM_DATA = {
             "claude-3-haiku-20240307"
         ],
         name: "Anthropic",
-        endpoint: "https://api.anthropic.com/v1/complete"
+        endpoint: "https://api.anthropic.com/v1/messages"
     }
 }
 //console.log(PLATFORM_DATA);
@@ -284,6 +284,7 @@ function removeScreenConversation() {
 
 
 function loadOldConversation(old_talk_id) {
+    chat_id = old_talk_id;
     let new_url = document.URL;
     new_url = new_url.split('?')[0]; // remove param if have some
     new_url = new_url.split("#")[0]; // remove # if have
@@ -293,14 +294,14 @@ function loadOldConversation(old_talk_id) {
     let past_talk = localStorage.getItem(old_talk_id); // grab the old conversation
 
     localStorage.removeItem(old_talk_id); // remove old conversation from localstorage
-    chat_id = new Date().getTime(); // renew ID
-
+    //chat_id = new Date().getTime(); // renew ID
+    let last_interaction_id = new Date().getTime();
 
     //let btn_star_old_chat = document.querySelector("[data-id='" + old_talk_id + "']");
     let btn_star_old_chat = document.querySelector("[data-id='" + old_talk_id + "']");
 
     //btn_star_old_chat.setAttribute("data-id", chat_id);
-    btn_star_old_chat.setAttribute("data-last-interaction", chat_id);
+    btn_star_old_chat.setAttribute("data-last-interaction", last_interaction_id);
     document.title = btn_star_old_chat.innerText;
 
 
@@ -308,7 +309,7 @@ function loadOldConversation(old_talk_id) {
     if (past_talk) {
         let messages = JSON.parse(past_talk).messages;
         conversations.messages = messages;
-        conversations.last_interact = chat_id;
+        conversations.last_interact = last_interaction_id;
         localStorage.setItem(old_talk_id.toString(), JSON.stringify(conversations));
 
         removeScreenConversation();
@@ -329,6 +330,10 @@ function loadOldConversation(old_talk_id) {
 
 
     } else {
+        let topic_with_no_chat = document.querySelector(".topic[data-id='" + chat_id + "']");
+        if (topic_with_no_chat) {
+            topic_with_no_chat.remove();
+        }
         createDialog('Conversation not found!', 10)
     }
     hljs.highlightAll();
@@ -387,21 +392,30 @@ function chat() {
     let system_prompt_text = getSystemPrompt();
     if (system_prompt_text) {
         let system_prompt = {content: system_prompt_text, 'role': 'system'};
-        all_parts.push(system_prompt);
+        if(chosen_platform !== 'anthropic'){
+            all_parts.push(system_prompt);
+        }
     }
+    console.log(all_parts)
     conversations.messages.forEach(part => {
-        //let role = part.role === 'assistant' ? 'model' : part.role;
-        all_parts.push({content: part.content, role: part.role});
-    })
+            //let role = part.role === 'assistant' ? 'model' : part.role;
+            let cnt = part.content;
+            if (chosen_platform === 'anthropic') {
+                let ant_part =
+                    {
+                        role: part.role,
+                        content: [{type: 'text', text: cnt}]
+                    }
+                all_parts.push(ant_part);
+            } else {
+                all_parts.push({content: part.content, role: part.role});
+            }
 
-
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${api_key}`
-        },
-        body: JSON.stringify({
+        }
+    )
+//max_tokens: 1024,
+    let data =
+        {
             model: model,
             stream: false,
             messages: all_parts,
@@ -409,12 +423,27 @@ function chat() {
             // max_tokens: -1,
             //seed: 0,
             //top_p: 1
-        })
+        }
+    if(chosen_platform ==='anthropic'){
+        data.system= system_prompt_text;
+        data.max_tokens = 4096
+    }
+
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${api_key}`,
+            'x-api-key': `${api_key}`, // for Anthropic
+            "anthropic-version": "2023-06-01", // for Anthropic
+            "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify(data)
     };
-    if(!endpoint){
+    if (!endpoint) {
         setOptions();
         toggleAnimation();
-        document.querySelector(".message:nth-last-of-type(1)").remove();
+        removeLastMessage();
         return false;
     }
 
@@ -422,13 +451,19 @@ function chat() {
         .then(response => response.json())
         .then(data => {
             let response_cnt = data.choices?.[0]?.message.content ?? '';
+            if(!response_cnt){
+                response_cnt = data.content?.[0]?.text ?? ''; // anthropic
+            }
             if (!response_cnt) {
-                if (data.code === "wrong_api_key" || data.error.code === "invalid_api_key") {
+                if (data.code === "wrong_api_key" || data.error.code === "invalid_api_key" || data.error.message === "invalid x-api-key") {
                     invalid_key = true;
+                    setTimeout(()=>{
+                        addWarning(data, false)
+                    },1000)
                 } else {
                     addWarning(data, false);
                 }
-                document.querySelector(".message:nth-last-of-type(1)").remove();
+                removeLastMessage()
             } else {
                 addConversation('assistant', response_cnt);
             }
@@ -436,7 +471,7 @@ function chat() {
         .catch(error => {
             console.log(error);
             addWarning("Error: " + error);
-            document.querySelector(".message:nth-last-of-type(1)").remove();
+            removeLastMessage()
         })
         .finally(() => {
             toggleAnimation();
@@ -449,6 +484,19 @@ function chat() {
         })
 }
 
+function removeLastMessage() {
+    let ele = document.querySelector(".message:nth-last-of-type(1)");
+    if (ele) {
+        document.querySelector(".chat-input textarea").value = ele.innerText;
+        conversations.messages.pop();
+        if (conversations.messages.length) {
+            localStorage.setItem(chat_id, JSON.stringify(conversations));
+        } else {
+            localStorage.removeItem(chat_id);
+        }
+        ele.remove();
+    }
+}
 
 let chatButton = document.querySelector(".chat-input button");
 let chat_textarea = document.querySelector(".chat-input textarea");
@@ -475,7 +523,7 @@ function addWarning(msg, self_remove = true) {
     }
     let duration = 0;
     if (self_remove) {
-        duration = 8;
+        duration = 7;
     }
     createDialog(msg, duration, self_remove)
     // let divMother = document.createElement('div');
@@ -746,7 +794,7 @@ function geminiChat() {
                     } catch {
                         console.log('Ops error, no: data.error.message')
                     }
-                    document.querySelector(".message:nth-last-of-type(1)").remove();
+                    removeLastMessage()
                 }
             } else {
                 text = data;
@@ -766,7 +814,6 @@ function geminiChat() {
         enableCopyForCode();
     })
 }
-
 
 
 function setApiKey() {
@@ -802,7 +849,7 @@ function setOptions() {
 
     let platform_info = '';
     let platform_name = '';
-    if(chosen_platform){
+    if (chosen_platform) {
         platform_name = PLATFORM_DATA[chosen_platform].name ?? '';
         platform_info = `<p class="platform_info">Active:<b> ${model}</b> from <b>${platform_name}</b></p>`;
     }
@@ -813,7 +860,7 @@ function setOptions() {
         let platform_name = PLATFORM_DATA[platform].name;
         platform_options += `<optgroup label="${platform_name}">`;
         list_models.forEach(model_name => {
-            if(model_name === model){
+            if (model_name === model) {
                 mark_as_select = "selected='selected'";
             }
             platform_options += `<option ${mark_as_select} data-platform="${platform}" value="${model_name}">${model_name}</option>`;
@@ -869,7 +916,8 @@ function saveModel() {
     localStorage.setItem('selected_model', model);
     let selected_platform = selected_option.getAttribute('data-platform');
     let input_api_key = document.querySelector("input[name=api_key]").value.trim();
-    if(input_api_key){
+    if (input_api_key) {
+        console.log('input key')
         api_key = input_api_key; /// need to be like that
     }
     localStorage.setItem('chosen_platform', selected_platform);
@@ -878,13 +926,18 @@ function saveModel() {
     endpoint = PLATFORM_DATA[selected_platform].endpoint;
     localStorage.setItem('endpoint', endpoint)
     if (input_api_key) {
+        console.log('input key 2')
         localStorage.setItem(`${chosen_platform}.api_key`, api_key)
+    } else {
+        console.log('no no input key')
+        api_key = localStorage.getItem(`${chosen_platform}.api_key`)
+        console.log(api_key + ' to ' + chosen_platform);
     }
     let platform_info = document.querySelector(".platform_info");
-    if(platform_info){
+    if (platform_info) {
         platform_info.innerHTML = `Active: <b>${model}</b> from <b>${platform_name}</b>`;
     }
-    createDialog('Saved with success!',3)
+    createDialog('Saved with success!', 3)
 
 }
 
