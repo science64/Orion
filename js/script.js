@@ -1008,7 +1008,6 @@ createDialog(guide,0,'cl_justify')
 
 function getOllamaModels() {
     let ollama_models_endpoint = PLATFORM_DATA.ollama.get_models_endpoint;
-    //  ollama_models_endpoint = 'http://localhost:333/v1/models';
     let optgroup_ollama = document.querySelector("select[name=platform] [label=Ollama]")
     let start_time = new Date().getTime();
     fetch(ollama_models_endpoint)
@@ -1016,9 +1015,6 @@ function getOllamaModels() {
             return response.json();
         })
         .then(data => {
-            let end_time = new Date().getTime()
-            let past_time = end_time - start_time;
-            console.log(past_time)
             data = data.data ?? [];
             data.forEach(ollama_model => {
                 let option_element = document.createElement('option');
@@ -1031,14 +1027,13 @@ function getOllamaModels() {
                 PLATFORM_DATA.ollama.models.push(ollama_model.id);
             })
         }).catch(error => {
-            console.error('Error: ' + error)
+            //console.error('Error: ' + error)
             let end_time = new Date().getTime()
             let past_time = end_time - start_time;
-            console.log(past_time)
             if (past_time > 1200) {
-                console.log("user don't seems to have ollama running");
+                //console.log("user don't seems to have ollama running");
             } else {
-                console.log('user seems to have ollama running with cors policy')
+               console.log('user seems to have ollama running with cors policy')
                 let guide_warnings = localStorage.getItem('guide_warnings');
                 if(!guide_warnings){
                     guide_warnings = 0;
@@ -1055,33 +1050,3 @@ function getOllamaModels() {
 }
 
 getOllamaModels();
-
-//ollamaGuide();
-//
-
-
-// Ollama
-//
-// fetch('http://localhost:11434/v1/chat/completions', {
-//     method: 'POST',
-//     headers: {
-//         'Content-Type': 'application/json',
-//         //'Barear' : 'opasd'
-//     },
-//     body: JSON.stringify({
-//         model: 'smollm:135m',
-//         messages: [
-//             {
-//                 role: 'system',
-//                 content: 'You are a helpful assistant.'
-//             },
-//             {
-//                 role: 'user',
-//                 content: 'Hello!'
-//             }
-//         ]
-//     })
-// })
-//     .then(response => response.json())
-//     .then(data => console.log(data))
-//     .catch(error => console.error('Error:', error));
