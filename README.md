@@ -3,12 +3,14 @@
 OrionChat is a *free* web-based chat interface that simplifies interactions with multiple AI model providers.
 It provides a unified platform for chatting and exploring multiple large language models (LLMs), including:
 
-- **Ollama** – An open-source tool for running LLMs locally
-- **OpenAI**
-- **Google Gemini**
-- **Claude (Anthropic)**
-- **Groq Inc.** – Optimized for fast inference
-- **Cerebras** – Optimized for fast inference
+- 🛠️ Ollama – An open-source tool for running LLMs locally 🏡 
+- 🤖 OpenAI
+- 🌌 Google Gemini
+- 🟡 Claude (Anthropic)
+- 🚀 Groq Inc. – Optimized for fast inference ⚡️
+- ⚡️ Cerebras – Also optimized for fast inference 🚀
+
+It's like assembling the ultimate superhero team of AI
 
 ![OrionChat Screenshot](imgs/screenshot.png "OrionChat Screenshot")
 
