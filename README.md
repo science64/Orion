@@ -18,7 +18,9 @@ user-friendly interface.
 
 ## Key Features
 
+
 - **Browser** - No need to download anything
+- **TTS** - Realistic text-to-speech using ElevenLabs
 - **Seamless integration** with multiple AI models
 - **Clean and responsive** web interface
 - **Syntax highlighting** for code snippets
