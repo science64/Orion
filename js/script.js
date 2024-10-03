@@ -176,6 +176,9 @@ function addConversation(role, content) {
 
     }
     document.querySelector('#chat-messages').append(div);
+    if(role === 'assistant' && content.length > 2){
+        genAudio(content, div);
+    }
     div.scrollIntoView();
     saveLocalHistory();
 }
@@ -402,7 +405,6 @@ function chat() {
             all_parts.push(system_prompt);
         }
     }
-    console.log(all_parts)
     conversations.messages.forEach(part => {
             //let role = part.role === 'assistant' ? 'model' : part.role;
             let cnt = part.content;
@@ -644,7 +646,6 @@ function enableCopyForCode(enable_down_too = true) {
     });
 
    if(enable_down_too){
-       console.log('ss'+enable_down_too)
        enableCodeDownload();
    }
 }
@@ -887,6 +888,22 @@ function setOptions() {
     })
     platform_options += `</select></div>`;
 
+    let disable_audio_option = '';
+    let is_audio_feature_active = localStorage.getItem('audio_feature')
+    is_audio_feature_active = parseInt(is_audio_feature_active);
+    let is_eleven_keys_set = localStorage.elabs_api_key ?? '';
+    if(is_audio_feature_active){
+        disable_audio_option = `<p><b>Audio active:</b> <button class="red_btn" onclick="disableAudioFeature()">Disable Audio</button></p>`;
+    }else {
+        if(is_eleven_keys_set){
+            disable_audio_option = `<p><b>Audio is disabled:</b> <button onclick="enableAudioFeature()">Enable Audio</button></p>`;
+        }
+    }
+    let audio_options =
+        `<hr><p>If you want an audio response, you can set up an API key for ElevenLabs below.</p>
+         <input type="password" name="elabs_api_key" placeholder="ElevenLabs API Key">
+         <button onclick="enableAudioFeature()">Save Key</button>
+        `;
     let cnt =
         `<div>${platform_options}
          <input type="password" name="api_key" placeholder="API Key(if not defined yet)">
@@ -895,6 +912,8 @@ function setOptions() {
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
          <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
          ${platform_info}
+         ${audio_options}
+         ${disable_audio_option}
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
 
@@ -1050,3 +1069,25 @@ function getOllamaModels() {
 }
 
 getOllamaModels();
+
+function disableAudioFeature(){
+    localStorage.setItem('audio_feature','0');
+    addWarning('Audio feature disabled',true)
+}
+
+function enableAudioFeature(){
+    localStorage.setItem('audio_feature','1');
+    let input_ele = document.querySelector("input[name=elabs_api_key]");
+    if(input_ele && input_ele.value.trim().length > 5){
+        elabs_api_key = input_ele.value.trim();
+        localStorage.setItem('elabs_api_key', elabs_api_key)
+        addWarning('Audio feature enabled',true)
+    }else {
+        if(!elabs_api_key){
+            addWarning('Ops. No key provided!', false)
+        }else {
+            addWarning('Audio feature enabled',true)
+        }
+    }
+
+}

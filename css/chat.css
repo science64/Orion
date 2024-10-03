@@ -5,12 +5,33 @@ html, body {
     background-color: #fbfbfb;
 }
 
-.cl_justify{
+.message.bot:last-of-type p:last-of-type {
+    margin-bottom: 2px;
+}
+
+button.play_audio_btn {
+    background: transparent;
+    border: navajowhite;
+    display: flow;
+    cursor: pointer;
+}
+
+.eleven_audio {
+    max-width: 222px;
+    height: 25px;
+}
+
+.red_btn {
+    background-color: #ff0000 !important;
+    border: 1px solid #ccc !important;
+}
+
+.cl_justify {
     text-align: justify !important;
 }
 
 /**Reset hljs**/
-pre code.hljs{
+pre code.hljs {
     padding: 6px;
     border-radius: 6px;
 
@@ -32,12 +53,12 @@ code.hljs::-webkit-scrollbar-track {
     background-color: #22272e;
 }
 
-.btn-group{
+.btn-group {
     margin-top: 1px;
     float: right;
 }
 
-.copy-btn,.down-btn {
+.copy-btn, .down-btn {
     padding: 5px;
     background-color: #5d60d2;
     color: white;
@@ -46,6 +67,7 @@ code.hljs::-webkit-scrollbar-track {
     border-radius: 4px;
 
 }
+
 .container {
     font-family: sans-serif;
     justify-content: center;
@@ -112,30 +134,33 @@ th {
     text-align: center;
 }
 
-.setApiDialog{
+.setApiDialog {
     padding: 25px 16px 33px;
     text-align: center;
 }
-.dialog input, .setApiDialog button{
+
+.dialog input, .setApiDialog button {
     padding: 8px;
     border-radius: 4px;
     color: #7578e1;
 }
-.dialog input{
+
+.dialog input {
     margin: 16px 0;
 }
 
-.dialog button{
+.dialog button {
     background-color: #7578e1;
     color: #fff;
     cursor: pointer;
 }
 
 
-.optionsDialog{
+.optionsDialog {
     background-color: #fff !important;
 }
-.optionsDialog button{
+
+.optionsDialog button {
     padding: 7px;
     border: 1px solid #232323;
     border-radius: 4px;
@@ -287,7 +312,7 @@ input:checked + .slider:before {
     transform: translateX(15px);
 }
 
-select[name=platform]{
+select[name=platform] {
     height: 33px;
     font-weight: 600;
 }
@@ -303,7 +328,7 @@ select[name=platform]{
 }
 
 
-#new_chat,#open_options {
+#new_chat, #open_options {
     padding: 8px;
     text-align: center;
     border: 1px solid #ccc;
@@ -441,7 +466,7 @@ select[name=platform]{
     top: 25px;
 }
 
-textarea.system_prompt{
+textarea.system_prompt {
     width: 90%;
     min-height: 80px;
     border-radius: 4px;
@@ -525,8 +550,10 @@ textarea.system_prompt{
         width: 100%;
         margin: 0;
     }
-    #settings{
+
+    #settings {
         right: 22px;
         left: unset;
     }
 }
+
