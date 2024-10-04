@@ -620,7 +620,12 @@ function closeDialogs() {
 
 function enableCopyForCode(enable_down_too = true) {
     document.querySelectorAll('code.hljs').forEach(block => {
-        if (block.nextElementSibling.querySelector(".copy-btn") == null) {   // to not be added more the one time
+        let block_group = block.nextElementSibling;
+        let has_copy_btn = false;
+        if(block_group){
+            has_copy_btn =  block_group.querySelector(".copy-btn");
+        }
+        if (has_copy_btn) {   // to not be added more the one time
             const button = document.createElement('button');
             const div_ele = document.createElement('div');
             div_ele.className = 'btn-group';
