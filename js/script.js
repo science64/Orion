@@ -864,7 +864,17 @@ function setOptions() {
     if (!system_prompt) {
         system_prompt = '';
     }
-
+    let prompts_options = '';
+    let prompt_id = 0;
+    if(typeof(all_prompts) !== "undefined"){
+        prompts_options += '<select name="prompt"><option selected="selected" disabled="disabled">Awesome Prompts</option>';
+        all_prompts.forEach(the_prompt=>{
+            let prompt_text = the_prompt.prompt.replace(/"/g, '&quot;');
+            prompts_options += `<option id="prompt_id${prompt_id}" value="${prompt_text}">${the_prompt.act}</option>`;
+            prompt_id++;
+        });
+        prompts_options +='</select>';
+    }
     let platform_info = '';
     let platform_name = '';
     if (chosen_platform) {
@@ -909,6 +919,7 @@ function setOptions() {
          <input type="password" name="api_key" placeholder="API Key(if not defined yet)">
          <button onclick="saveModel()">Save Model</button></div><hr>
          <div><strong>System Prompt</strong>
+         ${prompts_options}
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
          <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
          ${platform_info}
@@ -916,6 +927,21 @@ function setOptions() {
          ${disable_audio_option}
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
+    setTimeout(()=>{
+        let sl_prompt = document.querySelector("select[name=prompt]");
+        if(sl_prompt){
+            sl_prompt.onchange = (item=>{
+               let txt_area =  document.querySelector("textarea.system_prompt");
+               if(txt_area){
+                   txt_area.innerText = item.target.value;
+                   txt_area.style.backgroundColor = '##0d13fe78';
+                   setTimeout(()=>{
+                       txt_area.style.backgroundColor ='transparent';
+                   },1000)
+               }
+            })
+        }
+    },500)
 
 }
 

@@ -312,7 +312,7 @@ input:checked + .slider:before {
     transform: translateX(15px);
 }
 
-select[name=platform] {
+select{
     height: 33px;
     font-weight: 600;
 }
@@ -472,6 +472,8 @@ textarea.system_prompt {
     border-radius: 4px;
     padding: 5px;
     margin: 8px 0 4px;
+    font-weight: 600;
+
 }
 
 .popup {
