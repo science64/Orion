@@ -467,7 +467,8 @@ function chat() {
                 response_cnt = data.content?.[0]?.text ?? ''; // anthropic
             }
             if (!response_cnt) {
-                if (data.code === "wrong_api_key" || data.error.code === "invalid_api_key" || data.error.message === "invalid x-api-key") {
+                let the_code = data.code ?? data.error?.code ?? data.error?.message ?? '';
+                if (the_code === "wrong_api_key" || the_code === "invalid_api_key" || the_code === "invalid x-api-key") {
                     invalid_key = true;
                     setTimeout(() => {
                         addWarning(data, false)
