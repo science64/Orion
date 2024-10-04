@@ -625,7 +625,7 @@ function enableCopyForCode(enable_down_too = true) {
         if(block_group){
             has_copy_btn =  block_group.querySelector(".copy-btn");
         }
-        if (has_copy_btn) {   // to not be added more the one time
+        if (!has_copy_btn) {   // to not be added more the one time
             const button = document.createElement('button');
             const div_ele = document.createElement('div');
             div_ele.className = 'btn-group';
@@ -1027,6 +1027,12 @@ let current_chat = document.querySelector("[data-id='" + page_chat_id + "']");
 
 if (current_chat) {
     current_chat.click();
+}else if(page_chat_id){
+    // Chat id doesn't exist, will update the URL to home page
+    let new_url = document.URL;
+    new_url = new_url.split('?')[0];
+    new_url = new_url.split("#")[0];
+    history.pushState({url: new_url}, '', new_url);
 }
 
 orderTopics();
