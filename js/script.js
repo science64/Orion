@@ -75,6 +75,7 @@ let PLATFORM_DATA = {
 
 const language_extension = {
     "python": "py",
+    "markdown": "md",
     "javascript": "js",
     "java": "java",
     "c": "c",
@@ -176,7 +177,7 @@ function addConversation(role, content) {
 
     }
     document.querySelector('#chat-messages').append(div);
-    if(role === 'assistant' && content.length > 2){
+    if (role === 'assistant' && content.length > 2) {
         genAudio(content, div);
     }
     div.scrollIntoView();
@@ -396,32 +397,52 @@ function chat() {
     if (chosen_platform === 'google') {
         return geminiChat();
     }
+    let last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    let cmd = commandManager(last_user_input)
     let all_parts = [];
     let invalid_key = false;
     let system_prompt_text = getSystemPrompt();
     if (system_prompt_text) {
         let system_prompt = {content: system_prompt_text, 'role': 'system'};
         if (chosen_platform !== 'anthropic') {
-            all_parts.push(system_prompt);
+            if (!cmd) {
+                all_parts.push(system_prompt);
+            }
         }
     }
-    conversations.messages.forEach(part => {
-            //let role = part.role === 'assistant' ? 'model' : part.role;
-            let cnt = part.content;
-            if (chosen_platform === 'anthropic') {
-                let ant_part =
-                    {
-                        role: part.role,
-                        content: [{type: 'text', text: cnt}]
-                    }
-                all_parts.push(ant_part);
-            } else {
-                all_parts.push({content: part.content, role: part.role});
-            }
 
+    if (!cmd) {
+        conversations.messages.forEach(part => {
+                //let role = part.role === 'assistant' ? 'model' : part.role;
+                let cnt = part.content;
+                if (chosen_platform === 'anthropic') {
+                    let ant_part =
+                        {
+                            role: part.role,
+                            content: [{type: 'text', text: cnt}]
+                        }
+                    all_parts.push(ant_part);
+                } else {
+                    all_parts.push({content: part.content, role: part.role});
+                }
+
+            }
+        )
+    } else {
+        // have cmd - so will just past the last user message in the command
+        if (chosen_platform === 'anthropic') {
+            let ant_part =
+                {
+                    role: 'user',
+                    content: [{type: 'text', text: cmd}]
+                };
+            all_parts.push(ant_part);
+        } else {
+            all_parts.push({content: cmd, role: 'user'});
         }
-    )
-//max_tokens: 1024,
+    }
+
+    //max_tokens: 1024,
     let data =
         {
             model: model,
@@ -433,8 +454,14 @@ function chat() {
             //top_p: 1
         }
     if (chosen_platform === 'anthropic') {
+        if(!system_prompt_text){
+            system_prompt_text = "Your name is Orion"; // Anthropic requires a system prompt
+        }
         data.system = system_prompt_text;
-        data.max_tokens = 4096
+        data.max_tokens = 4096;
+        if(cmd){
+            data.system = "Your name is Orion."; //
+        }
     }
 
     let HTTP_HEADERS = {
@@ -622,8 +649,8 @@ function enableCopyForCode(enable_down_too = true) {
     document.querySelectorAll('code.hljs').forEach(block => {
         let block_group = block.nextElementSibling;
         let has_copy_btn = false;
-        if(block_group){
-            has_copy_btn =  block_group.querySelector(".copy-btn");
+        if (block_group) {
+            has_copy_btn = block_group.querySelector(".copy-btn");
         }
         if (!has_copy_btn) {   // to not be added more the one time
             const button = document.createElement('button');
@@ -635,7 +662,7 @@ function enableCopyForCode(enable_down_too = true) {
             btn_down.className = 'down-btn';
             btn_down.innerText = 'Down';
             div_ele.append(button);
-            if(enable_down_too){
+            if (enable_down_too) {
                 div_ele.append(btn_down);
             }
             block.parentElement.append(div_ele);
@@ -651,9 +678,9 @@ function enableCopyForCode(enable_down_too = true) {
         }
     });
 
-   if(enable_down_too){
-       enableCodeDownload();
-   }
+    if (enable_down_too) {
+        enableCodeDownload();
+    }
 }
 
 
@@ -746,7 +773,7 @@ function geminiChat() {
         });
     })
 
-    const data = {
+    let data = {
         "contents": [all_parts]
     };
 
@@ -756,6 +783,20 @@ function geminiChat() {
             "parts": [
                 {
                     "text": system_prompt
+                }
+            ]
+        };
+    }
+
+    let last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    let cmd = commandManager(last_user_input)
+    if(cmd){
+        data = {};
+        data.contents = {
+            "role": 'user',
+            "parts": [
+                {
+                    "text": cmd
                 }
             ]
         };
@@ -827,6 +868,7 @@ function geminiChat() {
         })
         .catch(error => {
             addWarning('Error: ' + error, false);
+            removeLastMessage();
         }).finally(() => {
         toggleAnimation();
         enableChat();
@@ -872,14 +914,14 @@ function setOptions() {
     }
     let prompts_options = '';
     let prompt_id = 0;
-    if(typeof(all_prompts) !== "undefined"){
+    if (typeof (all_prompts) !== "undefined") {
         prompts_options += '<select name="prompt"><option selected="selected" disabled="disabled">Awesome Prompts</option>';
-        all_prompts.forEach(the_prompt=>{
+        all_prompts.forEach(the_prompt => {
             let prompt_text = the_prompt.prompt.replace(/"/g, '&quot;');
             prompts_options += `<option id="prompt_id${prompt_id}" value="${prompt_text}">${the_prompt.act}</option>`;
             prompt_id++;
         });
-        prompts_options +='</select>';
+        prompts_options += '</select>';
     }
     let platform_info = '';
     let platform_name = '';
@@ -908,10 +950,10 @@ function setOptions() {
     let is_audio_feature_active = localStorage.getItem('audio_feature')
     is_audio_feature_active = parseInt(is_audio_feature_active);
     let is_eleven_keys_set = localStorage.elabs_api_key ?? '';
-    if(is_audio_feature_active){
+    if (is_audio_feature_active) {
         disable_audio_option = `<p><b>Audio active:</b> <button class="red_btn" onclick="disableAudioFeature()">Disable Audio</button></p>`;
-    }else {
-        if(is_eleven_keys_set){
+    } else {
+        if (is_eleven_keys_set) {
             disable_audio_option = `<p><b>Audio is disabled:</b> <button onclick="enableAudioFeature()">Enable Audio</button></p>`;
         }
     }
@@ -933,21 +975,21 @@ function setOptions() {
          ${disable_audio_option}
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
-    setTimeout(()=>{
+    setTimeout(() => {
         let sl_prompt = document.querySelector("select[name=prompt]");
-        if(sl_prompt){
-            sl_prompt.onchange = (item=>{
-               let txt_area =  document.querySelector("textarea.system_prompt");
-               if(txt_area){
-                   txt_area.innerText = item.target.value;
-                   txt_area.style.backgroundColor = '##0d13fe78';
-                   setTimeout(()=>{
-                       txt_area.style.backgroundColor ='transparent';
-                   },1000)
-               }
+        if (sl_prompt) {
+            sl_prompt.onchange = (item => {
+                let txt_area = document.querySelector("textarea.system_prompt");
+                if (txt_area) {
+                    txt_area.innerText = item.target.value;
+                    txt_area.style.backgroundColor = '##0d13fe78';
+                    setTimeout(() => {
+                        txt_area.style.backgroundColor = 'transparent';
+                    }, 1000)
+                }
             })
         }
-    },500)
+    }, 500)
 
 }
 
@@ -997,7 +1039,7 @@ function saveModel() {
     } else {
         api_key = localStorage.getItem(`${chosen_platform}.api_key`)
     }
-    if(!api_key && chosen_platform ==='ollama'){
+    if (!api_key && chosen_platform === 'ollama') {
         api_key = 'i_love_ollama_'.repeat(3);
         localStorage.setItem(`${chosen_platform}.api_key`, api_key);
     }
@@ -1027,7 +1069,7 @@ let current_chat = document.querySelector("[data-id='" + page_chat_id + "']");
 
 if (current_chat) {
     current_chat.click();
-}else if(page_chat_id){
+} else if (page_chat_id) {
     // Chat id doesn't exist, will update the URL to home page
     let new_url = document.URL;
     new_url = new_url.split('?')[0];
@@ -1054,11 +1096,11 @@ Environment=OLLAMA_ORIGINS=https://eliaspereirah.github.io</code></pre>
   <p><br>This will allow <strong>https://eliaspereirah.github.io</strong> to access http://localhost:11434/</p>
 </div>`
 
-createDialog(guide,0,'cl_justify')
+    createDialog(guide, 0, 'cl_justify')
     hljs.highlightAll();
-    setTimeout(()=>{
+    setTimeout(() => {
         enableCopyForCode(false);
-    },500)
+    }, 500)
 
 }
 
@@ -1078,7 +1120,7 @@ function getOllamaModels() {
                 option_element.setAttribute("data-platform", "ollama");
                 option_element.value = ollama_model.id;
                 option_element.innerText = ollama_model.id;
-                if(optgroup_ollama){
+                if (optgroup_ollama) {
                     optgroup_ollama.append(option_element)
                 }
                 PLATFORM_DATA.ollama.models.push(ollama_model.id);
@@ -1090,14 +1132,14 @@ function getOllamaModels() {
             if (past_time > 1200) {
                 //console.log("user don't seems to have ollama running");
             } else {
-               console.log('user seems to have ollama running with cors policy')
+                console.log('user seems to have ollama running with cors policy')
                 let guide_warnings = localStorage.getItem('guide_warnings');
-                if(!guide_warnings){
+                if (!guide_warnings) {
                     guide_warnings = 0;
                 }
                 guide_warnings = parseInt(guide_warnings);
                 guide_warnings++
-                if(guide_warnings <= 4){
+                if (guide_warnings <= 4) {
                     ollamaGuide();
                 }
                 localStorage.setItem('guide_warnings', guide_warnings.toString());
@@ -1108,24 +1150,50 @@ function getOllamaModels() {
 
 getOllamaModels();
 
-function disableAudioFeature(){
-    localStorage.setItem('audio_feature','0');
-    addWarning('Audio feature disabled',true)
+function disableAudioFeature() {
+    localStorage.setItem('audio_feature', '0');
+    addWarning('Audio feature disabled', true)
 }
 
-function enableAudioFeature(){
-    localStorage.setItem('audio_feature','1');
+function enableAudioFeature() {
+    localStorage.setItem('audio_feature', '1');
     let input_ele = document.querySelector("input[name=elabs_api_key]");
-    if(input_ele && input_ele.value.trim().length > 5){
+    if (input_ele && input_ele.value.trim().length > 5) {
         elabs_api_key = input_ele.value.trim();
         localStorage.setItem('elabs_api_key', elabs_api_key)
-        addWarning('Audio feature enabled',true)
-    }else {
-        if(!elabs_api_key){
+        addWarning('Audio feature enabled', true)
+    } else {
+        if (!elabs_api_key) {
             addWarning('Ops. No key provided!', false)
-        }else {
-            addWarning('Audio feature enabled',true)
+        } else {
+            addWarning('Audio feature enabled', true)
         }
     }
+
+}
+
+
+function commandManager(text) {
+    text = text.trim();
+    let arr = text.match(/\/(.*?):(.*?)\s/);
+    let cmd = '';
+    let args = '';
+    if(arr){
+        cmd = arr[1];
+        if(arr[2]){
+            args = arr[2];
+            console.log('args: '+args)
+        }
+    }
+
+
+    let prompt = especial_prompts[cmd] ?? '';
+    if (!prompt) {
+        return false; // no command passed
+    }
+    text = text.replace(/\/(.*?):(.*?)\s/, " ").trim();
+    prompt = prompt.replaceAll("{{USER_INPUT}}", text);
+    prompt = prompt.replaceAll("{{ARG1}}", args);
+    return prompt; // return the new prompt formated
 
 }
