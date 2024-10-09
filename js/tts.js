@@ -64,6 +64,7 @@ function genAudio(text, div){
         })
             .then(response => {
                 if (!response.ok) {
+                    showError(response)
                     throw new Error(response.status.toString());
                 }
                 return response.arrayBuffer();
@@ -93,8 +94,15 @@ function genAudio(text, div){
 
             })
             .catch(error => {
+                already_generated = false;
                 audio_in_queue = false;
                 addWarning('Unable to generate audio. '+error,true);
             });
     }
+}
+
+function showError(response){
+    response.json().then(data=>{
+        addWarning(data);
+    })
 }
