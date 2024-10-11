@@ -466,7 +466,7 @@ function chat() {
                                 "source": {
                                     "type": "base64",
                                     "media_type": mimeType,
-                                    "data": base64String
+                                    "data": base64String.split(',')[1]
                                 }
                             }, {type: 'text', text: cnt}]
                         };
