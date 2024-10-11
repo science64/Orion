@@ -8,10 +8,10 @@
     <meta name="description" content="OrionChat is a user-friendly, open-source web application for chatting with AI models from different providers.">
     <script src="js/library/showdown@1.9.0.js"></script>
     <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark-dimmed.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+          href="css/highlightjs/themes/github-dark-dimmed.css">
+    <script src="js/library/highlightjs.js"></script>
     <link rel="icon" href="favicon.png">
-    <link rel="stylesheet" href="css/chat.css">
+    <link rel="stylesheet" href="css/chat.css?v=1ss">
     <script>
         let chat_id = new Date().getTime();
     </script>
@@ -56,11 +56,14 @@
         <div class="chat-input">
             <div class="chat_wrap">
                 <label><textarea placeholder="Let's talk"></textarea></label>
+                <label class="upload_picture">
+                    <input id="fileInput" class="ds_none" type="file" name="fileInput">
+                </label>
                 <button>Send</button>
             </div>
         </div>
     </div>
 </div>
-<script async="async" src="js/script.js"></script>
+<script async="async" src="js/script.js?v=1sss42"></script>
 </body>
 </html>

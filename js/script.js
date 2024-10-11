@@ -3,8 +3,9 @@ let max_chats_history = 50;
 let chosen_platform = localStorage.getItem('chosen_platform');
 let model = localStorage.getItem('selected_model');
 let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
-
-
+let base64String = '';
+let mimeType = '';
+let media_type = 'image';
 let endpoint = localStorage.getItem('endpoint')
 
 
@@ -157,7 +158,7 @@ let conversations = {
     'messages': []
 };
 
-function addConversation(role, content) {
+function addConversation(role, content, add_to_document = true) {
     closeDialogs();
     let new_talk = {'role': role, 'content': content};
     conversations.messages.push(new_talk);
@@ -169,11 +170,40 @@ function addConversation(role, content) {
         div.classList.add('user');
         cnt = content;
         div.innerText = cnt;
+        if (base64String) {
+            let media = mimeType.split("/")[0];
+            console.log('me:' + media)
+            if (media === 'image') {
+                let imgEle = document.createElement('img');
+                // imgEle.src = "data:"+fileType+";base64," + base64String;
+                imgEle.src = base64String;
+                div.prepend(imgEle);
+                imgEle.className = 'appended_pic';
+            } else if (media === 'audio') {
+                let audioEle = document.createElement('audio');
+                audioEle.src = base64String;
+                audioEle.controls = true;
+                div.prepend(audioEle);
+                audioEle.className = 'appended_audio';
+            } else if (media === 'video') {
+                let videoEle = document.createElement('video');
+                videoEle.src = base64String;
+                videoEle.controls = true;
+                div.prepend(videoEle);
+                videoEle.className = 'appended_video';
+            }
+        }
 
     } else {
-        div.classList.add('bot');
-        cnt = converter.makeHtml(content);
-        div.innerHTML = cnt;
+        if (add_to_document) {
+            div.classList.add('bot');
+            cnt = converter.makeHtml(content);
+            div.innerHTML = cnt;
+            let has_att = document.querySelector(".has_attachment");
+            if (has_att) {
+                has_att.classList.remove('has_attachment');
+            }
+        }
 
     }
     document.querySelector('#chat-messages').append(div);
@@ -397,6 +427,10 @@ function chat() {
     if (chosen_platform === 'google') {
         return geminiChat();
     }
+    if (chosen_platform === 'ollama') {
+        return ollamaStreamChat();
+    }
+
     let last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
     let all_parts = [];
@@ -406,7 +440,10 @@ function chat() {
         let system_prompt = {content: system_prompt_text, 'role': 'system'};
         if (chosen_platform !== 'anthropic') {
             if (!cmd) {
-                all_parts.push(system_prompt);
+                if (!base64String) {
+                    // groq vision accept no system prompt
+                    all_parts.push(system_prompt);
+                }
             }
         }
     }
@@ -421,13 +458,57 @@ function chat() {
                             role: part.role,
                             content: [{type: 'text', text: cnt}]
                         }
-                    all_parts.push(ant_part);
+                    if (base64String && part.role === 'user') {
+                        ant_part = {
+                            role: part.role,
+                            content: [{
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": mimeType,
+                                    "data": base64String
+                                }
+                            }, {type: 'text', text: cnt}]
+                        };
+                        all_parts.push(ant_part);
+                        base64String = '';
+                        mimeType = '';
+
+                    } else {
+                        all_parts.push(ant_part);
+                    }
                 } else {
-                    all_parts.push({content: part.content, role: part.role});
+                    if (base64String) {
+                        all_parts.push({
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": part.content
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        // "url": "data:"+fileType+";base64," + base64String
+                                        "url": base64String
+                                    }
+                                }]
+                        });
+
+                        //all_parts = convertMessages(all_parts, base64String);
+                        base64String = '';
+                        mimeType = '';
+
+                    } else {
+                        all_parts.push({content: part.content, role: part.role});
+                        console.log('no image part')
+                    }
                 }
 
             }
-        )
+        );
+
+
     } else {
         // have cmd - so will just past the last user message in the command
         if (chosen_platform === 'anthropic') {
@@ -442,6 +523,7 @@ function chat() {
         }
     }
 
+
     //max_tokens: 1024,
     let data =
         {
@@ -454,12 +536,12 @@ function chat() {
             //top_p: 1
         }
     if (chosen_platform === 'anthropic') {
-        if(!system_prompt_text){
+        if (!system_prompt_text) {
             system_prompt_text = "Your name is Orion"; // Anthropic requires a system prompt
         }
         data.system = system_prompt_text;
         data.max_tokens = 4096;
-        if(cmd){
+        if (cmd) {
             data.system = "Your name is Orion."; //
         }
     }
@@ -758,7 +840,7 @@ function createDialog(text, duration_seconds = 0, add_class_name = '', can_delet
 
 }
 
-function geminiChat() {
+function geminiChat(fileUri = '') {
     let all_parts = [];
     let system_prompt = getSystemPrompt();
     conversations.messages.forEach(part => {
@@ -772,6 +854,27 @@ function geminiChat() {
             ]
         });
     })
+
+    if (base64String) {
+        geminiUploadImage().then(response => {
+            return response;
+        }).then(fileUri => {
+            base64String = '';
+            mimeType = '';
+            geminiChat(fileUri)
+        })
+        return false;
+    }
+
+    if (fileUri) {
+        all_parts[(all_parts.length - 1)].parts.push({
+            "file_data":
+                {
+                    "mime_type": mimeType,
+                    "file_uri": fileUri
+                }
+        })
+    }
 
     let data = {
         "contents": [all_parts]
@@ -790,7 +893,7 @@ function geminiChat() {
 
     let last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
-    if(cmd){
+    if (cmd) {
         data = {};
         data.contents = {
             "role": 'user',
@@ -1178,11 +1281,11 @@ function commandManager(text) {
     let arr = text.match(/\/(.*?):(.*?)\s/);
     let cmd = '';
     let args = '';
-    if(arr){
+    if (arr) {
         cmd = arr[1];
-        if(arr[2]){
+        if (arr[2]) {
             args = arr[2];
-            console.log('args: '+args)
+            console.log('args: ' + args)
         }
     }
 
@@ -1197,3 +1300,222 @@ function commandManager(text) {
     return prompt; // return the new prompt formated
 
 }
+
+
+async function ollamaStreamChat() {
+
+    let all_parts = [];
+    let invalid_key = false;
+    let first_response = true;
+    let system_prompt_text = getSystemPrompt();
+    if (system_prompt_text) {
+        let system_prompt = {content: system_prompt_text, 'role': 'system'};
+        all_parts.push(system_prompt);
+
+    }
+    conversations.messages.forEach(part => {
+            all_parts.push({content: part.content, role: part.role});
+        }
+    )
+
+    let data =
+        {
+            model: model,
+            stream: true,
+            messages: all_parts
+        }
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+        }
+
+        const reader = response.body.getReader();
+        chatContainer = document.querySelector('#chat-messages'); // Get the chat container
+        const botMessageDiv = document.createElement('div');  // Create the bot message div
+        botMessageDiv.classList.add('message', 'bot');      // Add the classes
+        chatContainer.append(botMessageDiv);           // Append to the chat
+
+        let story = '';
+
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) {
+                break;
+            }
+
+            const textDecoder = new TextDecoder('utf-8');
+            const chunk = textDecoder.decode(value);
+            // Parse the SSE stream
+            chunk.split('\n\n').forEach(part => {
+                if (part.startsWith('data: ')) {
+                    if (!part.startsWith('data: [DONE]')) {
+                        try {
+                            jsonData = JSON.parse(part.substring('data: '.length));
+                            if (jsonData.choices && jsonData.choices[0] && jsonData.choices[0].delta && jsonData.choices[0].delta.content) {
+                                story += jsonData.choices[0].delta.content;
+                            }
+                        } catch (jsonError) {
+                            console.error("Error parsing JSON:", jsonError);
+                        }
+                    } else {
+                        addConversation('assistant', story, false);
+                        // done
+
+                    }
+
+                }
+            });
+            //botMessageDiv.textContent = story; // Update the bot message div
+            botMessageDiv.innerHTML = converter.makeHtml(story);
+            botMessageDiv.scrollIntoView();
+            hljs.highlightAll();
+            if (first_response) {
+                first_response = false;
+                toggleAnimation();
+                botMessageDiv.scrollIntoView();
+            }
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+
+        // Display error message in the chat
+        const errorMessageDiv = document.createElement('div');
+        errorMessageDiv.classList.add('message', 'bot');
+        errorMessageDiv.textContent = `Error: ${error.message}`;
+        chatContainer.appendChild(errorMessageDiv);
+
+        toggleAnimation();
+        if (invalid_key) {
+            setApiKeyDialog();
+        }
+    } finally {
+        enableCopyForCode();
+        enableChat();
+    }
+}
+
+function detectAttachment() {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.onchange = (a) => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                mimeType = file.type;
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    //  base64String = event.target.result.split(',')[1];
+                    base64String = event.target.result;
+                    console.log('anexado')
+                    fileInput.parentElement.classList.add('has_attachment')
+                    fileInput.value = '';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                console.log('Nenhum arquivo anexado.');
+            }
+        }
+    }
+}
+
+detectAttachment();
+
+
+async function geminiUploadImage() {
+    if (!base64String) {
+        console.log('No file to be uploaded!')
+        return false;
+    }
+    let baseUrl = 'https://generativelanguage.googleapis.com';
+
+    mimeType = base64String.substring(base64String.indexOf(":") + 1, base64String.indexOf(";"));
+
+    const byteCharacters = atob(base64String.split(',')[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    let imgBlob = new Blob([byteArray], {type: mimeType});
+    try {
+        // Define headers and initiate the resumable upload
+        const startUploadOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Upload-Protocol': 'resumable',
+                'X-Goog-Upload-Command': 'start',
+                'X-Goog-Upload-Header-Content-Length': imgBlob.size,
+                'X-Goog-Upload-Header-Content-Type': imgBlob.type,
+            },
+            body: JSON.stringify({'file': {'display_name': 'TEXT'}}),
+        };
+
+        const startRes = await fetch(`${baseUrl}/upload/v1beta/files?key=${api_key}`, startUploadOptions);
+        const uploadUrl = startRes.headers.get('X-Goog-Upload-URL');
+
+        // Upload the actual bytes
+        const uploadOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Length': imgBlob.size,
+                'X-Goog-Upload-Offset': '0',
+                'X-Goog-Upload-Command': 'upload, finalize',
+            },
+            body: imgBlob,
+        };
+
+        const uploadRes = await fetch(uploadUrl, uploadOptions);
+        const fileInfo = await uploadRes.json();
+        const fileUri = fileInfo.file.uri;
+
+
+        let file_state = ''
+        while (file_state === '') {
+            console.log('while')
+            await fetch(fileUri + "?key=" + api_key)
+                .then(response => response.json())
+                .then(data => {
+                    // Exibindo o nome e o URI do arquivo atualizado
+                    file_state = data.state ?? 'empty';
+                })
+                .catch(error => {
+                    console.error('Erro ao fazer a requisição:', error);
+                });
+            if(file_state === 'ACTIVE' || file_state !=='PROCESSING'){
+                break;
+            }else {
+                console.log('antes :>' + new Date().getSeconds())
+                await delay(5000); // Aguarda 5 segundos
+                // wait 5 secs before verify again
+                console.log('depois :>' + new Date().getSeconds())
+            }
+
+        }
+
+
+        console.log(fileUri)
+        return fileUri;
+
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+    return false;
+}
+
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Usage example, assuming `imgBlob` is a Blob object representing the image.
