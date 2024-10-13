@@ -6,8 +6,8 @@ html, body {
 }
 
 
-div.message.bot:nth-last-of-type(1){
-    min-height: 54dvh;
+div.message.bot:nth-last-of-type(2),div.message.bot:nth-last-of-type(1){
+    min-height: 54dvh !important;
 }
 .has_attachment{
     background-color: #c9ffa0 !important;;
