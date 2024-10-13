@@ -47,6 +47,7 @@ button.play_audio_btn {
 pre code.hljs {
     padding: 6px;
     border-radius: 6px;
+    min-height: 22px;
 
 }
 
@@ -67,17 +68,18 @@ code.hljs::-webkit-scrollbar-track {
 }
 
 .btn-group {
-    margin-top: 1px;
-    float: right;
+    margin-top: -31px;
+    text-align: end;
 }
 
 .copy-btn, .down-btn {
     padding: 5px;
-    background-color: #5d60d2;
+    background-color: #39404a;
     color: white;
     border: 1px solid #f7f7ff;
     cursor: pointer;
     border-radius: 4px;
+    margin: 0 2px;
 
 }
 
@@ -85,7 +87,7 @@ code.hljs::-webkit-scrollbar-track {
     font-family: sans-serif;
     justify-content: center;
     align-items: center;
-    height: 100dvh;
+    min-height: 100dvh;
     margin: 0;
     display: flex;
 }
@@ -117,13 +119,13 @@ th {
     padding: 2px 4px;
     color: #5c5656;
     position: absolute;
-    top: -5px;
-    right: 0;
+    top: 5px;
+    right: 5px;
     background-color: #c9ffa0;
     box-sizing: border-box;
     border-radius: 3px;
     cursor: pointer;
-    transform: rotate(33deg);
+    transform: rotate(1deg);
     border: 1px solid #fff;
 }
 
@@ -255,7 +257,7 @@ a {
 }
 
 .start_msg:before {
-    content: 'System: ';
+    content: 'Orion: ';
 }
 
 .jsClose:before {
@@ -386,10 +388,14 @@ select{
     margin: 5px 0;
     border-radius: 4px;
     box-sizing: border-box;
-    color: #585eb6;
+    color: #605b67;
     cursor: pointer;
 }
 
+.active_topic{
+    background-color: #7578e1a1;
+    color: #ffffff !important;
+}
 
 .deletable:before {
     padding: 4px 5px;
@@ -464,6 +470,7 @@ select{
     height: 50px;
     box-sizing: border-box;
     border-right: none !important;
+    font-weight: 600;
 
 }
 
@@ -542,7 +549,7 @@ textarea.system_prompt {
 .dot {
     width: 20px;
     height: 20px;
-    background-color: #3498db;
+    background-color: #7578e1;
     border-radius: 50%;
     margin: 0 10px;
     animation: bounce 1s infinite alternate;
@@ -590,6 +597,10 @@ textarea.system_prompt {
     .chat {
         width: 100%;
         margin: 0;
+    }
+    .dialog_close:after{
+        right: inherit;
+        left: 5px;
     }
 
     #settings {

@@ -5,8 +5,16 @@ let model = localStorage.getItem('selected_model');
 let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
 let base64String = '';
 let mimeType = '';
-let media_type = 'image';
 let endpoint = localStorage.getItem('endpoint')
+
+const scrollingDetector = () => {
+    document.querySelector("#chat-messages").addEventListener('scroll', () => {
+        console.log("Scroll detected!");
+    });
+};
+
+// Call the function to start listening for scroll events
+scrollingDetector();
 
 
 let SITE_TITLE = "OrionChat";
@@ -172,7 +180,6 @@ function addConversation(role, content, add_to_document = true) {
         div.innerText = cnt;
         if (base64String) {
             let media = mimeType.split("/")[0];
-            console.log('me:' + media)
             if (media === 'image') {
                 let imgEle = document.createElement('img');
                 // imgEle.src = "data:"+fileType+";base64," + base64String;
@@ -203,13 +210,16 @@ function addConversation(role, content, add_to_document = true) {
             if (has_att) {
                 has_att.classList.remove('has_attachment');
             }
+            console.log('adding audio')
+            genAudio(content, div);
+        } else {
+            let lastBot = document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length - 1];
+            console.log('adding audio')
+            genAudio(content, lastBot);
         }
 
     }
     document.querySelector('#chat-messages').append(div);
-    if (role === 'assistant' && content.length > 2) {
-        genAudio(content, div);
-    }
     div.scrollIntoView();
     saveLocalHistory();
 }
@@ -266,7 +276,7 @@ function removeChat(div, id) {
         let ele = document.createElement('div');
         let content = document.querySelector(".container");
         ele.classList.add('chat_deleted_msg');
-        if (parseInt(id) === chat_id) {
+        if (id === chat_id) {
             // current chat - so clean the screen
             let all_user_msg = document.querySelectorAll("#chat-messages .message.user");
             let all_bot_msg = document.querySelectorAll("#chat-messages .message.bot");
@@ -377,7 +387,9 @@ function loadOldConversation(old_talk_id) {
         createDialog('Conversation not found!', 10)
     }
     hljs.highlightAll();
-    enableCopyForCode();
+    setTimeout(()=>{
+        enableCopyForCode();
+    },500)
 
 }
 
@@ -401,6 +413,7 @@ function loadOldChatTopics() {
             div.classList.add('deletable')
         }
         div.textContent = prev.topic.substring(0, 50);
+        div.title = prev.topic.substring(0, 90);
 
         div.setAttribute('data-id', prev.id)
         div.setAttribute('data-last-interaction', prev.last_interaction)
@@ -409,6 +422,11 @@ function loadOldChatTopics() {
             if (can_delete_history) {
                 removeChat(div, the_id);
             } else {
+                let all_active_topic = document.querySelectorAll(".active_topic");
+                all_active_topic.forEach(t => {
+                    t.classList.remove('active_topic');
+                })
+                div.classList.add('active_topic')
                 loadOldConversation(the_id)
             }
         })
@@ -1032,7 +1050,7 @@ function setOptions() {
         platform_name = PLATFORM_DATA[chosen_platform].name ?? '';
         platform_info = `<p class="platform_info">Active:<b> ${model}</b> from <b>${platform_name}</b></p>`;
     }
-    let platform_options = '<div><p>Choose a Model</p><select name="platform">';
+    let platform_options = '<div><p>Choose a Model</p><select name="platform"><option disabled="disabled" selected="selected">Select</option>';
     let mark_as_select = '';
     Object.keys(PLATFORM_DATA).forEach(platform => {
         let list_models = PLATFORM_DATA[platform].models;
@@ -1348,6 +1366,8 @@ async function ollamaStreamChat() {
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
+                console.log('break done')
+                addConversation('assistant', story, false);
                 break;
             }
 
@@ -1366,9 +1386,9 @@ async function ollamaStreamChat() {
                             console.error("Error parsing JSON:", jsonError);
                         }
                     } else {
-                        addConversation('assistant', story, false);
+                        console.log('done')
+                        // addConversation('assistant', story, false);
                         // done
-
                     }
 
                 }
@@ -1386,7 +1406,6 @@ async function ollamaStreamChat() {
 
     } catch (error) {
         console.error("Error:", error);
-
         // Display error message in the chat
         const errorMessageDiv = document.createElement('div');
         errorMessageDiv.classList.add('message', 'bot');
@@ -1414,13 +1433,13 @@ function detectAttachment() {
                 reader.onload = function (event) {
                     //  base64String = event.target.result.split(',')[1];
                     base64String = event.target.result;
-                    console.log('anexado')
+                    console.log('Attached')
                     fileInput.parentElement.classList.add('has_attachment')
                     fileInput.value = '';
                 }
                 reader.readAsDataURL(file);
             } else {
-                console.log('Nenhum arquivo anexado.');
+                console.log('No file attached.');
             }
         }
     }
@@ -1489,21 +1508,17 @@ async function geminiUploadImage() {
                     file_state = data.state ?? 'empty';
                 })
                 .catch(error => {
-                    console.error('Erro ao fazer a requisição:', error);
+                    console.error('Request error:', error);
                 });
-            if(file_state === 'ACTIVE' || file_state !=='PROCESSING'){
+            if (file_state === 'ACTIVE' || file_state !== 'PROCESSING') {
                 break;
-            }else {
-                console.log('antes :>' + new Date().getSeconds())
+            } else {
                 await delay(5000); // Aguarda 5 segundos
                 // wait 5 secs before verify again
-                console.log('depois :>' + new Date().getSeconds())
             }
 
         }
 
-
-        console.log(fileUri)
         return fileUri;
 
 
