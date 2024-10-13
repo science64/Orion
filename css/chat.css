@@ -4,6 +4,11 @@ html, body {
     padding: 0;
     background-color: #fbfbfb;
 }
+
+
+div.message.bot:nth-last-of-type(1){
+    min-height: 54dvh;
+}
 .has_attachment{
     background-color: #c9ffa0 !important;;
 }
@@ -113,21 +118,23 @@ th {
     text-overflow: ellipsis;
 }
 
-
 .dialog_close:after {
     content: "X";
     padding: 2px 4px;
     color: #5c5656;
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: -5px;
+    right: -5px;
     background-color: #c9ffa0;
     box-sizing: border-box;
     border-radius: 3px;
     cursor: pointer;
-    transform: rotate(1deg);
+    transform: rotate(33deg);
     border: 1px solid #fff;
 }
+
+
+
 
 #all_dialogs {
     display: contents;
@@ -598,9 +605,11 @@ textarea.system_prompt {
         width: 100%;
         margin: 0;
     }
-    .dialog_close:after{
+    .optionsDialog .dialog_close:after{
+        left: 1px;
+        top: 1px;
         right: inherit;
-        left: 5px;
+        transform: rotate(0deg);
     }
 
     #settings {

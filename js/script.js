@@ -5,17 +5,8 @@ let model = localStorage.getItem('selected_model');
 let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
 let base64String = '';
 let mimeType = '';
+let story = '';
 let endpoint = localStorage.getItem('endpoint')
-
-const scrollingDetector = () => {
-    document.querySelector("#chat-messages").addEventListener('scroll', () => {
-        console.log("Scroll detected!");
-    });
-};
-
-// Call the function to start listening for scroll events
-scrollingDetector();
-
 
 let SITE_TITLE = "OrionChat";
 
@@ -166,7 +157,7 @@ let conversations = {
     'messages': []
 };
 
-function addConversation(role, content, add_to_document = true) {
+function addConversation(role, content, add_to_document = true, do_scroll = true) {
     closeDialogs();
     let new_talk = {'role': role, 'content': content};
     conversations.messages.push(new_talk);
@@ -220,7 +211,10 @@ function addConversation(role, content, add_to_document = true) {
 
     }
     document.querySelector('#chat-messages').append(div);
-    div.scrollIntoView();
+    if(do_scroll){
+        div.scrollIntoView();
+
+    }
     saveLocalHistory();
 }
 
@@ -387,9 +381,9 @@ function loadOldConversation(old_talk_id) {
         createDialog('Conversation not found!', 10)
     }
     hljs.highlightAll();
-    setTimeout(()=>{
+    setTimeout(() => {
         enableCopyForCode();
-    },500)
+    }, 500)
 
 }
 
@@ -658,7 +652,7 @@ chatButton.onclick = () => {
 
 
 function addWarning(msg, self_remove = true) {
-    if (!(msg instanceof String)) {
+    if (typeof(msg) != 'string') {
         msg = JSON.stringify(msg);
     }
     let duration = 0;
@@ -858,7 +852,7 @@ function createDialog(text, duration_seconds = 0, add_class_name = '', can_delet
 
 }
 
-function geminiChat(fileUri = '') {
+function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     let all_parts = [];
     let system_prompt = getSystemPrompt();
     conversations.messages.forEach(part => {
@@ -950,6 +944,12 @@ function geminiChat(fileUri = '') {
         // "maxOutputTokens": 8192,
     };
 
+   if(with_stream){
+       return geminiStreamChat(fileUri, data);
+   }
+   if(the_data){
+       data = the_data;
+   }
 
     let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${api_key}`
     let invalid_key = false;
@@ -999,6 +999,8 @@ function geminiChat(fileUri = '') {
         hljs.highlightAll();
         enableCopyForCode();
     })
+
+
 }
 
 
@@ -1361,7 +1363,7 @@ async function ollamaStreamChat() {
         botMessageDiv.classList.add('message', 'bot');      // Add the classes
         chatContainer.append(botMessageDiv);           // Append to the chat
 
-        let story = '';
+         story = '';
 
         while (true) {
             const {done, value} = await reader.read();
@@ -1383,17 +1385,13 @@ async function ollamaStreamChat() {
                                 story += jsonData.choices[0].delta.content;
                             }
                         } catch (jsonError) {
+                            addWarning(JSON.stringify(jsonError))
                             console.error("Error parsing JSON:", jsonError);
                         }
-                    } else {
-                        console.log('done')
-                        // addConversation('assistant', story, false);
-                        // done
                     }
 
                 }
             });
-            //botMessageDiv.textContent = story; // Update the bot message div
             botMessageDiv.innerHTML = converter.makeHtml(story);
             botMessageDiv.scrollIntoView();
             hljs.highlightAll();
@@ -1431,7 +1429,6 @@ function detectAttachment() {
                 mimeType = file.type;
                 const reader = new FileReader();
                 reader.onload = function (event) {
-                    //  base64String = event.target.result.split(',')[1];
                     base64String = event.target.result;
                     console.log('Attached')
                     fileInput.parentElement.classList.add('has_attachment')
@@ -1504,7 +1501,6 @@ async function geminiUploadImage() {
             await fetch(fileUri + "?key=" + api_key)
                 .then(response => response.json())
                 .then(data => {
-                    // Exibindo o nome e o URI do arquivo atualizado
                     file_state = data.state ?? 'empty';
                 })
                 .catch(error => {
@@ -1513,7 +1509,7 @@ async function geminiUploadImage() {
             if (file_state === 'ACTIVE' || file_state !== 'PROCESSING') {
                 break;
             } else {
-                await delay(5000); // Aguarda 5 segundos
+                await delay(5000); // wait 5 seconds
                 // wait 5 secs before verify again
             }
 
@@ -1529,8 +1525,87 @@ async function geminiUploadImage() {
 }
 
 
+async function geminiStreamChat(fileUri, data) {
+    const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${api_key}`;
+    let first_response = true;
+    try {
+        const the_response= await fetch(endpoint_stream, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!the_response.ok) {
+            the_response.json().then(data=>{
+                addWarning(data);
+                removeLastMessage();
+                toggleAnimation();
+                enableChat();
+                let tt = data.error?.message ?? 'nada';
+                if (tt.match(/API key not valid/)) {
+                   setApiKeyDialog();
+                }
+            })
+            return false;
+        }
+        const reader = the_response.body.getReader();
+        chatContainer = document.querySelector('#chat-messages'); // Get the chat container
+        const botMessageDiv = document.createElement('div');  // Create the bot message div
+        botMessageDiv.classList.add('message', 'bot');      // Add the classes
+        chatContainer.append(botMessageDiv);           // Append to the chat
+
+        story = '';
+
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) {
+                if(story){
+                    addConversation('assistant', story, false, false)
+                }
+                break;
+            }
+
+            const textDecoder = new TextDecoder('utf-8');
+            const chunk = textDecoder.decode(value);
+            // Parse the SSE stream
+            chunk.split('\n\n').forEach(part => {
+                if (part.startsWith('data: ')) {
+                    try {
+                        jsonData = JSON.parse(part.substring('data: '.length));
+                        if (jsonData.candidates && jsonData.candidates[0] && jsonData.candidates[0].content) {
+                            story += jsonData.candidates[0].content.parts[0].text;
+                        }
+                    } catch (jsonError) {
+                        console.error("Error parsing JSON:", jsonError);
+                    }
+                }
+            });
+            if(first_response){
+                first_response = false;
+                toggleAnimation();
+                botMessageDiv.scrollIntoView();
+            }
+            if(story){
+                botMessageDiv.innerHTML = converter.makeHtml(story);
+            }
+            hljs.highlightAll();
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+        addWarning('Error: '+error.message)
+        toggleAnimation();
+        enableChat();
+    }finally {
+        enableCopyForCode();
+        enableChat();
+    }
+} // geminiStreamChat
+
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Usage example, assuming `imgBlob` is a Blob object representing the image.
