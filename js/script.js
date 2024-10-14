@@ -438,9 +438,7 @@ function chat() {
     if (chosen_platform === 'google') {
         return geminiChat();
     }
-    if (chosen_platform === 'ollama') {
-        return ollamaStreamChat();
-    }
+    return streamChat();
 
     let last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
@@ -1322,39 +1320,162 @@ function commandManager(text) {
 }
 
 
-async function ollamaStreamChat() {
-
+async function streamChat() {
+    let first_response = true;
+    let last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    let cmd = commandManager(last_user_input)
     let all_parts = [];
     let invalid_key = false;
-    let first_response = true;
     let system_prompt_text = getSystemPrompt();
     if (system_prompt_text) {
         let system_prompt = {content: system_prompt_text, 'role': 'system'};
-        all_parts.push(system_prompt);
-
-    }
-    conversations.messages.forEach(part => {
-            all_parts.push({content: part.content, role: part.role});
+        if (chosen_platform !== 'anthropic') {
+            if (!cmd) {
+                if (!base64String) {
+                    // groq vision accept no system prompt
+                    all_parts.push(system_prompt);
+                }
+            }
         }
-    )
+    }
 
+    if (!cmd) {
+        conversations.messages.forEach(part => {
+                //let role = part.role === 'assistant' ? 'model' : part.role;
+                let cnt = part.content;
+                if (chosen_platform === 'anthropic') {
+                    let ant_part =
+                        {
+                            role: part.role,
+                            content: [{type: 'text', text: cnt}]
+                        }
+                    if (base64String && part.role === 'user') {
+                        ant_part = {
+                            role: part.role,
+                            content: [{
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": mimeType,
+                                    "data": base64String.split(',')[1]
+                                }
+                            }, {type: 'text', text: cnt}]
+                        };
+                        all_parts.push(ant_part);
+                        base64String = '';
+                        mimeType = '';
+
+                    } else {
+                        all_parts.push(ant_part);
+                    }
+                } else {
+                    if (base64String) {
+                        all_parts.push({
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": part.content
+                                },
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        // "url": "data:"+fileType+";base64," + base64String
+                                        "url": base64String
+                                    }
+                                }]
+                        });
+
+                        //all_parts = convertMessages(all_parts, base64String);
+                        base64String = '';
+                        mimeType = '';
+
+                    } else {
+                        all_parts.push({content: part.content, role: part.role});
+                        //console.log('no image part')
+                    }
+                }
+
+            }
+        );
+
+
+    } else {
+        // have cmd - so will just past the last user message in the command
+        if (chosen_platform === 'anthropic') {
+            let ant_part =
+                {
+                    role: 'user',
+                    content: [{type: 'text', text: cmd}]
+                };
+            all_parts.push(ant_part);
+        } else {
+            all_parts.push({content: cmd, role: 'user'});
+        }
+    }
+
+
+    //max_tokens: 1024,
     let data =
         {
             model: model,
             stream: true,
-            messages: all_parts
+            messages: all_parts,
+            //  temperature: 0,
+            // max_tokens: -1,
+            //seed: 0,
+            //top_p: 1
         }
+    if (chosen_platform === 'anthropic') {
+        if (!system_prompt_text) {
+            system_prompt_text = "Your name is Orion"; // Anthropic requires a system prompt
+        }
+        data.system = system_prompt_text;
+        data.max_tokens = 4096;
+        if (cmd) {
+            data.system = "Your name is Orion."; //
+        }
+    }
+
+    let HTTP_HEADERS = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${api_key}`,
+        'x-api-key': `${api_key}`, // for Anthropic
+        "anthropic-version": "2023-06-01", // for Anthropic
+        "anthropic-dangerous-direct-browser-access": "true"
+    };
+    if (chosen_platform === 'ollama') {
+        HTTP_HEADERS = {};
+    }
+    const requestOptions = {
+        method: 'POST',
+        headers: HTTP_HEADERS,
+        body: JSON.stringify(data)
+    };
+    if (!endpoint) {
+        setOptions();
+        toggleAnimation();
+        removeLastMessage();
+        return false;
+    }
 
     try {
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
+        const response = await fetch(endpoint, requestOptions);
 
         if (!response.ok) {
+            response.json().then(data=>{
+                setTimeout(()=>{
+                    addWarning(data);
+                },500)
+                removeLastMessage();
+                toggleAnimation();
+                enableChat();
+                let the_code = data.code ?? data.error?.code ?? data.error?.message ?? '';
+                if (the_code === "wrong_api_key" || the_code === "invalid_api_key" || the_code === "invalid x-api-key") {
+                    setApiKeyDialog();
+                }
+            })
+            return false;
         }
 
         const reader = response.body.getReader();
@@ -1368,7 +1489,7 @@ async function ollamaStreamChat() {
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
-                addConversation('assistant', story, false);
+                addConversation('assistant', story, false, false);
                 break;
             }
 
@@ -1376,12 +1497,21 @@ async function ollamaStreamChat() {
             const chunk = textDecoder.decode(value);
             // Parse the SSE stream
             chunk.split('\n\n').forEach(part => {
-                if (part.startsWith('data: ')) {
+                if (part.startsWith('data: ') || part.startsWith('event: content_block_delta')) {
+
                     if (!part.startsWith('data: [DONE]')) {
                         try {
-                            jsonData = JSON.parse(part.substring('data: '.length));
-                            if (jsonData.choices && jsonData.choices[0] && jsonData.choices[0].delta && jsonData.choices[0].delta.content) {
-                                story += jsonData.choices[0].delta.content;
+                            if(chosen_platform === 'anthropic'){
+                                jsonData = JSON.parse(part.substring('event: content_block_delta'.length+6));
+                                console.log(jsonData)
+                                if(jsonData.delta?.text){
+                                    story += jsonData.delta?.text;
+                                }
+                            }else {
+                                jsonData = JSON.parse(part.substring('data: '.length));
+                                if (jsonData.choices?.[0]?.delta?.content) {
+                                    story += jsonData.choices[0].delta.content;
+                                }
                             }
                         } catch (jsonError) {
                             addWarning(JSON.stringify(jsonError))
@@ -1392,7 +1522,7 @@ async function ollamaStreamChat() {
                 }
             });
             botMessageDiv.innerHTML = converter.makeHtml(story);
-            botMessageDiv.scrollIntoView();
+            //botMessageDiv.scrollIntoView();
             hljs.highlightAll();
             if (first_response) {
                 first_response = false;
