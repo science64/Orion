@@ -27,11 +27,15 @@ user-friendly interface.
 - 🌈 Syntax highlighting for code snippets 🖌️
 - ⬇️ One-click download for AI-generated code outputs ⚙️
 - 🎛️ Customizable system prompts to tailor responses 🛠️
+- 🌐 Special command for quick and easy language translation tasks
+- 📁 Upload a variety of documents (text, PDF, images, video) to Google Gemini for analysis and processing
+
+
 
 ## API Key Management
 
 Your API keys are stored locally using `localStorage`, and requests are sent directly to the official provider's API
-(OpenAI, Anthropic, Google, Groq, Cerebras) without routing through any external proxy, ensuring security and privacy.
+(OpenAI, Anthropic, Google, Groq, Cerebras) without routing through any external proxy.
 
 ### Free API Keys
 
@@ -43,6 +47,17 @@ Your API keys are stored locally using `localStorage`, and requests are sent dir
 
 - **OpenAI:** [Get your key](https://platform.openai.com/api-keys)
 - **Anthropic:** [Sign up for an API key](https://console.anthropic.com/settings/keys)
+
+## Special Commands
+Translate text with ease using special command.
+### Translation
+- Usage example, type: `t:spanish Hello everyone!` to translate to Spanish
+- As you can see, you don't need to specify the source language, just the target language.
+
+## Awesome Prompts
+150+ awesome prompts from [🧠 Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
+
+
 
 ## License
 

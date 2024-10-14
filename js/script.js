@@ -1503,7 +1503,6 @@ async function streamChat() {
                         try {
                             if(chosen_platform === 'anthropic'){
                                 jsonData = JSON.parse(part.substring('event: content_block_delta'.length+6));
-                                console.log(jsonData)
                                 if(jsonData.delta?.text){
                                     story += jsonData.delta?.text;
                                 }
@@ -1511,6 +1510,8 @@ async function streamChat() {
                                 jsonData = JSON.parse(part.substring('data: '.length));
                                 if (jsonData.choices?.[0]?.delta?.content) {
                                     story += jsonData.choices[0].delta.content;
+                                }else {
+                                    console.log('none'+jsonData);
                                 }
                             }
                         } catch (jsonError) {
