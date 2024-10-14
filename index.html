@@ -65,5 +65,17 @@
     </div>
 </div>
 <script async="async" src="js/script.js?v=2.0.0"></script>
+<script>
+    let start_msg = document.querySelector(".start_msg");
+    let doc_title = document.title;
+    start_msg.onmouseover = ()=>{
+        document.title = model +' -> '+chosen_platform;
+        start_msg.title = document.title;
+    }
+    start_msg.onmouseleave = ()=>{
+        document.title = doc_title;
+        start_msg.removeAttribute('title');
+    }
+</script>
 </body>
 </html>

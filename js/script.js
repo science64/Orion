@@ -208,7 +208,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
 
     }
     document.querySelector('#chat-messages').append(div);
-    if(do_scroll){
+    if (do_scroll) {
         div.scrollIntoView();
 
     }
@@ -649,7 +649,7 @@ chatButton.onclick = () => {
 
 
 function addWarning(msg, self_remove = true) {
-    if (typeof(msg) != 'string') {
+    if (typeof (msg) != 'string') {
         msg = JSON.stringify(msg);
     }
     let duration = 0;
@@ -689,12 +689,15 @@ function enableChat() {
     // chat_textarea.focus();
 }
 
-function toggleAnimation() {
+function toggleAnimation(force_off= false) {
     let loading = document.querySelector("#loading")
     if (loading.style.display === 'inline-flex') {
         loading.style.display = 'none';
     } else {
         loading.style.display = 'inline-flex';
+    }
+    if(force_off){
+        loading.style.display = 'none';
     }
 }
 
@@ -941,12 +944,12 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
         // "maxOutputTokens": 8192,
     };
 
-   if(with_stream){
-       return geminiStreamChat(fileUri, data);
-   }
-   if(the_data){
-       data = the_data;
-   }
+    if (with_stream) {
+        return geminiStreamChat(fileUri, data);
+    }
+    if (the_data) {
+        data = the_data;
+    }
 
     let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${api_key}`
     let invalid_key = false;
@@ -1301,7 +1304,7 @@ function commandManager(text) {
     let args = '';
     if (arr) {
         cmd = arr[0];
-        cmd  = cmd.replace(/:(.*)/,"");
+        cmd = cmd.replace(/:(.*)/, "");
         if (arr[1]) {
             args = arr[1];
         }
@@ -1463,10 +1466,10 @@ async function streamChat() {
         const response = await fetch(endpoint, requestOptions);
 
         if (!response.ok) {
-            response.json().then(data=>{
-                setTimeout(()=>{
+            response.json().then(data => {
+                setTimeout(() => {
                     addWarning(data);
-                },500)
+                }, 500)
                 removeLastMessage();
                 toggleAnimation();
                 enableChat();
@@ -1484,8 +1487,7 @@ async function streamChat() {
         botMessageDiv.classList.add('message', 'bot');      // Add the classes
         chatContainer.append(botMessageDiv);           // Append to the chat
 
-         story = '';
-
+        story = '';
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
@@ -1496,22 +1498,24 @@ async function streamChat() {
             const textDecoder = new TextDecoder('utf-8');
             const chunk = textDecoder.decode(value);
             // Parse the SSE stream
-            chunk.split('\n\n').forEach(part => {
+            let separator = '\n';
+            if(chosen_platform === 'anthropic'){
+                separator = '\n\n';
+            }
+            chunk.split(separator).forEach(part => {
                 if (part.startsWith('data: ') || part.startsWith('event: content_block_delta')) {
 
                     if (!part.startsWith('data: [DONE]')) {
                         try {
-                            if(chosen_platform === 'anthropic'){
-                                jsonData = JSON.parse(part.substring('event: content_block_delta'.length+6));
-                                if(jsonData.delta?.text){
+                            if (chosen_platform === 'anthropic') {
+                                jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
+                                if (jsonData.delta?.text) {
                                     story += jsonData.delta?.text;
                                 }
-                            }else {
+                            } else {
                                 jsonData = JSON.parse(part.substring('data: '.length));
                                 if (jsonData.choices?.[0]?.delta?.content) {
                                     story += jsonData.choices[0].delta.content;
-                                }else {
-                                    console.log('none'+jsonData);
                                 }
                             }
                         } catch (jsonError) {
@@ -1534,13 +1538,13 @@ async function streamChat() {
 
     } catch (error) {
         console.error("Error:", error);
-        // Display error message in the chat
-        const errorMessageDiv = document.createElement('div');
-        errorMessageDiv.classList.add('message', 'bot');
-        errorMessageDiv.textContent = `Error: ${error.message}`;
-        chatContainer.appendChild(errorMessageDiv);
+        if(error === {}){
+            error = 'Error: {}';
 
-        toggleAnimation();
+        }
+        toggleAnimation(true);
+        addWarning(error,false)
+        // Display error message in the chat
         if (invalid_key) {
             setApiKeyDialog();
         }
@@ -1655,7 +1659,7 @@ async function geminiStreamChat(fileUri, data) {
     const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${api_key}`;
     let first_response = true;
     try {
-        const the_response= await fetch(endpoint_stream, {
+        const the_response = await fetch(endpoint_stream, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1664,16 +1668,16 @@ async function geminiStreamChat(fileUri, data) {
         });
 
         if (!the_response.ok) {
-            the_response.json().then(data=>{
-               setTimeout(()=>{
-                   addWarning(data);
-               },500)
+            the_response.json().then(data => {
+                setTimeout(() => {
+                    addWarning(data);
+                }, 500)
                 removeLastMessage();
                 toggleAnimation();
                 enableChat();
                 let tt = data.error?.message ?? 'nada';
                 if (tt.match(/API key not valid/)) {
-                   setApiKeyDialog();
+                    setApiKeyDialog();
                 }
             })
             return false;
@@ -1689,7 +1693,7 @@ async function geminiStreamChat(fileUri, data) {
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
-                if(story){
+                if (story) {
                     addConversation('assistant', story, false, false)
                 }
                 break;
@@ -1706,17 +1710,17 @@ async function geminiStreamChat(fileUri, data) {
                             story += jsonData.candidates?.[0]?.content?.parts?.[0]?.text;
                         }
                     } catch (error) {
-                        addWarning(error,false);
+                        addWarning(error, false);
                         console.error("Erro:", error);
                     }
                 }
             });
-            if(first_response){
+            if (first_response) {
                 first_response = false;
                 toggleAnimation();
                 botMessageDiv.scrollIntoView();
             }
-            if(story){
+            if (story) {
                 botMessageDiv.innerHTML = converter.makeHtml(story);
             }
             hljs.highlightAll();
@@ -1724,10 +1728,10 @@ async function geminiStreamChat(fileUri, data) {
 
     } catch (error) {
         console.error("Error:", error);
-        addWarning('Error: '+error.message)
+        addWarning('Error: ' + error.message)
         toggleAnimation();
         enableChat();
-    }finally {
+    } finally {
         enableCopyForCode();
         enableChat();
     }
