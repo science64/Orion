@@ -71,7 +71,6 @@ let PLATFORM_DATA = {
         endpoint: "http://localhost:11434/v1/chat/completions"
     }
 }
-//console.log(PLATFORM_DATA);
 
 const language_extension = {
     "python": "py",
@@ -167,8 +166,8 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
     div.classList.add('message');
     if (role === 'user') {
         div.classList.add('user');
-        cnt = content;
-        div.innerText = cnt;
+        cnt = converter.makeHtml(content);
+        div.innerHTML = cnt;
         if (base64String) {
             let media = mimeType.split("/")[0];
             if (media === 'image') {
@@ -201,11 +200,9 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
             if (has_att) {
                 has_att.classList.remove('has_attachment');
             }
-            console.log('adding audio')
             genAudio(content, div);
         } else {
             let lastBot = document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length - 1];
-            console.log('adding audio')
             genAudio(content, lastBot);
         }
 
@@ -258,7 +255,7 @@ function getPreviousChatTopic() {
                 all_topics.push({'topic': topic, 'id': id, 'last_interaction': last_interaction});
             }
         } catch (error) {
-            console.log('Error parser to JSON: ' + error)
+            console.error('Error parser to JSON: ' + error)
         }
     });
     return all_topics;
@@ -286,6 +283,9 @@ function removeChat(div, id) {
             }
             ele.innerText = "Current chat deleted!";
             content.prepend(ele);
+            conversations.messages = []; // clean old conversation
+            chat_id = new Date().getTime(); // generate a new chat_id
+
         } else {
             content.prepend(ele);
             ele.innerText = "Chat deleted!";
@@ -398,7 +398,6 @@ function loadOldChatTopics() {
     })
     for (let i = 0; i < all_topics.length; i++) {
         let prev = all_topics[i];
-        //console.log(all_topics);
         let div = document.createElement('div');
         let divWrap = document.createElement('div');
         div.classList.add('topic');
@@ -513,7 +512,7 @@ function chat() {
 
                     } else {
                         all_parts.push({content: part.content, role: part.role});
-                        console.log('no image part')
+                        //console.log('no image part')
                     }
                 }
 
@@ -603,7 +602,7 @@ function chat() {
             }
         })
         .catch(error => {
-            console.log(error);
+            console.error(error);
             addWarning("Error: " + error);
             removeLastMessage()
         })
@@ -977,7 +976,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                             invalid_key = true;
                         }
                     } catch {
-                        console.log('Ops error, no: data.error.message')
+                        console.error('Ops error, no: data.error.message')
                     }
                     removeLastMessage()
                 }
@@ -1204,6 +1203,7 @@ orderTopics();
 
 
 function ollamaGuide() {
+    let this_domain = `${location.protocol}//${location.hostname}`;
     let guide = `<div>
   <p>If you want to use Ollama, you may need to make some configurations in your local Ollama setup.</p>
   <p>Please take a look at the Ollama docs:</p>
@@ -1215,8 +1215,8 @@ function ollamaGuide() {
   <pre><code>systemctl edit ollama.service</code></pre>
   <p>Add the following:</p>
   <pre><code>[Service]
-Environment=OLLAMA_ORIGINS=https://eliaspereirah.github.io</code></pre>
-  <p><br>This will allow <strong>https://eliaspereirah.github.io</strong> to access http://localhost:11434/</p>
+Environment=OLLAMA_ORIGINS=${this_domain}</code></pre>
+  <p><br>This will allow <strong>${this_domain}</strong> to access http://localhost:11434/</p>
 </div>`
 
     createDialog(guide, 0, 'cl_justify')
@@ -1298,14 +1298,14 @@ function enableAudioFeature() {
 
 function commandManager(text) {
     text = text.trim();
-    let arr = text.match(/\/(.*?):(.*?)\s/);
+    let arr = text.match(/^t:(.*?)\s/);
     let cmd = '';
     let args = '';
     if (arr) {
-        cmd = arr[1];
-        if (arr[2]) {
-            args = arr[2];
-            console.log('args: ' + args)
+        cmd = arr[0];
+        cmd  = cmd.replace(/:(.*)/,"");
+        if (arr[1]) {
+            args = arr[1];
         }
     }
 
@@ -1314,7 +1314,7 @@ function commandManager(text) {
     if (!prompt) {
         return false; // no command passed
     }
-    text = text.replace(/\/(.*?):(.*?)\s/, " ").trim();
+    text = text.replace(/^t:(.*?)\s/, " ").trim();
     prompt = prompt.replaceAll("{{USER_INPUT}}", text);
     prompt = prompt.replaceAll("{{ARG1}}", args);
     return prompt; // return the new prompt formated
@@ -1368,7 +1368,6 @@ async function ollamaStreamChat() {
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
-                console.log('break done')
                 addConversation('assistant', story, false);
                 break;
             }
@@ -1430,13 +1429,10 @@ function detectAttachment() {
                 const reader = new FileReader();
                 reader.onload = function (event) {
                     base64String = event.target.result;
-                    console.log('Attached')
                     fileInput.parentElement.classList.add('has_attachment')
                     fileInput.value = '';
                 }
                 reader.readAsDataURL(file);
-            } else {
-                console.log('No file attached.');
             }
         }
     }
@@ -1447,7 +1443,6 @@ detectAttachment();
 
 async function geminiUploadImage() {
     if (!base64String) {
-        console.log('No file to be uploaded!')
         return false;
     }
     let baseUrl = 'https://generativelanguage.googleapis.com';
@@ -1539,7 +1534,9 @@ async function geminiStreamChat(fileUri, data) {
 
         if (!the_response.ok) {
             the_response.json().then(data=>{
-                addWarning(data);
+               setTimeout(()=>{
+                   addWarning(data);
+               },500)
                 removeLastMessage();
                 toggleAnimation();
                 enableChat();
@@ -1574,11 +1571,12 @@ async function geminiStreamChat(fileUri, data) {
                 if (part.startsWith('data: ')) {
                     try {
                         jsonData = JSON.parse(part.substring('data: '.length));
-                        if (jsonData.candidates && jsonData.candidates[0] && jsonData.candidates[0].content) {
-                            story += jsonData.candidates[0].content.parts[0].text;
+                        if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            story += jsonData.candidates?.[0]?.content?.parts?.[0]?.text;
                         }
-                    } catch (jsonError) {
-                        console.error("Error parsing JSON:", jsonError);
+                    } catch (error) {
+                        addWarning(error,false);
+                        console.error("Erro:", error);
                     }
                 }
             });

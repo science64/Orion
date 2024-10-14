@@ -23,10 +23,8 @@ function genAudio(text, div){
     }
     let audio_feature_enabled = localStorage.getItem('audio_feature');
     if(audio_feature_enabled !== '1'){
-        console.log('Audio feature is not enabled.')
         return false;
     }
-    console.log(div);
     div.append(audio_button_ele);
     if(!elabs_api_key){
         console.error('No API key defined for ElevenLabs')
