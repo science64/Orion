@@ -10,8 +10,15 @@ let endpoint = localStorage.getItem('endpoint');
 let last_role = '';
 let last_cnt = '';
 let is_chat_enabled = true;
-
 let SITE_TITLE = "OrionChat";
+
+
+// Markdown to HTML
+showdown.setFlavor('github');
+showdown.setOption('ghMentions', false); // if true "@something" became github.com/something
+showdown.setOption("openLinksInNewWindow", true);
+let converter = new showdown.Converter();
+
 
 let PLATFORM_DATA = {
     openai: {
@@ -24,13 +31,25 @@ let PLATFORM_DATA = {
         name: "OpenAI",
         endpoint: "https://api.openai.com/v1/chat/completions"
     },
-    cerebras: {
+    google: {
         models: [
-            "llama3.1-8b",
-            "llama3.1-70b"
+            "gemini-1.5-pro-002",
+            "gemini-1.5-pro",
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-002",
         ],
-        name: "Cerebras",
-        endpoint: "https://api.cerebras.ai/v1/chat/completions"
+        name: "Google",
+        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
+    },
+    cohere: {
+        models: [
+            "command-r-plus-08-2024",
+            "command-r-plus-04-2024",
+            "c4ai-aya-23-35b",
+            "command-light"
+        ],
+        name: "Cohere",
+        endpoint: "https://api.cohere.com/v2/chat"
     },
     groq: {
         models: [
@@ -48,16 +67,6 @@ let PLATFORM_DATA = {
         name: "Groq",
         endpoint: "https://api.groq.com/openai/v1/chat/completions"
     },
-    google: {
-        models: [
-            "gemini-1.5-pro-002",
-            "gemini-1.5-pro",
-            "gemini-1.5-flash",
-            "gemini-1.5-flash-002",
-        ],
-        name: "Google",
-        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
-    },
     anthropic: {
         models: [
             "claude-3-5-sonnet-20240620",
@@ -66,6 +75,14 @@ let PLATFORM_DATA = {
         ],
         name: "Anthropic",
         endpoint: "https://api.anthropic.com/v1/messages"
+    },
+    cerebras: {
+        models: [
+            "llama3.1-8b",
+            "llama3.1-70b"
+        ],
+        name: "Cerebras",
+        endpoint: "https://api.cerebras.ai/v1/chat/completions"
     },
     ollama: {
         models: [],
@@ -150,10 +167,6 @@ setTimeout(() => {
     chatMessages.scroll(0, 9559999);
 }, 1000);
 
-showdown.setFlavor('github');
-showdown.setOption('ghMentions', false); // se true @algo se torna em github.com/algo
-showdown.setOption("openLinksInNewWindow", true);
-var converter = new showdown.Converter();
 
 let conversations = {
     'messages': []
@@ -308,8 +321,8 @@ function removeChat(div, id) {
 function newChat() {
     document.title = SITE_TITLE;
     let new_url = document.URL;
-    new_url = new_url.split('?')[0]; // remove param if have some
-    new_url = new_url.split("#")[0]; // remove # if have
+    new_url = new_url.split('?')[0];
+    new_url = new_url.split("#")[0];
     history.pushState({url: new_url}, '', new_url);
 
     removeScreenConversation();
@@ -444,7 +457,9 @@ function chat() {
     }
     return streamChat();
 
-    let last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    // content generation no stream - old code
+    /*
+     let last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
     let all_parts = [];
     let invalid_key = false;
@@ -617,6 +632,9 @@ function chat() {
             hljs.highlightAll();
             enableCopyForCode();
         })
+
+    */
+    // content generation no stream - old code
 }
 
 function removeLastMessage() {
@@ -637,7 +655,7 @@ let chatButton = document.querySelector(".chat-input button");
 let chat_textarea = document.querySelector(".chat-input textarea");
 
 function startChat() {
-    if(!is_chat_enabled){
+    if (!is_chat_enabled) {
         addWarning('Chat is busy. Please wait!');
         return false;
     }
@@ -674,13 +692,13 @@ function addWarning(msg, self_remove = true) {
 
 
 function disableChat() {
-  //  chat_textarea.disabled = true;
+    //  chat_textarea.disabled = true;
     is_chat_enabled = false;
 }
 
 function enableChat() {
     is_chat_enabled = true;
-   // chat_textarea.disabled = false;
+    // chat_textarea.disabled = false;
     // chat_textarea.focus();
 }
 
@@ -1012,7 +1030,7 @@ function setApiKeyDialog() {
          <input id="set_api_key" type="password" name="api_key" placeholder="Your API key">
          <button onclick="setApiKey()">Save</button>
          <div>
-         <p>You can get free API Key from Google Gemini and Groq Inc.</p>
+         <p>Your API key will be saved in localStorage.</p>
          </div>`;
     createDialog(cnt, 0, 'setApiDialog');
 }
@@ -1239,7 +1257,7 @@ function getOllamaModels() {
                 PLATFORM_DATA.ollama.models.push(ollama_model.id);
             })
         }).catch(error => {
-            //console.error('Error: ' + error)
+            console.warn(error)
             let end_time = new Date().getTime()
             let past_time = end_time - start_time;
             if (past_time > 1200) {
@@ -1344,6 +1362,14 @@ async function streamChat() {
                             content: [{type: 'text', text: cnt}]
                         }
                     all_parts.push(ant_part);
+                } else if (chosen_platform === 'cohere') {
+                    let cohere_part =
+                        {
+                            role: part.role,
+                            content: cnt
+                        };
+                    all_parts.push(cohere_part);
+
                 } else {
                     all_parts.push({content: part.content, role: part.role});
                     //console.log('no image part')
@@ -1426,6 +1452,10 @@ async function streamChat() {
         }
     }
 
+
+    if (chosen_platform === 'cohere') {
+    }
+
     let HTTP_HEADERS = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${api_key}`,
@@ -1448,10 +1478,8 @@ async function streamChat() {
         return false;
     }
 
-    let jsonData;
     try {
         const response = await fetch(endpoint, requestOptions);
-
         if (!response.ok) {
             response.json().then(data => {
                 setTimeout(() => {
@@ -1460,8 +1488,8 @@ async function streamChat() {
                 removeLastMessage();
                 toggleAnimation();
                 enableChat();
-                let the_code = data.code ?? data.error?.code ?? data.error?.message ?? '';
-                if (the_code === "wrong_api_key" || the_code === "invalid_api_key" || the_code === "invalid x-api-key") {
+                let the_code = data.code ?? data.error?.code ?? data.error?.message ?? data.message ?? '';
+                if (the_code === "wrong_api_key" || the_code === "invalid_api_key" || the_code === "invalid x-api-key" || the_code === "invalid api token") {
                     setApiKeyDialog();
                 }
             })
@@ -1531,7 +1559,7 @@ async function streamChat() {
         chatContainer.append(botMessageDiv);
         let buffer = '';
         while (true) {
-            const { done, value } = await reader.read();
+            const {done, value} = await reader.read();
             if (done) {
                 // Processa qualquer dado remanescente no buffer
                 processBuffer(buffer);
@@ -1539,7 +1567,7 @@ async function streamChat() {
                 break;
             }
             const textDecoder = new TextDecoder('utf-8');
-            const chunk = textDecoder.decode(value, { stream: true });
+            const chunk = textDecoder.decode(value, {stream: true});
             buffer += chunk;
             let separator = chosen_platform === 'anthropic' ? '\n\n' : '\n';
             let parts = buffer.split(separator);
@@ -1552,7 +1580,6 @@ async function streamChat() {
                         try {
                             processDataPart(part);
                         } catch (jsonError) {
-                            console.log('Parte problemática:', part);
                             addWarning(JSON.stringify(jsonError));
                             console.error("Erro ao analisar JSON:", jsonError);
                         }
@@ -1560,13 +1587,13 @@ async function streamChat() {
                 }
             }
 
-                botMessageDiv.innerHTML = converter.makeHtml(story);
-                hljs.highlightAll();
-                if (first_response) {
-                    first_response = false;
-                    toggleAnimation();
-                    botMessageDiv.scrollIntoView();
-                }
+            botMessageDiv.innerHTML = converter.makeHtml(story);
+            hljs.highlightAll();
+            if (first_response) {
+                first_response = false;
+                toggleAnimation();
+                botMessageDiv.scrollIntoView();
+            }
 
         }
 
@@ -1591,7 +1618,7 @@ async function streamChat() {
 function detectAttachment() {
     const fileInput = document.getElementById('fileInput');
     if (fileInput) {
-        fileInput.onchange = (a) => {
+        fileInput.onchange = () => {
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
                 mimeType = file.type;
@@ -1619,21 +1646,21 @@ async function geminiUploadImage() {
     let md5_value = MD5(decodeURIComponent(encodeURIComponent(base64String)));
     let upload_date = localStorage.getItem(md5_value);
     let today_date = new Date().getTime();
-    if(upload_date){
+    if (upload_date) {
         upload_date = parseInt(upload_date);
         upload_date = new Date(upload_date);
         const differ_ms = today_date - upload_date;
         const d_seconds = Math.floor(differ_ms / 1000);
         const d_minutes = Math.floor(d_seconds / 60);
         const d_hours = Math.floor(d_minutes / 60);
-        if(d_hours < 23){
+        if (d_hours < 23) {
             let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
-            if(store_fileUri){
+            if (store_fileUri) {
                 return store_fileUri;
             }
         }
 
-    }else {
+    } else {
         console.log('file is new')
     }
 
@@ -1685,7 +1712,7 @@ async function geminiUploadImage() {
         let file_state = ''
         let start_time = new Date().getTime();
         while (file_state !== 'ACTIVE') {
-            console.log('while: file_state:'+file_state)
+            console.log('while: file_state:' + file_state)
             await fetch(fileUri + "?key=" + api_key)
                 .then(response => response.json())
                 .then(data => {
@@ -1702,7 +1729,7 @@ async function geminiUploadImage() {
             }
             let past_time = new Date().getTime() - start_time;
             let past_seconds = past_time / 1000;
-            if(past_seconds > 180){
+            if (past_seconds > 180) {
                 addWarning('Upload is taking to much time. Try again later.', false)
                 console.log('Upload is taking to much time')
                 break;
@@ -1752,7 +1779,7 @@ async function geminiStreamChat(fileUri, data) {
             return false;
         }
         const reader = the_response.body.getReader();
-        chatContainer = document.querySelector('#chat-messages'); // Get the chat container
+        let chatContainer = document.querySelector('#chat-messages'); // Get the chat container
         const botMessageDiv = document.createElement('div');  // Create the bot message div
         botMessageDiv.classList.add('message', 'bot');      // Add the classes
         chatContainer.append(botMessageDiv);           // Append to the chat
@@ -1807,10 +1834,10 @@ async function geminiStreamChat(fileUri, data) {
 } // geminiStreamChat
 
 
+
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
-
 
 
 function processDataPart(part) {
@@ -1820,10 +1847,16 @@ function processDataPart(part) {
         if (jsonData.delta?.text) {
             story += jsonData.delta.text;
         }
-    } else {
+    }else {
         jsonData = JSON.parse(part.toString().substring('data: '.length));
-        if (jsonData.choices?.[0]?.delta?.content) {
-            story += jsonData.choices[0].delta.content;
+        if(chosen_platform ==='cohere'){
+            if (jsonData.delta?.message?.content?.text) {
+                story += jsonData.delta.message.content.text;
+            }
+        }else {
+            if (jsonData.choices?.[0]?.delta?.content) {
+                story += jsonData.choices[0].delta.content;
+            }
         }
     }
 }
@@ -1842,11 +1875,11 @@ function processBuffer(remainingBuffer) {
 
 let start_msg = document.querySelector(".start_msg");
 let doc_title = document.title;
-start_msg.onmouseover = ()=>{
-    document.title = model +' -> '+chosen_platform;
+start_msg.onmouseover = () => {
+    document.title = model + ' -> ' + chosen_platform;
     start_msg.title = document.title;
 }
-start_msg.onmouseleave = ()=>{
+start_msg.onmouseleave = () => {
     document.title = doc_title;
     start_msg.removeAttribute('title');
 }
