@@ -347,8 +347,8 @@ function removeScreenConversation() {
 function loadOldConversation(old_talk_id) {
     chat_id = old_talk_id;
     let new_url = document.URL;
-    new_url = new_url.split('?')[0]; // remove param if have some
-    new_url = new_url.split("#")[0]; // remove # if have
+    new_url = new_url.split('?')[0];
+    new_url = new_url.split("#")[0];
     new_url += "#" + old_talk_id;
     history.pushState({url: new_url}, '', new_url);
 
@@ -362,7 +362,7 @@ function loadOldConversation(old_talk_id) {
     let btn_star_old_chat = document.querySelector("[data-id='" + old_talk_id + "']");
 
     //btn_star_old_chat.setAttribute("data-id", chat_id);
-    btn_star_old_chat.setAttribute("data-last-interaction", last_interaction_id);
+    btn_star_old_chat.setAttribute("data-last-interaction", last_interaction_id.toString());
     document.title = btn_star_old_chat.innerText;
 
 
@@ -643,9 +643,9 @@ function removeLastMessage() {
         document.querySelector(".chat-input textarea").value = ele.innerText;
         conversations.messages.pop();
         if (conversations.messages.length) {
-            localStorage.setItem(chat_id, JSON.stringify(conversations));
+            localStorage.setItem(chat_id.toString(), JSON.stringify(conversations));
         } else {
-            localStorage.removeItem(chat_id);
+            localStorage.removeItem(chat_id.toString());
         }
         ele.remove();
     }
@@ -1261,7 +1261,7 @@ function getOllamaModels() {
             let end_time = new Date().getTime()
             let past_time = end_time - start_time;
             if (past_time > 1200) {
-                //console.log("user don't seems to have ollama running");
+                //console.log("user don't seem to have ollama running");
             } else {
                 console.log('user seems to have ollama running with cors policy')
                 let guide_warnings = localStorage.getItem('guide_warnings');
@@ -1561,7 +1561,6 @@ async function streamChat() {
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
-                // Processa qualquer dado remanescente no buffer
                 processBuffer(buffer);
                 addConversation('assistant', story, false, false);
                 break;
@@ -1581,7 +1580,7 @@ async function streamChat() {
                             processDataPart(part);
                         } catch (jsonError) {
                             addWarning(JSON.stringify(jsonError));
-                            console.error("Erro ao analisar JSON:", jsonError);
+                            console.error("JSON error: ", jsonError);
                         }
                     }
                 }
@@ -1642,7 +1641,7 @@ async function geminiUploadImage() {
         return false;
     }
 
-    // the same content will not be upload again in less than 23 hours for Google Gemini
+    // the same content will not be uploaded again in less than 23 hours for Google Gemini
     let md5_value = MD5(decodeURIComponent(encodeURIComponent(base64String)));
     let upload_date = localStorage.getItem(md5_value);
     let today_date = new Date().getTime();
@@ -1801,13 +1800,13 @@ async function geminiStreamChat(fileUri, data) {
             chunk.split('\n').forEach(part => {
                 if (part.startsWith('data: ')) {
                     try {
-                        jsonData = JSON.parse(part.substring('data: '.length));
+                        let jsonData = JSON.parse(part.substring('data: '.length));
                         if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
                             story += jsonData.candidates?.[0]?.content?.parts?.[0]?.text;
                         }
                     } catch (error) {
                         addWarning(error, false);
-                        console.error("Erro:", error);
+                        console.error("Error:", error);
                     }
                 }
             });
@@ -1834,7 +1833,6 @@ async function geminiStreamChat(fileUri, data) {
 } // geminiStreamChat
 
 
-
 function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -1847,13 +1845,13 @@ function processDataPart(part) {
         if (jsonData.delta?.text) {
             story += jsonData.delta.text;
         }
-    }else {
+    } else {
         jsonData = JSON.parse(part.toString().substring('data: '.length));
-        if(chosen_platform ==='cohere'){
+        if (chosen_platform === 'cohere') {
             if (jsonData.delta?.message?.content?.text) {
                 story += jsonData.delta.message.content.text;
             }
-        }else {
+        } else {
             if (jsonData.choices?.[0]?.delta?.content) {
                 story += jsonData.choices[0].delta.content;
             }
