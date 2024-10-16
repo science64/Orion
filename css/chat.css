@@ -1,3 +1,4 @@
+
 html, body {
     margin: 0;
     border: 0;
@@ -10,6 +11,20 @@ html, body {
     padding: 8px;
 }
 
+.btn_special{
+    min-width: 50px;
+    margin: 5px 0;
+    padding: 4px;
+    border: 1px solid #232323;
+    border-radius: 4px;
+    background-color: #ffffff !important;
+    color: #7578e1 !important;
+    font-weight: 600;
+    box-sizing: border-box;
+}
+.language-plaintext{
+    white-space: pre-line !important;
+}
 div.message.bot:nth-last-of-type(2),div.message.bot:nth-last-of-type(1){
     min-height: 54dvh !important;
 }
@@ -249,6 +264,7 @@ a {
     border-radius: 7px;
     text-align: justify;
 }
+
 
 .bot:before, .user:before, .start_msg:before {
     content: "AI: ";

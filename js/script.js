@@ -2,6 +2,7 @@ let can_delete_history = false;
 let max_chats_history = 50;
 let chosen_platform = localStorage.getItem('chosen_platform');
 let model = localStorage.getItem('selected_model');
+
 let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
 let base64String = '';
 let mimeType = '';
@@ -1881,3 +1882,11 @@ start_msg.onmouseleave = () => {
     document.title = doc_title;
     start_msg.removeAttribute('title');
 }
+
+chatButton.onmouseover = () => {
+    document.title = 'Send to '+model + ' -> ' + chosen_platform;
+}
+chatButton.onmouseleave = () => {
+    document.title = doc_title;
+}
+
