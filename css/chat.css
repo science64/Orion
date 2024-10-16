@@ -1,4 +1,3 @@
-
 html, body {
     margin: 0;
     border: 0;
@@ -194,6 +193,15 @@ th {
     background-color: #7578e1;
     color: #fff;
     cursor: pointer;
+    font-weight: normal;
+    transition: background-color 0ms, color 0ms, border 500ms, font-weight 500ms;
+}
+
+.dialog button.animate{
+    background-color: #07d95e;
+    color: #fff;
+    font-weight: 600;
+    border: 1px solid #fcfcfc;
 }
 
 
@@ -523,9 +531,8 @@ select{
     display: block;
     height: 50px;
     box-sizing: border-box;
-
-
 }
+
 
 .chat_deleted_msg {
     background-color: #7578e1;

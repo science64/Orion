@@ -1028,7 +1028,7 @@ function setApiKeyDialog() {
     let platform_name = PLATFORM_DATA[chosen_platform].name;
     let cnt =
         `<div>Enter your API key for <strong>${platform_name}</strong>!</div>
-         <input id="set_api_key" type="password" name="api_key" placeholder="Your API key">
+         <input id="set_api_key" type="text" name="api_key" placeholder="Your API key">
          <button onclick="setApiKey()">Save</button>
          <div>
          <p>Your API key will be saved in localStorage.</p>
@@ -1090,13 +1090,13 @@ function setOptions() {
     }
     let audio_options =
         `<hr><p>If you want an audio response, you can set up an API key for ElevenLabs below.</p>
-         <input type="password" name="elabs_api_key" placeholder="ElevenLabs API Key">
+         <input type="text" name="elabs_api_key" placeholder="ElevenLabs API Key">
          <button onclick="enableAudioFeature()">Save Key</button>
         `;
     let cnt =
         `<div>${platform_options}
-         <input type="password" name="api_key" placeholder="API Key(if not defined yet)">
-         <button onclick="saveModel()">Save Model</button></div><hr>
+         <input type="text" name="api_key" placeholder="API Key(if not defined yet)">
+         <button onclick="saveModel()" class="save_model">Save Model</button></div><hr>
          <div><strong>System Prompt</strong>
          ${prompts_options}
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
@@ -1106,10 +1106,26 @@ function setOptions() {
          ${disable_audio_option}
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
+
     setTimeout(() => {
+
+        let sl_platform = document.querySelector("select[name=platform]");
+        if(sl_platform){
+            sl_platform.onchange = (item) => {
+                let btn_sm = document.querySelector('.save_model');
+                if(btn_sm){
+                    btn_sm.classList.add('animate');
+                }
+            }
+        }
+
         let sl_prompt = document.querySelector("select[name=prompt]");
         if (sl_prompt) {
             sl_prompt.onchange = (item => {
+                let btn_sp = document.querySelector('.save_prompt');
+                if(btn_sp){
+                    btn_sp.classList.add('animate');
+                }
                 let txt_area = document.querySelector("textarea.system_prompt");
                 if (txt_area) {
                     txt_area.innerText = item.target.value;
@@ -1142,15 +1158,26 @@ function orderTopics() {
 }
 
 function savePrompt() {
+    let btn_sp = document.querySelector('.save_prompt');
+    if(btn_sp){
+        btn_sp.classList.remove('animate');
+    }
     let sys_prompt = document.querySelector("textarea.system_prompt").value.trim();
     if (sys_prompt.length) {
         localStorage.setItem('system_prompt', sys_prompt);
+    }else {
+        localStorage.removeItem('system_prompt')
     }
     saveModel();
     closeDialogs();
 }
 
 function saveModel() {
+    let btn_sm = document.querySelector('.save_model');
+    if(btn_sm){
+        btn_sm.classList.remove('animate');
+    }
+
     let sl_platform = document.querySelector("select[name=platform]")
     let selected_option = sl_platform.options[sl_platform.selectedIndex];
     model = selected_option.value.trim();
