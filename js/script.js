@@ -11,7 +11,7 @@ let endpoint = localStorage.getItem('endpoint');
 let last_role = '';
 let last_cnt = '';
 let is_chat_enabled = true;
-let SITE_TITLE = "OrionChat";
+let SITE_TITLE = "Orion";
 
 
 // Markdown to HTML

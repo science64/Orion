@@ -1,5 +1,5 @@
-# OrionChat
-OrionChat is a web-based chat interface that simplifies interactions with multiple AI model providers.
+# Orion
+Orion is a web-based chat interface that simplifies interactions with multiple AI model providers.
 It provides a unified platform for chatting and exploring multiple large language models (LLMs), including:
 
 - 🛠️ Ollama – An open-source tool for running LLMs locally 🏡 
@@ -11,10 +11,10 @@ It provides a unified platform for chatting and exploring multiple large languag
 
 It's like assembling the ultimate superhero team of AI
 
-![OrionChat Screenshot](imgs/screenshot.png "OrionChat Screenshot")
+![Orion Screenshot](imgs/screenshot.png "Orion Screenshot")
 
 
-With OrionChat, users can easily navigate and assess the strengths and limitations of different AI models through an intuitive,
+With Orion, users can easily navigate and assess the strengths and limitations of different AI models through an intuitive,
 user-friendly interface.
 
 ## Key Features
