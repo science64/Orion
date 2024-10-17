@@ -6,7 +6,10 @@ let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
 let base64String = '';
 let mimeType = '';
 let story = '';
-let endpoint = localStorage.getItem('endpoint')
+let endpoint = localStorage.getItem('endpoint');
+let last_role = '';
+let last_cnt = '';
+let is_chat_enabled = true;
 
 let SITE_TITLE = "OrionChat";
 
@@ -172,7 +175,6 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
             let media = mimeType.split("/")[0];
             if (media === 'image') {
                 let imgEle = document.createElement('img');
-                // imgEle.src = "data:"+fileType+";base64," + base64String;
                 imgEle.src = base64String;
                 div.prepend(imgEle);
                 imgEle.className = 'appended_pic';
@@ -192,14 +194,14 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
         }
 
     } else {
+        let has_att = document.querySelector(".has_attachment");
+        if (has_att) {
+            has_att.classList.remove('has_attachment');
+        }
         if (add_to_document) {
             div.classList.add('bot');
             cnt = converter.makeHtml(content);
             div.innerHTML = cnt;
-            let has_att = document.querySelector(".has_attachment");
-            if (has_att) {
-                has_att.classList.remove('has_attachment');
-            }
             genAudio(content, div);
         } else {
             let lastBot = document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length - 1];
@@ -249,8 +251,8 @@ function getPreviousChatTopic() {
 
     all_keys.forEach(id => {
         try {
-            let topic = JSON.parse(localStorage.getItem(id)).messages[0].content ?? '';
-            let last_interaction = JSON.parse(localStorage.getItem(id)).last_interact ?? id;
+            let topic = JSON.parse(localStorage.getItem(id))?.messages?.[0]?.content ?? '';
+            let last_interaction = JSON.parse(localStorage.getItem(id))?.last_interact ?? id;
             if (topic) {
                 all_topics.push({'topic': topic, 'id': id, 'last_interaction': last_interaction});
             }
@@ -313,6 +315,8 @@ function newChat() {
     removeScreenConversation();
     conversations.messages = []; // clean old conversation
     chat_id = new Date().getTime(); // generate a new chat_id
+
+
 }
 
 function removeScreenConversation() {
@@ -539,14 +543,14 @@ function chat() {
             model: model,
             stream: false,
             messages: all_parts,
-            //  temperature: 0,
-            // max_tokens: -1,
+            //temperature: 0,
+            //max_tokens: -1,
             //seed: 0,
             //top_p: 1
         }
     if (chosen_platform === 'anthropic') {
         if (!system_prompt_text) {
-            system_prompt_text = "Your name is Orion"; // Anthropic requires a system prompt
+            system_prompt_text = "Your name is Orion"; // It seems that Anthropic requires a system prompt
         }
         data.system = system_prompt_text;
         data.max_tokens = 4096;
@@ -633,6 +637,10 @@ let chatButton = document.querySelector(".chat-input button");
 let chat_textarea = document.querySelector(".chat-input textarea");
 
 function startChat() {
+    if(!is_chat_enabled){
+        addWarning('Chat is busy. Please wait!');
+        return false;
+    }
     let input_text = chat_textarea.value;
     if (input_text.trim().length > 0) {
         toggleAnimation();
@@ -646,6 +654,11 @@ function startChat() {
 chatButton.onclick = () => {
     startChat();
 }
+chat_textarea.onkeyup = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        startChat();
+    }
+}
 
 
 function addWarning(msg, self_remove = true) {
@@ -657,55 +670,32 @@ function addWarning(msg, self_remove = true) {
         duration = 7;
     }
     createDialog(msg, duration, self_remove)
-    // let divMother = document.createElement('div');
-    // divMother.classList.add('popup');
-    // let div = document.createElement('div');
-    // div.classList.add('warning');
-    // div.innerHTML = msg;
-    // document.querySelector(".container").append(divMother);
-    // if (self_remove) {
-    //     setTimeout(() => {
-    //         divMother.remove();
-    //     }, 5000);
-    // } else {
-    //     let close_warning = document.createElement('span');
-    //     close_warning.classList.add('close_warning');
-    //     div.append(close_warning);
-    //     close_warning.onclick = (() => {
-    //         divMother.remove();
-    //     })
-    // }
-    // divMother.append(div);
-
 }
 
 
 function disableChat() {
-    // chat_textarea.disabled = true;
+  //  chat_textarea.disabled = true;
+    is_chat_enabled = false;
 }
 
 function enableChat() {
-    chat_textarea.disabled = false;
+    is_chat_enabled = true;
+   // chat_textarea.disabled = false;
     // chat_textarea.focus();
 }
 
-function toggleAnimation(force_off= false) {
+function toggleAnimation(force_off = false) {
     let loading = document.querySelector("#loading")
     if (loading.style.display === 'inline-flex') {
         loading.style.display = 'none';
     } else {
         loading.style.display = 'inline-flex';
     }
-    if(force_off){
+    if (force_off) {
         loading.style.display = 'none';
     }
 }
 
-chat_textarea.onkeyup = (event) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        startChat();
-    }
-}
 
 let can_delete = document.querySelector("#can_delete");
 if (can_delete != null) {
@@ -872,7 +862,6 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             return response;
         }).then(fileUri => {
             base64String = '';
-            mimeType = '';
             geminiChat(fileUri)
         })
         return false;
@@ -887,7 +876,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                 }
         })
     }
-
+    mimeType = '';
     let data = {
         "contents": [all_parts]
     };
@@ -1346,62 +1335,59 @@ async function streamChat() {
         conversations.messages.forEach(part => {
                 //let role = part.role === 'assistant' ? 'model' : part.role;
                 let cnt = part.content;
+                last_role = part.role;
+                last_cnt = part.content;
                 if (chosen_platform === 'anthropic') {
                     let ant_part =
                         {
                             role: part.role,
                             content: [{type: 'text', text: cnt}]
                         }
-                    if (base64String && part.role === 'user') {
-                        ant_part = {
-                            role: part.role,
-                            content: [{
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": mimeType,
-                                    "data": base64String.split(',')[1]
-                                }
-                            }, {type: 'text', text: cnt}]
-                        };
-                        all_parts.push(ant_part);
-                        base64String = '';
-                        mimeType = '';
-
-                    } else {
-                        all_parts.push(ant_part);
-                    }
+                    all_parts.push(ant_part);
                 } else {
-                    if (base64String) {
-                        all_parts.push({
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": part.content
-                                },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        // "url": "data:"+fileType+";base64," + base64String
-                                        "url": base64String
-                                    }
-                                }]
-                        });
-
-                        //all_parts = convertMessages(all_parts, base64String);
-                        base64String = '';
-                        mimeType = '';
-
-                    } else {
-                        all_parts.push({content: part.content, role: part.role});
-                        //console.log('no image part')
-                    }
+                    all_parts.push({content: part.content, role: part.role});
+                    //console.log('no image part')
                 }
 
             }
-        );
+        ); // end forEach
 
+        if (base64String && last_role === 'user' && chosen_platform === 'anthropic') {
+            let ant_part = {
+                role: last_role,
+                content: [{
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": mimeType,
+                        "data": base64String.split(',')[1]
+                    }
+                }, {type: 'text', text: last_cnt}]
+            };
+            all_parts.pop(); // remove last
+            all_parts.push(ant_part); // add with image scheme
+            base64String = '';
+            mimeType = '';
+        } else if (base64String && last_role === 'user') {
+            all_parts.pop();
+            all_parts.push({
+                "role": last_role,
+                "content": [
+                    {
+                        "type": "text",
+                        "text": last_cnt
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": base64String
+                        }
+                    }]
+            });
+            base64String = '';
+            mimeType = '';
+
+        }
 
     } else {
         // have cmd - so will just past the last user message in the command
@@ -1424,8 +1410,8 @@ async function streamChat() {
             model: model,
             stream: true,
             messages: all_parts,
-            //  temperature: 0,
-            // max_tokens: -1,
+            //temperature: 0,
+            //max_tokens: -1,
             //seed: 0,
             //top_p: 1
         }
@@ -1462,6 +1448,7 @@ async function streamChat() {
         return false;
     }
 
+    let jsonData;
     try {
         const response = await fetch(endpoint, requestOptions);
 
@@ -1481,69 +1468,116 @@ async function streamChat() {
             return false;
         }
 
-        const reader = response.body.getReader();
-        chatContainer = document.querySelector('#chat-messages'); // Get the chat container
-        const botMessageDiv = document.createElement('div');  // Create the bot message div
-        botMessageDiv.classList.add('message', 'bot');      // Add the classes
-        chatContainer.append(botMessageDiv);           // Append to the chat
+        // const reader = response.body.getReader();
+        // let chatContainer = document.querySelector('#chat-messages'); // Get the chat container
+        // const botMessageDiv = document.createElement('div');  // Create the bot message div
+        // botMessageDiv.classList.add('message', 'bot');      // Add the classes
+        // chatContainer.append(botMessageDiv);           // Append to the chat
+        //
+        // story = '';
+        // while (true) {
+        //     const {done, value} = await reader.read();
+        //     if (done) {
+        //         addConversation('assistant', story, false, false);
+        //         break;
+        //     }
+        //
+        //     const textDecoder = new TextDecoder('utf-8');
+        //     const chunk = textDecoder.decode(value);
+        //     // Parse the SSE stream
+        //     let separator = '\n';
+        //     if (chosen_platform === 'anthropic') {
+        //         separator = '\n\n';
+        //     }
+        //     chunk.split(separator).forEach(part => {
+        //         if (part.startsWith('data: ') || part.startsWith('event: content_block_delta')) {
+        //             if (!part.startsWith('data: [DONE]')) {
+        //                 try {
+        //                     if (chosen_platform === 'anthropic') {
+        //                         jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
+        //                         if (jsonData.delta?.text) {
+        //                             story += jsonData.delta?.text;
+        //                         }
+        //                     } else {
+        //                        jsonData = JSON.parse(part.toString().substring('data: '.length));
+        //                         if (jsonData.choices?.[0]?.delta?.content) {
+        //                             story += jsonData.choices[0].delta.content;
+        //                         }
+        //                     }
+        //                 } catch (jsonError) {
+        //                     console.log(part)
+        //                     addWarning(JSON.stringify(jsonError))
+        //                     console.error("Error parsing JSON:", jsonError);
+        //                 }
+        //             }
+        //
+        //         }
+        //     });
+        //     botMessageDiv.innerHTML = converter.makeHtml(story);
+        //     //botMessageDiv.scrollIntoView();
+        //     hljs.highlightAll();
+        //     if (first_response) {
+        //         first_response = false;
+        //         toggleAnimation();
+        //         botMessageDiv.scrollIntoView();
+        //     }
+        // }
 
         story = '';
+        const reader = response.body.getReader();
+        let chatContainer = document.querySelector('#chat-messages');
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.classList.add('message', 'bot');
+        chatContainer.append(botMessageDiv);
+        let buffer = '';
         while (true) {
-            const {done, value} = await reader.read();
+            const { done, value } = await reader.read();
             if (done) {
+                // Processa qualquer dado remanescente no buffer
+                processBuffer(buffer);
                 addConversation('assistant', story, false, false);
                 break;
             }
-
             const textDecoder = new TextDecoder('utf-8');
-            const chunk = textDecoder.decode(value);
-            // Parse the SSE stream
-            let separator = '\n';
-            if(chosen_platform === 'anthropic'){
-                separator = '\n\n';
-            }
-            chunk.split(separator).forEach(part => {
-                if (part.startsWith('data: ') || part.startsWith('event: content_block_delta')) {
+            const chunk = textDecoder.decode(value, { stream: true });
+            buffer += chunk;
+            let separator = chosen_platform === 'anthropic' ? '\n\n' : '\n';
+            let parts = buffer.split(separator);
 
+            buffer = parts.pop() || '';
+
+            for (let part of parts) {
+                if (part.startsWith('data: ') || part.startsWith('event: content_block_delta')) {
                     if (!part.startsWith('data: [DONE]')) {
                         try {
-                            if (chosen_platform === 'anthropic') {
-                                jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
-                                if (jsonData.delta?.text) {
-                                    story += jsonData.delta?.text;
-                                }
-                            } else {
-                                jsonData = JSON.parse(part.substring('data: '.length));
-                                if (jsonData.choices?.[0]?.delta?.content) {
-                                    story += jsonData.choices[0].delta.content;
-                                }
-                            }
+                            processDataPart(part);
                         } catch (jsonError) {
-                            addWarning(JSON.stringify(jsonError))
-                            console.error("Error parsing JSON:", jsonError);
+                            console.log('Parte problemática:', part);
+                            addWarning(JSON.stringify(jsonError));
+                            console.error("Erro ao analisar JSON:", jsonError);
                         }
                     }
-
                 }
-            });
-            botMessageDiv.innerHTML = converter.makeHtml(story);
-            //botMessageDiv.scrollIntoView();
-            hljs.highlightAll();
-            if (first_response) {
-                first_response = false;
-                toggleAnimation();
-                botMessageDiv.scrollIntoView();
             }
+
+                botMessageDiv.innerHTML = converter.makeHtml(story);
+                hljs.highlightAll();
+                if (first_response) {
+                    first_response = false;
+                    toggleAnimation();
+                    botMessageDiv.scrollIntoView();
+                }
+
         }
 
     } catch (error) {
         console.error("Error:", error);
-        if(error === {}){
+        if (error === {}) {
             error = 'Error: {}';
 
         }
         toggleAnimation(true);
-        addWarning(error,false)
+        addWarning(error, false)
         // Display error message in the chat
         if (invalid_key) {
             setApiKeyDialog();
@@ -1580,6 +1614,29 @@ async function geminiUploadImage() {
     if (!base64String) {
         return false;
     }
+
+    // the same content will not be upload again in less than 23 hours for Google Gemini
+    let md5_value = MD5(decodeURIComponent(encodeURIComponent(base64String)));
+    let upload_date = localStorage.getItem(md5_value);
+    let today_date = new Date().getTime();
+    if(upload_date){
+        upload_date = parseInt(upload_date);
+        upload_date = new Date(upload_date);
+        const differ_ms = today_date - upload_date;
+        const d_seconds = Math.floor(differ_ms / 1000);
+        const d_minutes = Math.floor(d_seconds / 60);
+        const d_hours = Math.floor(d_minutes / 60);
+        if(d_hours < 23){
+            let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
+            if(store_fileUri){
+                return store_fileUri;
+            }
+        }
+
+    }else {
+        console.log('file is new')
+    }
+
     let baseUrl = 'https://generativelanguage.googleapis.com';
 
     mimeType = base64String.substring(base64String.indexOf(":") + 1, base64String.indexOf(";"));
@@ -1626,24 +1683,36 @@ async function geminiUploadImage() {
 
 
         let file_state = ''
-        while (file_state === '') {
-            console.log('while')
+        let start_time = new Date().getTime();
+        while (file_state !== 'ACTIVE') {
+            console.log('while: file_state:'+file_state)
             await fetch(fileUri + "?key=" + api_key)
                 .then(response => response.json())
                 .then(data => {
-                    file_state = data.state ?? 'empty';
+                    file_state = data.state;
                 })
                 .catch(error => {
                     console.error('Request error:', error);
                 });
-            if (file_state === 'ACTIVE' || file_state !== 'PROCESSING') {
+            if (file_state === 'ACTIVE') {
                 break;
             } else {
                 await delay(5000); // wait 5 seconds
                 // wait 5 secs before verify again
             }
+            let past_time = new Date().getTime() - start_time;
+            let past_seconds = past_time / 1000;
+            if(past_seconds > 180){
+                addWarning('Upload is taking to much time. Try again later.', false)
+                console.log('Upload is taking to much time')
+                break;
+            }
+
 
         }
+
+        localStorage.setItem('file_' + md5_value, fileUri);
+        localStorage.setItem(md5_value, new Date().getTime().toString());
 
         return fileUri;
 
@@ -1702,7 +1771,7 @@ async function geminiStreamChat(fileUri, data) {
             const textDecoder = new TextDecoder('utf-8');
             const chunk = textDecoder.decode(value);
             // Parse the SSE stream
-            chunk.split('\n\n').forEach(part => {
+            chunk.split('\n').forEach(part => {
                 if (part.startsWith('data: ')) {
                     try {
                         jsonData = JSON.parse(part.substring('data: '.length));
@@ -1742,3 +1811,42 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
+
+function processDataPart(part) {
+    let jsonData;
+    if (chosen_platform === 'anthropic') {
+        jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
+        if (jsonData.delta?.text) {
+            story += jsonData.delta.text;
+        }
+    } else {
+        jsonData = JSON.parse(part.toString().substring('data: '.length));
+        if (jsonData.choices?.[0]?.delta?.content) {
+            story += jsonData.choices[0].delta.content;
+        }
+    }
+}
+
+function processBuffer(remainingBuffer) {
+    if (remainingBuffer.trim().length > 0) {
+        try {
+            processDataPart(remainingBuffer);
+        } catch (error) {
+            console.error('Error processing final buffer', error);
+            addWarning(JSON.stringify(error));
+        }
+    }
+}
+
+
+let start_msg = document.querySelector(".start_msg");
+let doc_title = document.title;
+start_msg.onmouseover = ()=>{
+    document.title = model +' -> '+chosen_platform;
+    start_msg.title = document.title;
+}
+start_msg.onmouseleave = ()=>{
+    document.title = doc_title;
+    start_msg.removeAttribute('title');
+}

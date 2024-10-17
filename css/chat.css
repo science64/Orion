@@ -4,7 +4,11 @@ html, body {
     padding: 0;
     background-color: #fbfbfb;
 }
-
+.stream_error{
+    background-color: red;
+    color: #fff;
+    padding: 8px;
+}
 
 div.message.bot:nth-last-of-type(2),div.message.bot:nth-last-of-type(1){
     min-height: 54dvh !important;
