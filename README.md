@@ -1,6 +1,6 @@
 # OrionChat
 
-OrionChat is a *free* web-based chat interface that simplifies interactions with multiple AI model providers.
+OrionChat is a web-based chat interface that simplifies interactions with multiple AI model providers.
 It provides a unified platform for chatting and exploring multiple large language models (LLMs), including:
 
 - 🛠️ Ollama – An open-source tool for running LLMs locally 🏡 
@@ -56,9 +56,3 @@ Translate text with ease using special command.
 
 ## Awesome Prompts
 150+ awesome prompts from [🧠 Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
-
-
-
-## License
-
-This project is open-source and available under the [MIT license](LICENSE).
