@@ -4,10 +4,14 @@ html, body {
     padding: 0;
     background-color: #fbfbfb;
 }
-.stream_error{
-    background-color: red;
+
+.beta_warning:after{
+    content: 'Beta';
+    background-color: orange;
+    padding: 2px 3px;
     color: #fff;
-    padding: 8px;
+    border-radius: 4px;
+    margin: 0 3px;
 }
 
 .btn_special{
@@ -174,6 +178,22 @@ th {
     text-align: center;
 }
 
+.success_dialog{
+    background-color: #5bff9f;
+    color: #5d5555;
+    box-shadow: none;
+}
+.fail_dialog{
+    background-color: #ff5959;
+    color: #fff;
+    box-shadow: none;
+}
+.dialog_warning{
+    background-color: #565656;
+    color: #fff;
+    box-shadow: none;
+}
+
 .setApiDialog {
     padding: 25px 16px 33px;
     text-align: center;
@@ -204,6 +224,9 @@ th {
     border: 1px solid #fcfcfc;
 }
 
+.disable_btn{
+    background-color: #fc5353 !important;
+}
 
 .optionsDialog {
     background-color: #fff !important;
@@ -213,6 +236,13 @@ th {
     padding: 7px;
     border: 1px solid #232323;
     border-radius: 4px;
+}
+.more_opt_btn{
+    background-color: #07d95e !important;
+    color: #fff !important;
+    border-bottom-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom: 4px solid #ffff00 !important;
 }
 
 a {
@@ -349,7 +379,7 @@ a {
 }
 
 input:checked + .slider {
-    background-color: #0871c4
+    background-color: #7578e1;
 }
 
 input:focus + .slider {
@@ -436,7 +466,7 @@ select{
     padding: 4px 5px;
     margin-right: 2px;
     content: 'X';
-    background-color: red;
+    background-color: #7578e1;
     color: #fff;
     border-radius: 3px;
 }

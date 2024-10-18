@@ -1,12 +1,3 @@
-pre code.hljs {
-    display: block;
-    overflow-x: auto;
-    padding: 1em
-}
-
-code.hljs {
-    padding: 3px 5px
-}
 
 /*!
   Theme: GitHub Dark Dimmed
@@ -17,6 +8,21 @@ code.hljs {
 
   Colors taken from GitHub's CSS
 */
+
+
+/* Orion */
+pre code.hljs {
+    display: block;
+    overflow-x: auto;
+    padding: 1em
+}
+
+code.hljs {
+    padding: 3px 5px
+}
+/* Orion */
+
+
 .hljs {
     color: #adbac7;
     background: #22272e

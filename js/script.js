@@ -2,7 +2,7 @@ let can_delete_history = false;
 let max_chats_history = 50;
 let chosen_platform = localStorage.getItem('chosen_platform');
 let model = localStorage.getItem('selected_model');
-
+let is_mobile = window.matchMedia("(max-width: 768px)").matches;
 let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
 let base64String = '';
 let mimeType = '';
@@ -10,9 +10,9 @@ let story = '';
 let endpoint = localStorage.getItem('endpoint');
 let last_role = '';
 let last_cnt = '';
+let last_user_input = '';
 let is_chat_enabled = true;
 let SITE_TITLE = "Orion";
-
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -60,9 +60,7 @@ let PLATFORM_DATA = {
             "mixtral-8x7b-32768",
             "llama-3.2-11b-vision-preview",
             "llama3-groq-8b-8192-tool-use-preview",
-            "llama-3.2-11b-text-preview",
             "gemma2-9b-it",
-            "llava-v1.5-7b-4096-preview",
             "llama3-groq-70b-8192-tool-use-preview"
         ],
         name: "Groq",
@@ -380,7 +378,7 @@ function loadOldConversation(old_talk_id) {
             div_talk.classList.add('message');
             if (msg.role === 'user') {
                 div_talk.classList.add('user');
-                div_talk.innerText = msg.content;
+                div_talk.innerHTML = converter.makeHtml(msg.content);
             } else {
                 div_talk.classList.add('bot');
                 div_talk.innerHTML = converter.makeHtml(msg.content);
@@ -501,7 +499,7 @@ chat_textarea.onkeyup = (event) => {
 }
 
 
-function addWarning(msg, self_remove = true) {
+function addWarning(msg, self_remove = true, add_class = '') {
     if (typeof (msg) != 'string') {
         msg = JSON.stringify(msg);
     }
@@ -509,19 +507,16 @@ function addWarning(msg, self_remove = true) {
     if (self_remove) {
         duration = 7;
     }
-    createDialog(msg, duration, self_remove)
+    createDialog(msg, duration, add_class)
 }
 
 
 function disableChat() {
-    //  chat_textarea.disabled = true;
     is_chat_enabled = false;
 }
 
 function enableChat() {
     is_chat_enabled = true;
-    // chat_textarea.disabled = false;
-    // chat_textarea.focus();
 }
 
 function toggleAnimation(force_off = false) {
@@ -615,6 +610,9 @@ function enableCodeDownload() {
             btn.addEventListener("click", function () {
                 const code = btn.parentElement.parentElement.querySelector("code");
                 let lang_name = code.classList[0] ?? 'txt';
+                if (lang_name === "hljs") {
+                    lang_name = code.classList[1]?.split("-")[1] ?? 'txt';
+                }
                 let extension = language_extension[lang_name] ?? 'txt';
                 let ai_full_text = btn.parentElement.parentElement.parentElement.innerHTML;
                 let file_name = ai_full_text.match(new RegExp(`([a-zA-Z0-9_-]+\\.${extension})`, 'g'));
@@ -624,10 +622,11 @@ function enableCodeDownload() {
                     file_name = file_name[0];
                     if (more_than_one.length >= 2) {
                         file_name = 'file.' + extension;
-                        // can't determine precisely the file name(because have two or more), so file_name will be default to file.ext
+                        // can't determine precisely the file name(because have two or more),
+                        // so file_name will be default to file.ext
                     }
                 } else {
-                    file_name = 'file.' + extension; // change
+                    file_name = 'file.' + extension;
                 }
 
 
@@ -699,6 +698,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
 
     if (base64String) {
         geminiUploadImage().then(response => {
+            console.log('uploading')
             return response;
         }).then(fileUri => {
             base64String = '';
@@ -732,18 +732,17 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
         };
     }
 
-    let last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
     if (cmd) {
-        data = {};
-        data.contents = {
-            "role": 'user',
-            "parts": [
-                {
-                    "text": cmd
-                }
-            ]
-        };
+        data.contents.push({
+                 "role": 'user',
+                 "parts": [
+                     {
+                         "text": cmd
+                     }
+                 ]
+             });
     }
 
     data.safetySettings = [
@@ -773,11 +772,33 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
         // "maxOutputTokens": 8192,
     };
 
-    if (with_stream) {
-        return geminiStreamChat(fileUri, data);
-    }
     if (the_data) {
         data = the_data;
+    }
+
+    if (needToolUse(last_user_input)) {
+        let tool_name = whichTool(last_user_input);
+        let tool_compatibility = `google_compatible`; // ex
+        let the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
+        if (the_tool) {
+            with_stream = false; // in this case for tool use we will not use stream mode
+            data.tools = [the_tool];
+            data.toolConfig = {
+                "functionCallingConfig": {
+                    "mode": "ANY"
+                }
+            };
+        } else {
+            console.log('g: do not has tool')
+        }
+    }
+
+
+
+
+
+    if (with_stream) {
+        return geminiStreamChat(fileUri, data);
     }
 
     let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${api_key}`
@@ -796,7 +817,16 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             let text;
             if (typeof data === "object") {
                 try {
-                    text = data.candidates[0].content.parts[0].text;
+                    text = data.candidates[0].content.parts[0]?.text ?? '';
+                    if (!text) {
+                        let g_tool = data.candidates[0].content.parts[0]?.functionCall ?? '';
+                        if (g_tool) {
+                            toolHandle(g_tool);
+                        } else {
+                            addWarning('Error: Unexpected response', true, 'fail_dialog')
+                        }
+
+                    }
                 } catch {
                     text = '<pre>' + JSON.stringify(data) + '</pre>';
                     try {
@@ -820,13 +850,14 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             addWarning('Error: ' + error, false);
             removeLastMessage();
         }).finally(() => {
-        toggleAnimation();
+        toggleAnimation(true);
         enableChat();
         if (invalid_key) {
             setApiKeyDialog();
         }
         hljs.highlightAll();
         enableCopyForCode();
+
     })
 
 
@@ -898,22 +929,9 @@ function setOptions() {
     })
     platform_options += `</select></div>`;
 
-    let disable_audio_option = '';
-    let is_audio_feature_active = localStorage.getItem('audio_feature')
-    is_audio_feature_active = parseInt(is_audio_feature_active);
-    let is_eleven_keys_set = localStorage.elabs_api_key ?? '';
-    if (is_audio_feature_active) {
-        disable_audio_option = `<p><b>Audio active:</b> <button class="red_btn" onclick="disableAudioFeature()">Disable Audio</button></p>`;
-    } else {
-        if (is_eleven_keys_set) {
-            disable_audio_option = `<p><b>Audio is disabled:</b> <button onclick="enableAudioFeature()">Enable Audio</button></p>`;
-        }
-    }
-    let audio_options =
-        `<hr><p>If you want an audio response, you can set up an API key for ElevenLabs below.</p>
-         <input type="text" name="elabs_api_key" placeholder="ElevenLabs API Key">
-         <button onclick="enableAudioFeature()">Save Key</button>
-        `;
+
+    let more_option = `<button class="more_opt_btn" onclick="moreOptions()">More Options</button>`;
+
     let cnt =
         `<div>${platform_options}
          <input type="text" name="api_key" placeholder="API Key(if not defined yet)">
@@ -923,18 +941,17 @@ function setOptions() {
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
          <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
          ${platform_info}
-         ${audio_options}
-         ${disable_audio_option}
+         <p>${more_option}</p>
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
 
     setTimeout(() => {
 
         let sl_platform = document.querySelector("select[name=platform]");
-        if(sl_platform){
-            sl_platform.onchange = (item) => {
+        if (sl_platform) {
+            sl_platform.onchange = () => {
                 let btn_sm = document.querySelector('.save_model');
-                if(btn_sm){
+                if (btn_sm) {
                     btn_sm.classList.add('animate');
                 }
             }
@@ -944,22 +961,69 @@ function setOptions() {
         if (sl_prompt) {
             sl_prompt.onchange = (item => {
                 let btn_sp = document.querySelector('.save_prompt');
-                if(btn_sp){
+                if (btn_sp) {
                     btn_sp.classList.add('animate');
                 }
                 let txt_area = document.querySelector("textarea.system_prompt");
                 if (txt_area) {
-                    txt_area.innerText = item.target.value;
-                    txt_area.style.backgroundColor = '##0d13fe78';
-                    setTimeout(() => {
-                        txt_area.style.backgroundColor = 'transparent';
-                    }, 1000)
+                    txt_area.value = item.target.value;
                 }
             })
         }
     }, 500)
 
 }
+
+
+function moreOptions(show = 'all') {
+    closeDialogs(); // close opened dialogs before show options dialog
+
+    let m_disable_audio_option = '';
+    let m_is_audio_feature_active = localStorage.getItem('audio_feature')
+    m_is_audio_feature_active = parseInt(m_is_audio_feature_active);
+    let m_is_eleven_keys_set = localStorage.elabs_api_key ?? '';
+    if (m_is_audio_feature_active) {
+        m_disable_audio_option = `<p><b id="audio_txt_status">Audio active:</b> <button class="disable_btn" onclick="disableAudioFeature()">Disable Audio</button></p>`;
+    } else {
+        if (m_is_eleven_keys_set) {
+            m_disable_audio_option = `<p><b id="audio_txt_status">Audio is disabled:</b> <button onclick="enableAudioFeature()">Enable Audio</button></p>`;
+        }
+    }
+    let m_audio_options =
+        `<p>If you want an audio response, you can set up an API key for ElevenLabs below.</p>
+         <input type="text" name="elabs_api_key" placeholder="ElevenLabs API Key">
+         <button onclick="enableAudioFeature()">Save Key</button>
+        `;
+    let cse_option = `
+    <hr>
+    <p><span class="beta_warning"></span><b>RAG: Search With Google</b></p>
+    <p>By enabling Google <abbr title="Custom Search Engine">CSE</abbr> You will be able to ask the AI to search the internet.</p>
+    <input type="text" id="cse_google_api_key" name="cse_google_api_key" placeholder="Google CSE API Key">
+    <input type="text" id="cse_google_cx_id" name="cse_google_cx_id" placeholder="Google CX ID">
+    <button onclick="enableGoogleCse()">Activate</button>
+    `;
+    let g_cse_status = '';
+    if (isGoogleCseActive()) {
+        g_cse_status = `<button id="disable_g_cse" class="disable_btn" onclick="disableGoogleCse()">Disable CSE</button`;
+    }
+
+    let cnt =
+        `<div>
+         ${m_audio_options}
+         ${m_disable_audio_option}
+         ${cse_option}
+         ${g_cse_status}
+         </div>`;
+    if (show === 'cse') {
+        cnt =
+            `<div>
+              ${cse_option}
+              ${g_cse_status}
+         </div>`;
+    }
+    createDialog(cnt, 0, 'optionsDialog');
+}
+
 
 function orderTopics() {
     let topics = document.querySelectorAll('.topic');
@@ -980,13 +1044,13 @@ function orderTopics() {
 
 function savePrompt() {
     let btn_sp = document.querySelector('.save_prompt');
-    if(btn_sp){
+    if (btn_sp) {
         btn_sp.classList.remove('animate');
     }
     let sys_prompt = document.querySelector("textarea.system_prompt").value.trim();
     if (sys_prompt.length) {
         localStorage.setItem('system_prompt', sys_prompt);
-    }else {
+    } else {
         localStorage.removeItem('system_prompt')
     }
     saveModel();
@@ -995,7 +1059,7 @@ function savePrompt() {
 
 function saveModel() {
     let btn_sm = document.querySelector('.save_model');
-    if(btn_sm){
+    if (btn_sm) {
         btn_sm.classList.remove('animate');
     }
 
@@ -1034,8 +1098,9 @@ let hc = localStorage.getItem("hide_conversations");
 if (hc === '1') {
     document.querySelector('.conversations').style.display = 'none';
 } else {
-    document.querySelector('.conversations').style.display = 'block';
-
+    if (!is_mobile) {
+        document.querySelector('.conversations').style.display = 'block';
+    }
 }
 
 if (!api_key) {
@@ -1060,8 +1125,7 @@ orderTopics();
 
 
 function ollamaGuide() {
-    let is_mobile = window.matchMedia("(max-width: 768px)").matches;
-    if(is_mobile){
+    if (is_mobile) {
         console.log('User seem to be in mobile device')
         return false;
     }
@@ -1136,31 +1200,55 @@ function getOllamaModels() {
 getOllamaModels();
 
 function disableAudioFeature() {
+    let audio_txt_status = document.querySelector("#audio_txt_status");
+    audio_txt_status.innerText = 'Audio is disabled!'
     localStorage.setItem('audio_feature', '0');
     addWarning('Audio feature disabled', true)
 }
 
 function enableAudioFeature() {
+    let audio_txt_status = document.querySelector("#audio_txt_status");
     localStorage.setItem('audio_feature', '1');
     let input_ele = document.querySelector("input[name=elabs_api_key]");
+
     if (input_ele && input_ele.value.trim().length > 5) {
         elabs_api_key = input_ele.value.trim();
         localStorage.setItem('elabs_api_key', elabs_api_key)
         addWarning('Audio feature enabled', true)
+        audio_txt_status.innerText = 'Audio is enabled!'
     } else {
         if (!elabs_api_key) {
             addWarning('Ops. No key provided!', false)
         } else {
             addWarning('Audio feature enabled', true)
+            audio_txt_status.innerText = 'Audio is enabled!'
         }
     }
 
 }
 
 
+function needToolUse(last_user_input) {
+    let lui = last_user_input.trim();
+    let cmd = lui.match(/^[a-z]+:/i)?.[0];
+    return cmd === "search:" || cmd === 's:';
+    // If it has some command to search will need to use tools
+
+
+}
+
+function whichTool(last_user_input) {
+    let lui = last_user_input.trim();
+    let cmd = lui.match(/^[a-z]+:/i)?.[0] ?? '';
+    if ((cmd === "search:" || cmd === 's:')) {
+        return 'googleSearch';
+    }
+    return '';
+}
+
 function commandManager(text) {
-    text = text.trim();
-    let arr = text.match(/^t:(.*?)\s/);
+    text = text.trim() + " ";
+    let arr = text.match(/^[a-z]+:(.*?)\s/i);
     let cmd = '';
     let args = '';
     if (arr) {
@@ -1171,12 +1259,12 @@ function commandManager(text) {
         }
     }
 
-
     let prompt = especial_prompts[cmd] ?? '';
     if (!prompt) {
         return false; // no command passed
     }
-    text = text.replace(/^t:(.*?)\s/, " ").trim();
+
+    text = text.replace(/^[a-z]+:(.*?)\s/i, " ").trim();
     prompt = prompt.replaceAll("{{USER_INPUT}}", text);
     prompt = prompt.replaceAll("{{ARG1}}", args);
     return prompt; // return the new prompt formated
@@ -1184,9 +1272,9 @@ function commandManager(text) {
 }
 
 
-async function streamChat() {
+async function streamChat(can_use_tools = true) {
     let first_response = true;
-    let last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
     let all_parts = [];
     let invalid_key = false;
@@ -1196,80 +1284,79 @@ async function streamChat() {
         if (chosen_platform !== 'anthropic') {
             if (!cmd) {
                 if (!base64String) {
-                    // groq vision accept no system prompt
+                    // Groq vision accept no system prompt??
                     all_parts.push(system_prompt);
                 }
             }
         }
     }
 
-    if (!cmd) {
-        conversations.messages.forEach(part => {
-                //let role = part.role === 'assistant' ? 'model' : part.role;
-                let cnt = part.content;
-                last_role = part.role;
-                last_cnt = part.content;
-                if (chosen_platform === 'anthropic') {
-                    let ant_part =
-                        {
-                            role: part.role,
-                            content: [{type: 'text', text: cnt}]
-                        }
-                    all_parts.push(ant_part);
-                } else if (chosen_platform === 'cohere') {
-                    let cohere_part =
-                        {
-                            role: part.role,
-                            content: cnt
-                        };
-                    all_parts.push(cohere_part);
-
-                } else {
-                    all_parts.push({content: part.content, role: part.role});
-                    //console.log('no image part')
-                }
-
-            }
-        ); // end forEach
-
-        if (base64String && last_role === 'user' && chosen_platform === 'anthropic') {
-            let ant_part = {
-                role: last_role,
-                content: [{
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": mimeType,
-                        "data": base64String.split(',')[1]
+    conversations.messages.forEach(part => {
+            //let role = part.role === 'assistant' ? 'model' : part.role;
+            let cnt = part.content;
+            last_role = part.role;
+            last_cnt = part.content;
+            if (chosen_platform === 'anthropic') {
+                let ant_part =
+                    {
+                        role: part.role,
+                        content: [{type: 'text', text: cnt}]
                     }
-                }, {type: 'text', text: last_cnt}]
-            };
-            all_parts.pop(); // remove last
-            all_parts.push(ant_part); // add with image scheme
-            base64String = '';
-            mimeType = '';
-        } else if (base64String && last_role === 'user') {
-            all_parts.pop();
-            all_parts.push({
-                "role": last_role,
-                "content": [
+                all_parts.push(ant_part);
+            } else if (chosen_platform === 'cohere') {
+                let cohere_part =
                     {
-                        "type": "text",
-                        "text": last_cnt
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": base64String
-                        }
-                    }]
-            });
-            base64String = '';
-            mimeType = '';
+                        role: part.role,
+                        content: cnt
+                    };
+                all_parts.push(cohere_part);
+
+            } else {
+                all_parts.push({content: part.content, role: part.role});
+            }
 
         }
+    ); // end forEach
 
-    } else {
+    if (base64String && last_role === 'user' && chosen_platform === 'anthropic') {
+        let ant_part = {
+            role: last_role,
+            content: [{
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": mimeType,
+                    "data": base64String.split(',')[1]
+                }
+            }, {type: 'text', text: last_cnt}]
+        };
+        all_parts.pop(); // remove last
+        all_parts.push(ant_part); // add with image scheme
+        base64String = '';
+        mimeType = '';
+    } else if (base64String && last_role === 'user') {
+        all_parts.pop();
+        all_parts.push({
+            "role": last_role,
+            "content": [
+                {
+                    "type": "text",
+                    "text": last_cnt
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": base64String
+                    }
+                }]
+        });
+        base64String = '';
+        mimeType = '';
+
+    }
+
+    if(cmd){
+        all_parts.pop() // remove last
         // have cmd - so will just past the last user message in the command
         if (chosen_platform === 'anthropic') {
             let ant_part =
@@ -1283,17 +1370,11 @@ async function streamChat() {
         }
     }
 
-
-    //max_tokens: 1024,
     let data =
         {
             model: model,
             stream: true,
             messages: all_parts,
-            //temperature: 0,
-            //max_tokens: -1,
-            //seed: 0,
-            //top_p: 1
         }
     if (chosen_platform === 'anthropic') {
         if (!system_prompt_text) {
@@ -1307,9 +1388,6 @@ async function streamChat() {
     }
 
 
-    if (chosen_platform === 'cohere') {
-    }
-
     let HTTP_HEADERS = {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${api_key}`,
@@ -1320,11 +1398,41 @@ async function streamChat() {
     if (chosen_platform === 'ollama') {
         HTTP_HEADERS = {};
     }
+    let the_tool = '';
+    if (can_use_tools) {
+        if (needToolUse(last_user_input)) {
+            let tool_name = whichTool(last_user_input);
+            let tool_compatibility = `openai_compatible`;
+            if(chosen_platform === 'anthropic'){
+                tool_compatibility = 'anthropic_compatible';
+            }else if(chosen_platform === 'cohere'){
+                tool_compatibility = 'cohere_compatible';
+            }
+
+            the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
+            if (the_tool) {
+                data.stream = false; // in this case for tool use we will not use stream mode
+                data.tools = [the_tool];
+                if(chosen_platform !== 'cohere'){
+                    data.tool_choice = "required";
+                }
+                if(chosen_platform === 'anthropic'){
+                    data.tools = [the_tool];
+                    data.tool_choice = {"type": "tool", "name": "googleSearch"};
+                }
+            } else {
+                console.log('do not has tool')
+            }
+        }
+    }
+
     const requestOptions = {
         method: 'POST',
         headers: HTTP_HEADERS,
         body: JSON.stringify(data)
     };
+
+
     if (!endpoint) {
         setOptions();
         toggleAnimation();
@@ -1350,75 +1458,42 @@ async function streamChat() {
             return false;
         }
 
-        // const reader = response.body.getReader();
-        // let chatContainer = document.querySelector('#chat-messages'); // Get the chat container
-        // const botMessageDiv = document.createElement('div');  // Create the bot message div
-        // botMessageDiv.classList.add('message', 'bot');      // Add the classes
-        // chatContainer.append(botMessageDiv);           // Append to the chat
-        //
-        // story = '';
-        // while (true) {
-        //     const {done, value} = await reader.read();
-        //     if (done) {
-        //         addConversation('assistant', story, false, false);
-        //         break;
-        //     }
-        //
-        //     const textDecoder = new TextDecoder('utf-8');
-        //     const chunk = textDecoder.decode(value);
-        //     // Parse the SSE stream
-        //     let separator = '\n';
-        //     if (chosen_platform === 'anthropic') {
-        //         separator = '\n\n';
-        //     }
-        //     chunk.split(separator).forEach(part => {
-        //         if (part.startsWith('data: ') || part.startsWith('event: content_block_delta')) {
-        //             if (!part.startsWith('data: [DONE]')) {
-        //                 try {
-        //                     if (chosen_platform === 'anthropic') {
-        //                         jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
-        //                         if (jsonData.delta?.text) {
-        //                             story += jsonData.delta?.text;
-        //                         }
-        //                     } else {
-        //                        jsonData = JSON.parse(part.toString().substring('data: '.length));
-        //                         if (jsonData.choices?.[0]?.delta?.content) {
-        //                             story += jsonData.choices[0].delta.content;
-        //                         }
-        //                     }
-        //                 } catch (jsonError) {
-        //                     console.log(part)
-        //                     addWarning(JSON.stringify(jsonError))
-        //                     console.error("Error parsing JSON:", jsonError);
-        //                 }
-        //             }
-        //
-        //         }
-        //     });
-        //     botMessageDiv.innerHTML = converter.makeHtml(story);
-        //     //botMessageDiv.scrollIntoView();
-        //     hljs.highlightAll();
-        //     if (first_response) {
-        //         first_response = false;
-        //         toggleAnimation();
-        //         botMessageDiv.scrollIntoView();
-        //     }
-        // }
 
         story = '';
+        let cloned_response = response.clone();
         const reader = response.body.getReader();
         let chatContainer = document.querySelector('#chat-messages');
         const botMessageDiv = document.createElement('div');
         botMessageDiv.classList.add('message', 'bot');
-        chatContainer.append(botMessageDiv);
+        if (!the_tool) {
+            chatContainer.append(botMessageDiv);
+        }
         let buffer = '';
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
-                processBuffer(buffer);
-                addConversation('assistant', story, false, false);
+                if (story === '') {
+                    cloned_response.json().then(data => {
+                        processFullData(data);
+                        if (story) {
+                            addConversation('assistant', story, true, true);
+                            enableCopyForCode(true);
+                            hljs.highlightAll();
+                        } else {
+                            // probably not stream - tool use
+                            toggleAnimation();
+                            toolHandle(data);
+                            return false;
+                        }
+                    })
+                } else {
+                    processBuffer(buffer);
+                    addConversation('assistant', story, false, false);
+                }
+
                 break;
             }
+
             const textDecoder = new TextDecoder('utf-8');
             const chunk = textDecoder.decode(value, {stream: true});
             buffer += chunk;
@@ -1605,6 +1680,18 @@ async function geminiUploadImage() {
 
 
 async function geminiStreamChat(fileUri, data) {
+    last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    if (needToolUse(last_user_input)) {
+        let tool_name = whichTool(last_user_input);
+        let tool_compatibility = `google_compatible`;
+        let the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
+        if (the_tool) {
+            geminiChat(fileUri, false)
+        } else {
+            console.log('has not tool')
+        }
+    }
+
     const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${api_key}`;
     let first_response = true;
     try {
@@ -1622,7 +1709,7 @@ async function geminiStreamChat(fileUri, data) {
                     addWarning(data);
                 }, 500)
                 removeLastMessage();
-                toggleAnimation();
+                toggleAnimation(true);
                 enableChat();
                 let tt = data.error?.message ?? 'nada';
                 if (tt.match(/API key not valid/)) {
@@ -1644,6 +1731,7 @@ async function geminiStreamChat(fileUri, data) {
             if (done) {
                 if (story) {
                     addConversation('assistant', story, false, false)
+                    toggleAnimation(true)
                 }
                 break;
             }
@@ -1666,7 +1754,7 @@ async function geminiStreamChat(fileUri, data) {
             });
             if (first_response) {
                 first_response = false;
-                toggleAnimation();
+                toggleAnimation(true);
                 botMessageDiv.scrollIntoView();
             }
             if (story) {
@@ -1678,11 +1766,12 @@ async function geminiStreamChat(fileUri, data) {
     } catch (error) {
         console.error("Error:", error);
         addWarning('Error: ' + error.message)
-        toggleAnimation();
+        toggleAnimation(true);
         enableChat();
     } finally {
         enableCopyForCode();
         enableChat();
+        toggleAnimation(true)
     }
 } // geminiStreamChat
 
@@ -1713,6 +1802,25 @@ function processDataPart(part) {
     }
 }
 
+
+function processFullData(jsonData) {
+    if (chosen_platform === 'anthropic') {
+        if (jsonData.content?.[0].text) {
+            story += jsonData.content[0].text;
+        }
+    } else {
+        if (chosen_platform === 'cohere') {
+            if (jsonData.message?.content?.[0]?.text) {
+                story += jsonData.message.content[0].text;
+            }
+        } else {
+            if (jsonData.choices?.[0]?.message?.content) {
+                story += jsonData.choices[0].message.content;
+            }
+        }
+    }
+}
+
 function processBuffer(remainingBuffer) {
     if (remainingBuffer.trim().length > 0) {
         try {
@@ -1724,6 +1832,130 @@ function processBuffer(remainingBuffer) {
     }
 }
 
+function enableGoogleCse() {
+    let g_api_key = document.querySelector("#cse_google_api_key")?.value.trim() ?? '';
+    let g_cx_id = document.querySelector("#cse_google_cx_id")?.value.trim() ?? '';
+    if (g_api_key && g_cx_id) {
+        localStorage.setItem('cse_google_api_key', g_api_key)
+        localStorage.setItem('cse_google_cx_id', g_cx_id)
+        closeDialogs();
+        addWarning('Google CSE successfully defined!', true, 'success_dialog');
+    } else {
+        addWarning("Error: API Key and/or CX ID not defined for Google Custom Search", true, 'fail_dialog')
+    }
+}
+
+function disableGoogleCse() {
+    localStorage.removeItem('cse_google_api_key')
+    localStorage.removeItem('cse_google_cx_id')
+    let disable_g_cse = document.querySelector("#disable_g_cse");
+    if (disable_g_cse) {
+        disable_g_cse.remove();
+    }
+    closeDialogs();
+}
+
+function isGoogleCseActive() {
+    let g_api_key = localStorage.getItem('cse_google_api_key')
+    let g_cx_id = localStorage.getItem('cse_google_cx_id')
+    return !!(g_api_key && g_cx_id);
+
+}
+
+async function gcseActive() {
+ return isGoogleCseActive();
+}
+
+
+
+async function googleSearch(data) {
+    let is_cse_active = await isGoogleCseActive();
+    if(!is_cse_active){
+        let cse_opt = `<button class="more_opt_btn" onclick="moreOptions('cse')">See Options</button>`;
+        cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
+        cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
+        addWarning(cse_opt,false,'dialog_warning');
+        toggleAnimation(true)
+        return false;
+    }
+
+    let term = data.term ?? '';
+    if (!term) {
+        addWarning('googleSearch() received no search param');
+    }
+    console.log('Searching for ' + term);
+    let gs = new GoogleSearch();
+    let results = await gs.search(term);
+    let txt_result = '';
+    if (results.items) {
+        results.items.forEach(item => {
+            txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
+        })
+    } else {
+        if (is_cse_active) {
+            addWarning('Got no result from Google Search');
+        }
+        removeLastMessage();
+        toggleAnimation();
+        return false;
+    }
+  //  let last_input = conversations.messages[conversations.messages.length - 1].content;
+
+    let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
+    let ele = document.querySelector(".message:nth-last-of-type(1)");
+    if (ele) {
+        let cnt = `${last_input} <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
+        ele.innerHTML = converter.makeHtml(cnt);
+    }
+
+    conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n respond based on this context: <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
+    if (chosen_platform === 'google') {
+        await geminiChat()
+        toggleAnimation(true);
+    } else {
+        await streamChat(false); // false to prevent infinite loop
+        toggleAnimation(true);
+
+    }
+
+}
+
+function toolHandle(data) {
+    if (chosen_platform === 'google') {
+        try {
+            let fn_name = data.name;
+            let arguments = data.args;
+            this[fn_name](arguments);
+        } catch (error) {
+            console.log(error)
+        }
+    }else if(chosen_platform === 'anthropic'){
+        if (data.content?.[0]) {
+            let fn_name = data.content[0].name;
+            let arguments = data.content[0].input;
+            this[fn_name](arguments);
+        } else {
+            addWarning('A tool was expected, got none.', false)
+        }
+    }else if(chosen_platform === 'cohere'){
+        if (data.message?.tool_calls?.[0]?.function) {
+            let fn_name = data.message.tool_calls[0]?.function.name
+            let arguments = JSON.parse(data.message.tool_calls[0]?.function.arguments)
+            this[fn_name](arguments);
+        } else {
+            addWarning('A tool was expected, got none.', false)
+        }
+    }else {
+        if (data.choices?.[0]?.message?.tool_calls?.[0]?.function) {
+            let tool = data.choices[0].message.tool_calls[0].function;
+            let fn_name = tool.name;
+            let arguments = JSON.parse(tool.arguments);
+            this[fn_name](arguments);
+        } else {
+            addWarning('A tool was expected, got none.', false)
+        }
+    }
+}
 
 let start_msg = document.querySelector(".start_msg");
 let doc_title = document.title;
@@ -1737,9 +1969,10 @@ start_msg.onmouseleave = () => {
 }
 
 chatButton.onmouseover = () => {
-    document.title = 'Send to '+model + ' -> ' + chosen_platform;
+    document.title = 'Send to ' + model + ' -> ' + chosen_platform;
 }
 chatButton.onmouseleave = () => {
     document.title = doc_title;
 }
+
 

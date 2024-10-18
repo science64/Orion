@@ -690,3 +690,6 @@ let all_prompts = [
 let especial_prompts = {};
 especial_prompts.translate = "You are a professional translator tasked with translating a text from one language to another. Your goal is to provide an accurate and natural-sounding translation that preserves the meaning, tone, and style of the original text. Here is the text to be translated: <source_text> {{USER_INPUT}} </source_text> The target language is {{ARG1}}. Translate the text into the target language, ensuring that you maintain the original meaning as closely as possible. pay attention to idiomatic expressions, cultural references, and nuances in the source language, and find appropriate equivalents in the target language, preserve the tone and style of the original text (e.g., formal, casual, technical, literary) in your translation and ensure that the grammar, syntax, and punctuation in the target language are correct and natural-sounding. Remember to focus solely on the translation task and do not add any personal comments or opinions unrelated to the translation process. Just return the translation without any comment.";
 especial_prompts.t = especial_prompts.translate;
+
+especial_prompts.search = "{{ARG1}} {{USER_INPUT}}";
+especial_prompts.s = especial_prompts.search;
