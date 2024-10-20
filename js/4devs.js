@@ -1,4 +1,4 @@
-//Downloads chat history stored under the specified localStorage key.
+//Downloads chat history stored in localStorage.
 // Please be caution where to keep this files
 // the file will be saved in JSON and is not encrypted
 // This file will have sensitive info, as your conversations and API key
@@ -31,6 +31,8 @@ function downloadChatHistory() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    addWarning("Be careful where you save this file, as it contains your secret API keys and private conversations with the AI", false);
+
 }
 
 
@@ -49,6 +51,9 @@ function restoreChatHistory() {
                     localStorage.setItem(idx.toString(), chatHistory[idx]);
                 }
                 addWarning("Chat history restored successfully!", true, 'success_dialog');
+                setTimeout(()=>{
+                    document.location = document.location;
+                },5000)
             } catch (error) {
                 console.error("Error parsing JSON file:", error);
                 addWarning("Error restoring chat history.  Please make sure you selected a valid JSON file.", false, 'fail_dialog');
@@ -57,4 +62,5 @@ function restoreChatHistory() {
         reader.readAsText(file);
     };
     input.click();
+
 }

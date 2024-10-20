@@ -6,7 +6,8 @@ class GoogleSearch {
     async search(term, max_results = 10, start = 0) {
         let cse_active = await gcseActive();
         if(!cse_active){
-            addWarning('Not Active')
+            addWarning('Google Custom Search Is Not Active!')
+            return false;
         }
 
         let GOOGLE_SEARCH_API_KEY = localStorage.getItem('cse_google_api_key')
@@ -26,6 +27,7 @@ class GoogleSearch {
             const response = await fetch(url);
             const data = await response.json();
             if (data.error) {
+                addWarning('Google CSE -> Error details: '+ JSON.stringify(data));
                 console.error('Google CSE -> Error details:', data.error);
             }
            return this.search_results = data || {};

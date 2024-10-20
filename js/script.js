@@ -143,8 +143,16 @@ settings.onclick = () => {
     }
 }
 
+
+
 let options = document.querySelector("#open_options");
 options.onclick = () => {
+    let cvns = document.querySelector('.conversations');
+    if(cvns && is_mobile){
+        cvns.style.display = 'none'; // if open will be closed on mobile
+    }
+    console.log('oppp')
+
     setOptions();
 }
 
@@ -173,6 +181,10 @@ let conversations = {
 
 function addConversation(role, content, add_to_document = true, do_scroll = true) {
     closeDialogs();
+    if(!content.trim()){
+        addWarning('Empty conversation', true);
+        return false;
+    }
     let new_talk = {'role': role, 'content': content};
     conversations.messages.push(new_talk);
     //chat_textarea.focus();
@@ -1007,12 +1019,22 @@ function moreOptions(show = 'all') {
         g_cse_status = `<button id="disable_g_cse" class="disable_btn" onclick="disableGoogleCse()">Disable CSE</button`;
     }
 
+
+    let import_export_configs =
+        `<div>
+         <hr>
+         <p>Import or export settings and saved chats.</p>
+          <button onclick="downloadChatHistory()">Export</button>
+          <button onclick="restoreChatHistory()">Import</button>
+         </div>`;
+
     let cnt =
         `<div>
          ${m_audio_options}
          ${m_disable_audio_option}
          ${cse_option}
          ${g_cse_status}
+         ${import_export_configs}
          </div>`;
     if (show === 'cse') {
         cnt =

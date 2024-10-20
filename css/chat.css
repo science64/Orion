@@ -141,18 +141,31 @@ th {
 }
 
 .dialog_close:after {
+    /*content: "X";*/
+    /*padding: 2px 4px;*/
+    /*color: #5c5656;*/
+    /*position: absolute;*/
+    /*top: -5px;*/
+    /*right: -5px;*/
+    /*background-color: #c9ffa0;*/
+    /*box-sizing: border-box;*/
+    /*border-radius: 3px;*/
+    /*cursor: pointer;*/
+    /*transform: rotate(33deg);*/
+    /*border: 1px solid #fff;*/
+
     content: "X";
-    padding: 2px 4px;
-    color: #5c5656;
+    padding: 5px 7px;
+    color: #2d2828;
     position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: #c9ffa0;
+    top: 2px;
+    right: 2px;
+    background-color: #f7f7f7;
     box-sizing: border-box;
     border-radius: 3px;
+    font-weight: 600;
     cursor: pointer;
-    transform: rotate(33deg);
-    border: 1px solid #fff;
+    border: 1px solid #b0b0b0;
 }
 
 
@@ -163,6 +176,7 @@ th {
 }
 
 .dialog {
+    z-index: 999;
     word-wrap: break-word;
     display: none;
     width: 370px;
@@ -230,6 +244,7 @@ th {
 
 .optionsDialog {
     background-color: #fff !important;
+    z-index: 999;
 }
 
 .optionsDialog button {
@@ -663,10 +678,10 @@ textarea.system_prompt {
         margin: 0;
     }
     .optionsDialog .dialog_close:after{
-        left: 1px;
-        top: 1px;
-        right: inherit;
-        transform: rotate(0deg);
+        /*left: 1px;*/
+        /*top: 1px;*/
+        /*right: inherit;*/
+        /*transform: rotate(0deg);*/
     }
 
     #settings {
