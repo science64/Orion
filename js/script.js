@@ -144,11 +144,10 @@ settings.onclick = () => {
 }
 
 
-
 let options = document.querySelector("#open_options");
 options.onclick = () => {
     let cvns = document.querySelector('.conversations');
-    if(cvns && is_mobile){
+    if (cvns && is_mobile) {
         cvns.style.display = 'none'; // if open will be closed on mobile
     }
     console.log('oppp')
@@ -181,7 +180,7 @@ let conversations = {
 
 function addConversation(role, content, add_to_document = true, do_scroll = true) {
     closeDialogs();
-    if(!content.trim()){
+    if (!content.trim()) {
         addWarning('Empty conversation', true);
         return false;
     }
@@ -289,6 +288,33 @@ function getPreviousChatTopic() {
 
 function removeChat(div, id) {
     if (can_delete_history) {
+        let the_chat = JSON.parse(localStorage.getItem(id));
+        if (div.classList.contains('confirm_deletion')) {
+            localStorage.removeItem(id);
+        } else {
+            let tot_msgs = the_chat.messages.length;
+            div.classList.add('confirm_deletion');
+            if (tot_msgs < 19) {
+                localStorage.removeItem(id);
+            } else {
+                let alert_msg =
+                    `<p>Are you sure you want to delete?</p>
+                    <p>This conversation has ${tot_msgs} messages.</p>
+                    <p>If yes, click again to delete.</p>`;
+                addWarning(alert_msg,false)
+                div.classList.add('del_caution')
+                return false;
+            }
+        }
+        document.querySelectorAll(".del_caution").forEach((dc=>{
+            dc.classList.remove('del_caution');
+        }))
+
+        document.querySelectorAll(".confirm_deletion").forEach((cd=>{
+            cd.classList.remove('confirm_deletion');
+        }))
+
+
         localStorage.removeItem(id);
         let ele = document.createElement('div');
         let content = document.querySelector(".container");
@@ -748,13 +774,13 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     let cmd = commandManager(last_user_input)
     if (cmd) {
         data.contents.push({
-                 "role": 'user',
-                 "parts": [
-                     {
-                         "text": cmd
-                     }
-                 ]
-             });
+            "role": 'user',
+            "parts": [
+                {
+                    "text": cmd
+                }
+            ]
+        });
     }
 
     data.safetySettings = [
@@ -804,9 +830,6 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             console.log('g: do not has tool')
         }
     }
-
-
-
 
 
     if (with_stream) {
@@ -1377,7 +1400,7 @@ async function streamChat(can_use_tools = true) {
 
     }
 
-    if(cmd){
+    if (cmd) {
         all_parts.pop() // remove last
         // have cmd - so will just past the last user message in the command
         if (chosen_platform === 'anthropic') {
@@ -1425,9 +1448,9 @@ async function streamChat(can_use_tools = true) {
         if (needToolUse(last_user_input)) {
             let tool_name = whichTool(last_user_input);
             let tool_compatibility = `openai_compatible`;
-            if(chosen_platform === 'anthropic'){
+            if (chosen_platform === 'anthropic') {
                 tool_compatibility = 'anthropic_compatible';
-            }else if(chosen_platform === 'cohere'){
+            } else if (chosen_platform === 'cohere') {
                 tool_compatibility = 'cohere_compatible';
             }
 
@@ -1435,10 +1458,10 @@ async function streamChat(can_use_tools = true) {
             if (the_tool) {
                 data.stream = false; // in this case for tool use we will not use stream mode
                 data.tools = [the_tool];
-                if(chosen_platform !== 'cohere'){
+                if (chosen_platform !== 'cohere') {
                     data.tool_choice = "required";
                 }
-                if(chosen_platform === 'anthropic'){
+                if (chosen_platform === 'anthropic') {
                     data.tools = [the_tool];
                     data.tool_choice = {"type": "tool", "name": "googleSearch"};
                 }
@@ -1885,18 +1908,17 @@ function isGoogleCseActive() {
 }
 
 async function gcseActive() {
- return isGoogleCseActive();
+    return isGoogleCseActive();
 }
-
 
 
 async function googleSearch(data) {
     let is_cse_active = await isGoogleCseActive();
-    if(!is_cse_active){
+    if (!is_cse_active) {
         let cse_opt = `<button class="more_opt_btn" onclick="moreOptions('cse')">See Options</button>`;
         cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
         cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
-        addWarning(cse_opt,false,'dialog_warning');
+        addWarning(cse_opt, false, 'dialog_warning');
         toggleAnimation(true)
         return false;
     }
@@ -1921,7 +1943,7 @@ async function googleSearch(data) {
         toggleAnimation();
         return false;
     }
-  //  let last_input = conversations.messages[conversations.messages.length - 1].content;
+    //  let last_input = conversations.messages[conversations.messages.length - 1].content;
 
     let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
     let ele = document.querySelector(".message:nth-last-of-type(1)");
@@ -1951,7 +1973,7 @@ function toolHandle(data) {
         } catch (error) {
             console.log(error)
         }
-    }else if(chosen_platform === 'anthropic'){
+    } else if (chosen_platform === 'anthropic') {
         if (data.content?.[0]) {
             let fn_name = data.content[0].name;
             let arguments = data.content[0].input;
@@ -1959,7 +1981,7 @@ function toolHandle(data) {
         } else {
             addWarning('A tool was expected, got none.', false)
         }
-    }else if(chosen_platform === 'cohere'){
+    } else if (chosen_platform === 'cohere') {
         if (data.message?.tool_calls?.[0]?.function) {
             let fn_name = data.message.tool_calls[0]?.function.name
             let arguments = JSON.parse(data.message.tool_calls[0]?.function.arguments)
@@ -1967,7 +1989,7 @@ function toolHandle(data) {
         } else {
             addWarning('A tool was expected, got none.', false)
         }
-    }else {
+    } else {
         if (data.choices?.[0]?.message?.tool_calls?.[0]?.function) {
             let tool = data.choices[0].message.tool_calls[0].function;
             let fn_name = tool.name;
