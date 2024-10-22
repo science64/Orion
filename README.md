@@ -52,7 +52,7 @@ Your API keys are stored locally using `localStorage`, and requests are sent dir
 ### Free and Paid API Keys
 - **Cohere** [Get your key](https://dashboard.cohere.com/api-keys)
 
-## Special Commands
+# Special Commands
 Use special commands to perform an action quickly and easily.
 ### Translation
 **Translate:** Translate text with ease using special command.

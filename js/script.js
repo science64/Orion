@@ -1421,13 +1421,9 @@ async function streamChat(can_use_tools = true) {
             messages: all_parts,
         }
     if (chosen_platform === 'anthropic') {
-        if (!system_prompt_text) {
-            system_prompt_text = "Your name is Orion"; // Anthropic requires a system prompt
-        }
-        data.system = system_prompt_text;
         data.max_tokens = 4096;
-        if (cmd) {
-            data.system = "Your name is Orion."; //
+        if(system_prompt_text){
+            data.system = system_prompt_text;
         }
     }
 
