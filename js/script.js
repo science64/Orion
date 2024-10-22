@@ -42,6 +42,14 @@ let PLATFORM_DATA = {
         name: "Google",
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
     },
+    anthropic: {
+        models: [
+            "claude-3-5-sonnet-20241022",
+            "claude-3-haiku-20240307"
+        ],
+        name: "Anthropic",
+        endpoint: "https://api.anthropic.com/v1/messages"
+    },
     cohere: {
         models: [
             "command-r-plus-08-2024",
@@ -65,15 +73,6 @@ let PLATFORM_DATA = {
         ],
         name: "Groq",
         endpoint: "https://api.groq.com/openai/v1/chat/completions"
-    },
-    anthropic: {
-        models: [
-            "claude-3-5-sonnet-20240620",
-            "claude-3-opus-20240229",
-            "claude-3-haiku-20240307"
-        ],
-        name: "Anthropic",
-        endpoint: "https://api.anthropic.com/v1/messages"
     },
     cerebras: {
         models: [
@@ -1626,7 +1625,7 @@ async function geminiUploadImage() {
         const d_seconds = Math.floor(differ_ms / 1000);
         const d_minutes = Math.floor(d_seconds / 60);
         const d_hours = Math.floor(d_minutes / 60);
-        if (d_hours < 23) {
+        if (d_hours < 48) {
             let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
             if (store_fileUri) {
                 return store_fileUri;
