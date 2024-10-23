@@ -1477,6 +1477,8 @@ async function streamChat(can_use_tools = true) {
         }
     }
 
+
+
     const requestOptions = {
         method: 'POST',
         headers: HTTP_HEADERS,
