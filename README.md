@@ -21,6 +21,7 @@ user-friendly interface.
 ## Key Features
 
 - 🖥️ Browser - No need to download anything ⚡️
+- ✅ Code Execution (Execute code with Google Gemini)
 - 🗣️ TTS - Realistic text-to-speech using ElevenLabs
 - 🎙️ STT - Speech-to-Text using Groq/Whisper ️
 - 🔄 Seamless integration with multiple AI models
