@@ -5,6 +5,30 @@ html, body {
     background-color: #fbfbfb;
 }
 
+
+.code_outcome{
+    padding: 6px 7px;
+    border-radius: 4px;
+    width: fit-content;
+    color: #fd5656;
+}
+.OUTCOME_OK{
+    background-color: #22272e;
+    color: #8edd91;
+}
+
+.code_execution:before{
+    content: "Code Execution:";
+    margin-bottom: -11px;
+    display: block;
+    background-color: #8edd91;
+    padding: 3px;
+    width: fit-content;
+    border-radius: 3px;
+    color: #000;
+    border: 1px solid #ccc;
+}
+
 .beta_warning:after{
     content: 'Beta';
     background-color: orange;

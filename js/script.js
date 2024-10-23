@@ -815,7 +815,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
 
     if (needToolUse(last_user_input)) {
         let tool_name = whichTool(last_user_input);
-        let tool_compatibility = `google_compatible`; // ex
+        let tool_compatibility = `google_compatible`;
         let the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
         if (the_tool) {
             with_stream = false; // in this case for tool use we will not use stream mode
@@ -829,6 +829,10 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             console.log('g: do not has tool')
         }
     }
+
+   if(!data.tools){
+       data.tools= [{'code_execution': {}}];
+   }
 
 
     if (with_stream) {
@@ -1785,6 +1789,16 @@ async function geminiStreamChat(fileUri, data) {
                         let jsonData = JSON.parse(part.substring('data: '.length));
                         if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
                             story += jsonData.candidates?.[0]?.content?.parts?.[0]?.text;
+                        }else if(jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code){
+                            let code = jsonData.candidates[0].content.parts[0].executableCode.code;
+                            let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
+                            code_lang = code_lang.toLowerCase();
+                            code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
+                            story += code;
+                        }else if(jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output){
+                            let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
+                            let ce_output =  jsonData.candidates[0].content.parts[0].codeExecutionResult.output
+                            story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
                         }
                     } catch (error) {
                         addWarning(error, false);
