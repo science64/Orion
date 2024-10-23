@@ -865,6 +865,13 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                         }
 
                     }
+                    let finished_reason = data.candidates[0].finishReason ?? '';
+                    if(finished_reason && finished_reason !== 'STOP'){
+                        setTimeout(()=>{
+                            addWarning('finishReason: '+finished_reason,false, 'fail_dialog')
+                        },500)
+                    }
+
                 } catch {
                     text = '<pre>' + JSON.stringify(data) + '</pre>';
                     try {
@@ -1788,7 +1795,7 @@ async function geminiStreamChat(fileUri, data) {
                     try {
                         let jsonData = JSON.parse(part.substring('data: '.length));
                         if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            story += jsonData.candidates?.[0]?.content?.parts?.[0]?.text;
+                            story += jsonData.candidates[0].content?.parts[0].text;
                         }else if(jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code){
                             let code = jsonData.candidates[0].content.parts[0].executableCode.code;
                             let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
@@ -1800,6 +1807,14 @@ async function geminiStreamChat(fileUri, data) {
                             let ce_output =  jsonData.candidates[0].content.parts[0].codeExecutionResult.output
                             story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
                         }
+
+                        let finished_reason = jsonData.candidates[0].finishReason ?? '';
+                        if(finished_reason && finished_reason !== 'STOP'){
+                            setTimeout(()=>{
+                                addWarning('finishReason: '+finished_reason,false, 'fail_dialog')
+                            },500)
+                        }
+
                     } catch (error) {
                         addWarning(error, false);
                         console.error("Error:", error);
