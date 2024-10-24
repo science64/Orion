@@ -13,6 +13,7 @@ let last_cnt = '';
 let last_user_input = '';
 let is_chat_enabled = true;
 let SITE_TITLE = "Orion";
+let js_code = '';
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -149,7 +150,6 @@ options.onclick = () => {
     if (cvns && is_mobile) {
         cvns.style.display = 'none'; // if open will be closed on mobile
     }
-    console.log('oppp')
 
     setOptions();
 }
@@ -513,7 +513,7 @@ let chat_textarea = document.querySelector(".chat-input textarea");
 
 function startChat() {
     if (!is_chat_enabled) {
-        addWarning('Chat is busy. Please wait!');
+        //addWarning('Chat is busy. Please wait!');
         return false;
     }
     let input_text = chat_textarea.value;
@@ -825,8 +825,6 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                     "mode": "ANY"
                 }
             };
-        } else {
-            console.log('g: do not has tool')
         }
     }
 
@@ -856,15 +854,14 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             if (typeof data === "object") {
                 try {
                     text = data.candidates[0].content.parts[0]?.text ?? '';
-                    if (!text) {
-                        let g_tool = data.candidates[0].content.parts[0]?.functionCall ?? '';
-                        if (g_tool) {
-                            toolHandle(g_tool);
-                        } else {
-                            addWarning('Error: Unexpected response', true, 'fail_dialog')
-                        }
-
+                    let g_tool = data.candidates[0].content.parts[0]?.functionCall ?? '';
+                    if (g_tool) {
+                        toolHandle(g_tool);
                     }
+                    if (!text && !g_tool) {
+                        addWarning('Error: Unexpected response', true, 'fail_dialog')
+                    }
+
                     let finished_reason = data.candidates[0].finishReason ?? '';
                     if(finished_reason && finished_reason !== 'STOP'){
                         setTimeout(()=>{
@@ -873,6 +870,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                     }
 
                 } catch {
+                    console.log('catch')
                     text = '<pre>' + JSON.stringify(data) + '</pre>';
                     try {
                         // Verify if it is an error with the api key being not valid
@@ -888,7 +886,9 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             } else {
                 text = data;
             }
-            addConversation('assistant', text);
+            if(text){
+                addConversation('assistant', text);
+            }
 
         })
         .catch(error => {
@@ -1270,13 +1270,17 @@ function enableAudioFeature() {
         elabs_api_key = input_ele.value.trim();
         localStorage.setItem('elabs_api_key', elabs_api_key)
         addWarning('Audio feature enabled', true)
-        audio_txt_status.innerText = 'Audio is enabled!'
+        if(audio_txt_status){
+            audio_txt_status.innerText = 'Audio is enabled!'
+        }
     } else {
         if (!elabs_api_key) {
             addWarning('Ops. No key provided!', false)
         } else {
             addWarning('Audio feature enabled', true)
-            audio_txt_status.innerText = 'Audio is enabled!'
+           if(audio_txt_status){
+               audio_txt_status.innerText = 'Audio is enabled!'
+           }
         }
     }
 
@@ -1286,20 +1290,25 @@ function enableAudioFeature() {
 function needToolUse(last_user_input) {
     let lui = last_user_input.trim();
     let cmd = lui.match(/^[a-z]+:/i)?.[0];
-    return cmd === "search:" || cmd === 's:';
-    // If it has some command to search will need to use tools
-
-
+    let cmd_list = [
+        'search:', 's:',
+        'javascript:', 'js:'
+    ]
+    return cmd_list.includes(cmd);
 }
 
 function whichTool(last_user_input) {
+    console.log(last_user_input)
     let lui = last_user_input.trim();
     let cmd = lui.match(/^[a-z]+:/i)?.[0] ?? '';
-    if ((cmd === "search:" || cmd === 's:')) {
+    if (cmd === "search:" || cmd === 's:') {
         return 'googleSearch';
+    } else if (cmd === 'javascript:' || cmd === 'js:') {
+        return 'javascriptCodeExecution';
     }
     return '';
 }
+
 
 function commandManager(text) {
     text = text.trim() + " ";
@@ -1469,10 +1478,8 @@ async function streamChat(can_use_tools = true) {
                 }
                 if (chosen_platform === 'anthropic') {
                     data.tools = [the_tool];
-                    data.tool_choice = {"type": "tool", "name": "googleSearch"};
+                    data.tool_choice = {"type": "tool", "name": tool_name};
                 }
-            } else {
-                console.log('do not has tool')
             }
         }
     }
@@ -1744,7 +1751,6 @@ async function geminiStreamChat(fileUri, data) {
             console.log('has not tool')
         }
     }
-
     const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${api_key}`;
     let first_response = true;
     try {
@@ -2041,8 +2047,49 @@ start_msg.onmouseleave = () => {
 chatButton.onmouseover = () => {
     document.title = 'Send to ' + model + ' -> ' + chosen_platform;
 }
+
 chatButton.onmouseleave = () => {
     document.title = doc_title;
 }
 
+window.addEventListener('online', () => {
+    addWarning("You are online again!", false,'success_dialog')
+});
 
+window.addEventListener('offline', () => {
+    addWarning("You are offline!", false,'fail_dialog')
+});
+
+
+function javascriptCodeExecution(obj) {
+    console.log('js exec')
+    console.log(obj)
+    toggleAnimation(true);
+    js_code = obj.code
+        .replace(/\\n/g, "\n")
+        .replace(/\\"/g, "'")
+        .replace(/\\'/g, "'")
+        .replace(/console\.log/g, "")
+        .replace(/document\.write/, "")
+        .replace("<script>", "")
+        .replace("<script", "")
+        .replace("</script>", "");
+    console.log(js_code)
+    let msg = `The AI want to execute the following code: <button class="accept_code_execution" onclick="executeJsCode(js_code)">Accept</button> <pre><code class="javascript language-javascript hljs">${js_code}</code></pre>`;
+    addWarning(msg, false)
+    setTimeout(()=>{
+        hljs.highlightAll();
+    },500)
+}
+
+async function executeJsCode(code) {
+    js_code = ''; // reset
+    let response;
+    try {
+        response = await eval(code)
+    }catch(error){
+        response = error;
+    }
+    chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${response}</span>`;
+    document.querySelector("#send").click();
+}

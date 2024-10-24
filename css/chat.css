@@ -6,6 +6,29 @@ html, body {
 }
 
 
+.accept_code_execution{
+    background-color: #7d776e;
+    display: block;
+    margin-left: 44%;
+    margin-top: 6px;
+    color: #0bff15;
+    font-weight: 700;
+    padding: 5px 7px;
+    border: 2px solid #ffffff;
+    border-radius: 4px;
+}
+
+.js_output{
+    background-color: #60fc67a6;
+    padding: 7px;
+    width: fit-content;
+    border-radius: 4px;
+    color: #000000;
+    display: block;
+    margin-top: 5px;
+}
+
+
 .code_outcome{
     padding: 6px 7px;
     border-radius: 4px;

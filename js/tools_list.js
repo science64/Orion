@@ -21,6 +21,25 @@ tools_list.openai_compatible = {
         },
         "strict": true
     },
+    javascriptCodeExecution: {
+        "type": "function",
+        "function": {
+            "name": "javascriptCodeExecution",
+            "description": "Use this function to interact with the user's computer by executing JavaScript code.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "The code to be executed in the user browser. The response will be returned to you"
+                    }
+                },
+                "required": ["code"],
+                "additionalProperties": false
+            }
+        },
+        "strict": true
+    }
 }
 
 
@@ -44,7 +63,26 @@ tools_list.google_compatible = {
                     }
                 }
             ]
-        }
+        },
+    javascriptCodeExecution: {
+        "functionDeclarations": [
+            {
+                "name": "javascriptCodeExecution",
+                "description": "Use this function to interact with the user's computer by executing JavaScript code.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "code": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "code"
+                    ]
+                }
+            }
+        ]
+    }
 }
 
 
@@ -62,6 +100,21 @@ tools_list.anthropic_compatible = {
                 }
             },
             "required": ["term"]
+        }
+    },
+
+    javascriptCodeExecution: {
+        "name": "javascriptCodeExecution",
+        "description": "Use this function to interact with the user's computer by executing JavaScript code.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "description": "The code to be executed in the user browser. The response will be returned to you"
+                }
+            },
+            "required": ["code"]
         }
     }
 };
@@ -83,6 +136,24 @@ tools_list.cohere_compatible = {
                     }
                 },
                 "required": ["term"]
+            }
+        }
+    },
+
+    javascriptCodeExecution: {
+        "type": "function",
+        "function": {
+            "name": "javascriptCodeExecution",
+            "description": "Use this function to interact with the user's computer by executing JavaScript code.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "type": "string",
+                        "description": "The code to be executed in the user browser. The response will be returned to you"
+                    }
+                },
+                "required": ["code"]
             }
         }
     },
