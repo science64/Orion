@@ -14,6 +14,7 @@ let last_user_input = '';
 let is_chat_enabled = true;
 let SITE_TITLE = "Orion";
 let js_code = '';
+let temp_safe_mode = false;
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -55,6 +56,7 @@ let PLATFORM_DATA = {
         models: [
             "command-r-plus-08-2024",
             "command-r-plus-04-2024",
+            "c4ai-aya-expanse-32b",
             "c4ai-aya-23-35b",
             "command-light"
         ],
@@ -192,7 +194,12 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
     if (role === 'user') {
         div.classList.add('user');
         cnt = converter.makeHtml(content);
-        div.innerHTML = cnt;
+        if(temp_safe_mode){
+            div.innerText = cnt;
+        }else {
+            div.innerHTML = cnt;
+        }
+        temp_safe_mode = false;
         if (base64String) {
             let media = mimeType.split("/")[0];
             if (media === 'image') {
@@ -222,8 +229,14 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
         }
         if (add_to_document) {
             div.classList.add('bot');
+
             cnt = converter.makeHtml(content);
-            div.innerHTML = cnt;
+            if(temp_safe_mode){
+                div.innerText = cnt;
+            }else {
+                div.innerHTML = cnt;
+            }
+            temp_safe_mode = false;
             genAudio(content, div);
         } else {
             let lastBot = document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length - 1];
@@ -2090,6 +2103,7 @@ async function executeJsCode(code) {
     }catch(error){
         response = error;
     }
+    //temp_safe_mode = true; // if true disable html
     chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${response}</span>`;
     document.querySelector("#send").click();
 }
