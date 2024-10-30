@@ -15,6 +15,7 @@ let is_chat_enabled = true;
 let SITE_TITLE = "Orion";
 let js_code = '';
 let temp_safe_mode = false;
+let azure_endpoint = localStorage.getItem('azure_endpoint');
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -91,6 +92,17 @@ let PLATFORM_DATA = {
         get_models_endpoint: "http://localhost:11434/v1/models",
         endpoint: "http://localhost:11434/v1/chat/completions"
     }
+}
+
+
+if(azure_endpoint){
+    PLATFORM_DATA.azure = {
+        models: [
+            "gpt-4o-mini"
+        ],
+        name: "Azure",
+        endpoint: azure_endpoint
+    };
 }
 
 const language_extension = {
@@ -194,9 +206,9 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
     if (role === 'user') {
         div.classList.add('user');
         cnt = converter.makeHtml(content);
-        if(temp_safe_mode){
+        if (temp_safe_mode) {
             div.innerText = cnt;
-        }else {
+        } else {
             div.innerHTML = cnt;
         }
         temp_safe_mode = false;
@@ -231,9 +243,9 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
             div.classList.add('bot');
 
             cnt = converter.makeHtml(content);
-            if(temp_safe_mode){
+            if (temp_safe_mode) {
                 div.innerText = cnt;
-            }else {
+            } else {
                 div.innerHTML = cnt;
             }
             temp_safe_mode = false;
@@ -313,16 +325,16 @@ function removeChat(div, id) {
                     `<p>Are you sure you want to delete?</p>
                     <p>This conversation has ${tot_msgs} messages.</p>
                     <p>If yes, click again to delete.</p>`;
-                addWarning(alert_msg,false)
+                addWarning(alert_msg, false)
                 div.classList.add('del_caution')
                 return false;
             }
         }
-        document.querySelectorAll(".del_caution").forEach((dc=>{
+        document.querySelectorAll(".del_caution").forEach((dc => {
             dc.classList.remove('del_caution');
         }))
 
-        document.querySelectorAll(".confirm_deletion").forEach((cd=>{
+        document.querySelectorAll(".confirm_deletion").forEach((cd => {
             cd.classList.remove('confirm_deletion');
         }))
 
@@ -785,6 +797,8 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
     if (cmd) {
+       d = data.contents.splice((data.contents.length - 1), 1);
+       console.log(d)
         data.contents.push({
             "role": 'user',
             "parts": [
@@ -841,9 +855,12 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
         }
     }
 
-   if(!data.tools){
-       data.tools= [{'code_execution': {}}];
-   }
+    if (!data.tools) {
+        if(last_user_input.match(/^cc:/)){
+            // code execution command
+            data.tools = [{'code_execution': {}}];
+        }
+    }
 
 
     if (with_stream) {
@@ -876,10 +893,10 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                     }
 
                     let finished_reason = data.candidates[0].finishReason ?? '';
-                    if(finished_reason && finished_reason !== 'STOP'){
-                        setTimeout(()=>{
-                            addWarning('finishReason: '+finished_reason,false, 'fail_dialog')
-                        },500)
+                    if (finished_reason && finished_reason !== 'STOP') {
+                        setTimeout(() => {
+                            addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
+                        }, 500)
                     }
 
                 } catch {
@@ -899,7 +916,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             } else {
                 text = data;
             }
-            if(text){
+            if (text) {
                 addConversation('assistant', text);
             }
 
@@ -1283,7 +1300,7 @@ function enableAudioFeature() {
         elabs_api_key = input_ele.value.trim();
         localStorage.setItem('elabs_api_key', elabs_api_key)
         addWarning('Audio feature enabled', true)
-        if(audio_txt_status){
+        if (audio_txt_status) {
             audio_txt_status.innerText = 'Audio is enabled!'
         }
     } else {
@@ -1291,9 +1308,9 @@ function enableAudioFeature() {
             addWarning('Ops. No key provided!', false)
         } else {
             addWarning('Audio feature enabled', true)
-           if(audio_txt_status){
-               audio_txt_status.innerText = 'Audio is enabled!'
-           }
+            if (audio_txt_status) {
+                audio_txt_status.innerText = 'Audio is enabled!'
+            }
         }
     }
 
@@ -1455,7 +1472,7 @@ async function streamChat(can_use_tools = true) {
         }
     if (chosen_platform === 'anthropic') {
         data.max_tokens = 4096;
-        if(system_prompt_text){
+        if (system_prompt_text) {
             data.system = system_prompt_text;
         }
     }
@@ -1468,6 +1485,10 @@ async function streamChat(can_use_tools = true) {
         "anthropic-version": "2023-06-01", // for Anthropic
         "anthropic-dangerous-direct-browser-access": "true"
     };
+
+    if(chosen_platform === "azure"){
+        HTTP_HEADERS['api-key'] = api_key;
+    }
     if (chosen_platform === 'ollama') {
         HTTP_HEADERS = {};
     }
@@ -1496,7 +1517,6 @@ async function streamChat(can_use_tools = true) {
             }
         }
     }
-
 
 
     const requestOptions = {
@@ -1817,23 +1837,23 @@ async function geminiStreamChat(fileUri, data) {
                         let jsonData = JSON.parse(part.substring('data: '.length));
                         if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
                             story += jsonData.candidates[0].content?.parts[0].text;
-                        }else if(jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code){
+                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code) {
                             let code = jsonData.candidates[0].content.parts[0].executableCode.code;
                             let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
                             code_lang = code_lang.toLowerCase();
                             code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
                             story += code;
-                        }else if(jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output){
+                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
                             let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
-                            let ce_output =  jsonData.candidates[0].content.parts[0].codeExecutionResult.output
+                            let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output
                             story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
                         }
 
                         let finished_reason = jsonData.candidates[0].finishReason ?? '';
-                        if(finished_reason && finished_reason !== 'STOP'){
-                            setTimeout(()=>{
-                                addWarning('finishReason: '+finished_reason,false, 'fail_dialog')
-                            },500)
+                        if (finished_reason && finished_reason !== 'STOP') {
+                            setTimeout(() => {
+                                addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
+                            }, 500)
                         }
 
                     } catch (error) {
@@ -2066,11 +2086,11 @@ chatButton.onmouseleave = () => {
 }
 
 window.addEventListener('online', () => {
-    addWarning("You are online again!", false,'success_dialog')
+    addWarning("You are online again!", false, 'success_dialog')
 });
 
 window.addEventListener('offline', () => {
-    addWarning("You are offline!", false,'fail_dialog')
+    addWarning("You are offline!", false, 'fail_dialog')
 });
 
 
@@ -2090,9 +2110,9 @@ function javascriptCodeExecution(obj) {
     console.log(js_code)
     let msg = `The AI want to execute the following code: <button class="accept_code_execution" onclick="executeJsCode(js_code)">Accept</button> <pre><code class="javascript language-javascript hljs">${js_code}</code></pre>`;
     addWarning(msg, false)
-    setTimeout(()=>{
+    setTimeout(() => {
         hljs.highlightAll();
-    },500)
+    }, 500)
 }
 
 async function executeJsCode(code) {
@@ -2100,7 +2120,7 @@ async function executeJsCode(code) {
     let response;
     try {
         response = await eval(code)
-    }catch(error){
+    } catch (error) {
         response = error;
     }
     //temp_safe_mode = true; // if true disable html

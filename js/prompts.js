@@ -712,3 +712,7 @@ especial_prompts.reply = "You are tasked with acting as a human replying to a tw
 especial_prompts.javascript = "{{USER_INPUT}}";
 especial_prompts.js = especial_prompts.javascript;
 
+
+// Code execution - just for Gemini models
+especial_prompts.cc = "{{USER_INPUT}}";
+

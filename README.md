@@ -66,9 +66,10 @@ Search: Perform quick searches and retrieve relevant information with ease from 
 Please perform this functionality with caution and always check code before accepting execution.
 - Example: `javascript: How Many R's in 'Strawberry'?` or `js: How Many R's in 'Strawberry'?`
 - This will allow the AI to generate Javascript code that will run in your browser.
-
-- **Note**: When using Google Gemini you can ask it to execute codes directly in Google's own remote environment. For now only 
-Python codes are executed. The code and output will be returned. No need for special commands, just ask.
+### Executing Python code in a remote environment
+- When using Google Gemini you can ask it to execute codes directly in Google's own remote environment. For now only 
+Python codes are executed. The code and output will be returned.
+- Command example: `cc: Run a python code to write "tseb eht sI noirO" in the inverse order`
 
 # Google CSE API Key
 To search using Google, you will need Google CSE (Custom Search Engine) API Key and CX.
