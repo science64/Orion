@@ -856,7 +856,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     }
 
     if (!data.tools) {
-        if(last_user_input.match(/^cc:/)){
+        if(last_user_input.match(/^py:|python:/)){
             // code execution command
             data.tools = [{'code_execution': {}}];
         }
