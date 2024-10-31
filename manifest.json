@@ -3,8 +3,8 @@
   "short_name": "Orion",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FFFFFF",
-  "theme_color": "#F2F2F2",
+  "background_color": "#7578e1",
+  "theme_color": "#7578e1",
   "icons": [
     {
       "src": "imgs/icons/orion_192x192.png",
