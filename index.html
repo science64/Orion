@@ -9,17 +9,26 @@
     <title>Orion</title>
     <script>
         let chat_id = new Date().getTime();
-    </script>
 
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(registration => console.log('Service Worker registered', registration))
+                .catch(error => console.log('Failed to register Service Worker:', error));
+        }
+
+    </script>
     <link rel="icon" href="favicon.png">
     <link rel="stylesheet" href="css/highlight_js/themes/github-dark-dimmed.css?v=1.1.2">
     <link rel="stylesheet" href="css/chat.css?v=1.2.6">
+    <link rel="manifest" href="manifest.json">
+
     <meta property="og:type" content="article">
     <meta property="og:title" content="Orion - Chat interface for AI models.">
     <meta property="og:description" content="Orion - Chat interface for IA models">
     <meta property="og:image" content="https://eliaspereirah.github.io/OrionChat/imgs/screenshot.png">
     <meta property="og:locale" content="en-US">
     <meta property="og:url" content="https://eliaspereirah.github.io/OrionChat/">
+
 </head>
 <body>
 <div class="container">
