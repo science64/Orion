@@ -1,4 +1,4 @@
-const CACHE_NAME = 'orion_cache_v4';
+const CACHE_NAME = 'orion_cache_v0';
 const urlsToCache = [
     './index.html',
     './',
