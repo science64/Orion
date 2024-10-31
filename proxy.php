@@ -1,5 +1,10 @@
 <?php
 
+// Note: This proxy code will use the IP address of where it is hosted, the purpose is not to mask or anonymize the user,
+// just to get rid of CORS errors.
+
+// GitHub Pages does not support PHP, so this proxy code will not work in such an environment.
+
 /*
  *
 To get around CORS errors when working with SambaNova or NVIDIA, a proxy may be necessary.
@@ -83,4 +88,3 @@ if ($post_data) {
     curl_close($ch);
     exit();
 }
-

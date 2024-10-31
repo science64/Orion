@@ -9,6 +9,8 @@ It provides a unified platform for chatting and exploring multiple large languag
 - 🟡 Anthropic (Claude models)
 - 🚀 Groq Inc. – Optimized for fast inference (open source models) ⚡️
 - ⚡️ Cerebras – Also optimized for fast inference 🚀
+- 🟢 NVIDIA – With its powerful llama-3.1-nemotron-70b-instruct (proxy is needed)
+- 🟣 SambaNova - Fast inference and support for Meta-Llama-3.1-405B-Instruct 🦙🦙🦙.🦙
 
 It's like assembling the ultimate superhero team of AI
 
@@ -39,19 +41,20 @@ user-friendly interface.
 Your API keys are stored locally using `localStorage`, and requests are sent directly to the official provider's API
 (OpenAI, Anthropic, Google, Groq, Cerebras) without routing through any external proxy.
 
+
 ### Free API Keys
 Some companies offer free API access. Check their terms and conditions before you get started.
 - **Google Gemini:** [Get your key](https://aistudio.google.com/app/apikey)
 - **Cerebras:** [Sign up for an API key](https://cloud.cerebras.ai/platform/)
+- **Cohere** [Get your key](https://dashboard.cohere.com/api-keys)
 - **Groq:** [Request a key](https://console.groq.com/keys)
+- **NVIDIA:** [NVIDIA Key](https://build.nvidia.com/nvidia/llama-3_1-nemotron-70b-instruct)
+- **SambaNova** [SambaNova Key](https://cloud.sambanova.ai/apis)
 
 ### Paid API Keys
 
 - **OpenAI:** [Get your key](https://platform.openai.com/api-keys)
 - **Anthropic:** [Sign up for an API key](https://console.anthropic.com/settings/keys)
-
-### Free and Paid API Keys
-- **Cohere** [Get your key](https://dashboard.cohere.com/api-keys)
 
 # Special Commands
 Use special commands to perform an action quickly and easily.
@@ -81,6 +84,49 @@ To search using Google, you will need Google CSE (Custom Search Engine) API Key 
   but not in-depth information. 
 In some cases, AI may fail to provide an answer or provide an incorrect answer due to a lack of broader context. 
 Keep this in mind when using this tool.
+
+# Proxy
+To get around CORS errors when working with SambaNova or NVIDIA, a proxy may be necessary.
+
+If you are using Orion via localhost or a hosting with PHP support, you can use the PHP proxy code available in this 
+repository (`proxy.php` file) for this you will also need to add the following JavaScript code in plugins.
+
+To do this, click on "Options" -> Plugins and paste the JavaScript code provided below:
+
+
+```javascript
+let page_url = new URL(document.URL);
+page_url = page_url.origin + page_url.pathname;
+if (page_url.charAt(page_url.length - 1) === '/') {
+page_url = page_url.slice(0, -1);
+}
+endpoint = page_url+"/proxy.php?platform="+chosen_platform;
+
+function setProxyEndpoint(){
+if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
+let proxy_endpoint = page_url+"/proxy.php?platform="+chosen_platform;
+if(proxy_endpoint !== endpoint){
+let ra = `<p>You have changed platforms and are now using <b>${chosen_platform}</b> which requires proxy usage.
+To activate the proxy, reload the page.</p><p><button onclick="reloadPage()">Reload Page</button></p>`;
+addWarning(ra,false, 'fail_dialog')
+}
+}
+}
+
+let button_send = document.querySelector("#send");
+chat_textarea.addEventListener('keyup', (event) => {
+if (event.key === 'Enter' && !event.shiftKey) {
+setProxyEndpoint();
+}
+});
+
+button_send.addEventListener("click", ()=>{
+setProxyEndpoint()
+})
+```
+
+Be careful when using any other proxy as sensitive data will be passed through it like your API key and messages. 
+Use only trusted services.
 
 ## Awesome Prompts
 150+ awesome prompts from [🧠 Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
