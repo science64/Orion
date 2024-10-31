@@ -5,7 +5,13 @@ html, body {
     background-color: #fbfbfb;
 }
 
-
+#plugin_code, #plugin_url{
+    width: 80%;
+}
+#plugin_code{
+    min-height: 150px;
+    border-radius: 4px;
+}
 .accept_code_execution{
     background-color: #7d776e;
     display: block;
@@ -301,7 +307,7 @@ th {
     border: 1px solid #232323;
     border-radius: 4px;
 }
-.more_opt_btn{
+.more_opt_btn, .plugin_opt_btn{
     background-color: #07d95e !important;
     color: #fff !important;
     border-bottom-right-radius: 0 !important;

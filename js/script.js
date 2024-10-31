@@ -16,6 +16,7 @@ let SITE_TITLE = "Orion";
 let js_code = '';
 let temp_safe_mode = false;
 let azure_endpoint = localStorage.getItem('azure_endpoint');
+u = '';
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -34,6 +35,22 @@ let PLATFORM_DATA = {
         ],
         name: "OpenAI",
         endpoint: "https://api.openai.com/v1/chat/completions"
+    },
+    sambanova: {
+        models : [
+            "Meta-Llama-3.1-405B-Instruct",
+            "Llama-3.2-90B-Vision-Instruct"
+        ],
+        name: "SambaNova",
+        endpoint : "https://api.sambanova.ai/v1/chat/completions"
+
+    },
+    nvidia: {
+        models: [
+            "nvidia/llama-3.1-nemotron-70b-instruct"
+        ],
+        name: "NVIDIA",
+        endpoint: "https://integrate.api.nvidia.com/v1/chat/completions"
     },
     google: {
         models: [
@@ -95,7 +112,7 @@ let PLATFORM_DATA = {
 }
 
 
-if(azure_endpoint){
+if (azure_endpoint) {
     PLATFORM_DATA.azure = {
         models: [
             "gpt-4o-mini"
@@ -797,9 +814,11 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
     if (cmd) {
-       d = data.contents.splice((data.contents.length - 1), 1);
-       console.log(d)
-        data.contents.push({
+        data.contents[0].pop(); // remove the last input - something like cmd: prompt
+
+        // add the last input but without the "cmd:", just the prompt
+        // note: cmd variable will be clean at this point
+        data.contents[0].push({
             "role": 'user',
             "parts": [
                 {
@@ -856,7 +875,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     }
 
     if (!data.tools) {
-        if(last_user_input.match(/^py:|python:/)){
+        if (last_user_input.match(/^py:|python:/)) {
             // code execution command
             data.tools = [{'code_execution': {}}];
         }
@@ -900,7 +919,6 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                     }
 
                 } catch {
-                    console.log('catch')
                     text = '<pre>' + JSON.stringify(data) + '</pre>';
                     try {
                         // Verify if it is an error with the api key being not valid
@@ -1004,7 +1022,7 @@ function setOptions() {
     })
     platform_options += `</select></div>`;
 
-
+    let plugin_option = `<button class="plugin_opt_btn" onclick="pluginOptions()">Plugins</button>`;
     let more_option = `<button class="more_opt_btn" onclick="moreOptions()">More Options</button>`;
 
     let cnt =
@@ -1016,7 +1034,9 @@ function setOptions() {
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
          <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
          ${platform_info}
+         <p>${plugin_option}</p>
          <p>${more_option}</p>
+        
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
 
@@ -1048,6 +1068,69 @@ function setOptions() {
     }, 500)
 
 }
+
+function loadPlugins(){
+    let plugin_url =  localStorage.getItem("plugin_url");
+    if(plugin_url){
+        let sc = document.createElement('script');
+        sc.src = plugin_url.trim();
+        document.body.append(sc);
+    }
+    let plugin_code =  localStorage.getItem("plugin_code");
+    if(plugin_code){
+        let sc_inline = document.createElement('script');
+        sc_inline.innerHTML = plugin_code.trim();
+        document.body.append(sc_inline);
+
+    }
+}
+
+function savePlugin(){
+    let plugin_url = document.querySelector("#plugin_url");
+    let plugin_code =  document.querySelector("#plugin_code");
+    if(plugin_code && plugin_code.value.trim()){
+        plugin_code = plugin_code.value.trim();
+        if(plugin_code){
+            localStorage.setItem("plugin_code", plugin_code);
+        }
+    }else {
+        localStorage.removeItem("plugin_code");
+    }
+    if(plugin_url && plugin_url.value.trim()){
+        plugin_url = plugin_url.value.trim();
+        if(plugin_url){
+            localStorage.setItem('plugin_url', plugin_url)
+        }
+    }else {
+        localStorage.removeItem("plugin_url");
+    }
+    closeDialogs();
+}
+
+function pluginOptions() {
+    closeDialogs(); // close opened dialogs before show options dialog
+    let plugin_url =  localStorage.getItem("plugin_url")
+    let plugin_code =  localStorage.getItem("plugin_code");
+    let value_plugin_code = '';
+    if(plugin_code){
+        value_plugin_code = `${plugin_code}`;
+    }
+
+    let value_plugin_url = '';
+    if(plugin_url){
+        value_plugin_url = `value="${plugin_url}"`;
+    }
+    let cnt =
+        `<div>
+         <p>Add new functionality by adding a script.</p>
+         <input ${value_plugin_url} placeholder="JavaScript URL" type="url" id="plugin_url">
+         <p>and/or code</p>
+         <textarea placeholder="JavaScript code" id="plugin_code">${value_plugin_code}</textarea>
+         <p><button onclick="savePlugin()">Save Plugin</button></p>
+         </div>`;
+
+    createDialog(cnt, 0, 'optionsDialog');
+}// end addPlugin
 
 
 function moreOptions(show = 'all') {
@@ -1211,7 +1294,7 @@ orderTopics();
 
 function ollamaGuide() {
     if (is_mobile) {
-        console.log('User seem to be in mobile device')
+        console.log('User seems to be on a mobile device')
         return false;
     }
     let this_domain = `${location.protocol}//${location.hostname}`;
@@ -1328,7 +1411,6 @@ function needToolUse(last_user_input) {
 }
 
 function whichTool(last_user_input) {
-    console.log(last_user_input)
     let lui = last_user_input.trim();
     let cmd = lui.match(/^[a-z]+:/i)?.[0] ?? '';
     if (cmd === "search:" || cmd === 's:') {
@@ -1486,7 +1568,7 @@ async function streamChat(can_use_tools = true) {
         "anthropic-dangerous-direct-browser-access": "true"
     };
 
-    if(chosen_platform === "azure"){
+    if (chosen_platform === "azure") {
         HTTP_HEADERS['api-key'] = api_key;
     }
     if (chosen_platform === 'ollama') {
@@ -2061,7 +2143,8 @@ function toolHandle(data) {
             let arguments = JSON.parse(tool.arguments);
             this[fn_name](arguments);
         } else {
-            addWarning('A tool was expected, got none.', false)
+            addWarning(data, false);
+           // addWarning('A tool was expected, got none.', false)
         }
     }
 }
@@ -2095,8 +2178,6 @@ window.addEventListener('offline', () => {
 
 
 function javascriptCodeExecution(obj) {
-    console.log('js exec')
-    console.log(obj)
     toggleAnimation(true);
     js_code = obj.code
         .replace(/\\n/g, "\n")
@@ -2107,7 +2188,6 @@ function javascriptCodeExecution(obj) {
         .replace("<script>", "")
         .replace("<script", "")
         .replace("</script>", "");
-    console.log(js_code)
     let msg = `The AI want to execute the following code: <button class="accept_code_execution" onclick="executeJsCode(js_code)">Accept</button> <pre><code class="javascript language-javascript hljs">${js_code}</code></pre>`;
     addWarning(msg, false)
     setTimeout(() => {
@@ -2126,4 +2206,10 @@ async function executeJsCode(code) {
     //temp_safe_mode = true; // if true disable html
     chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${response}</span>`;
     document.querySelector("#send").click();
+}
+
+loadPlugins(); // load plugins
+
+function reloadPage(){
+    document.location = document.location.href;
 }
