@@ -1,5 +1,7 @@
-const CACHE_NAME = 'orion_cache_v2';
+const CACHE_NAME = 'orion_cache_v3';
 const urlsToCache = [
+    './index.html',
+    './',
     './css/chat.css',
     './css/highlight_js/themes/github-dark-dimmed.css',
     './favicon.png',
@@ -7,7 +9,6 @@ const urlsToCache = [
     './imgs/new-chat.png',
     './imgs/screenshot.png',
     './imgs/settings.png',
-    './index.html',
     './js/4devs.js',
     './js/google_cse.js',
     './js/library/highlight.js',
