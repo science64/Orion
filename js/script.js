@@ -47,6 +47,7 @@ let PLATFORM_DATA = {
     },
     nvidia: {
         models: [
+            "meta/llama-3.1-405b-instruct",
             "nvidia/llama-3.1-nemotron-70b-instruct"
         ],
         name: "NVIDIA",
