@@ -1,4 +1,11 @@
 <?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, api-key, x-api-key, anthropic-version, anthropic-dangerous-direct-browser-access, Authorization");
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
 
 // Note: This proxy code will use the IP address of where it is hosted, the purpose is not to mask or anonymize the user,
 // just to get rid of CORS errors.
@@ -47,7 +54,7 @@ button_send.addEventListener("click", ()=>{
 
 */
 
-ini_set('display_errors', 1);
+//ini_set('display_errors', 1);
 $platform = $_GET["platform"] ?? '';
 $post_data = file_get_contents('php://input');
 if ($post_data) {
@@ -63,19 +70,18 @@ if ($post_data) {
     $received_headers = getallheaders();
     $headers_to_send = [];
     foreach ($received_headers as $key => $value) {
-        if ($key === "Authorization") {
+        if (strtolower($key) === "authorization") {
             $headers_to_send[] = "$key: $value";
         }
     }
     $headers_to_send[] = "Content-Type: application/json";
-
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers_to_send);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $arr = json_decode($post_data);
     if(!empty($arr->stream)){
-        header('Content-Type: text/event-stream');
+          header('Content-Type: text/event-stream');
     }
     header('Cache-Control: no-cache');
     curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $data) {
