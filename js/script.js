@@ -2212,5 +2212,36 @@ async function executeJsCode(code) {
 loadPlugins(); // load plugins
 
 function reloadPage(){
+    // don't remove
     document.location = document.location.href;
 }
+
+
+
+// When in stream mode the scrolling may get blocked, this should free up the scrolling
+function unlockScroll(){
+    let chat_msg = document.querySelector("#chat-messages");
+    if(chat_msg){
+        let last_position = chat_msg.scrollTop;
+        document.addEventListener("keydown", (event)=>{
+            if(event.key === "ArrowDown"){
+                if(chat_msg.scrollTop <= last_position){
+                    chat_msg.scrollTop += 40;
+                    console.log('forcing scroll down')
+                }else{
+                    console.log('all fine: down')
+                }
+                last_position = chat_msg.scrollTop;
+            }else if(event.key === "ArrowUp"){
+                if(chat_msg.scrollTop >= last_position){
+                    chat_msg.scrollTop -= 40;
+                    console.log('forcing scroll up')
+                }else{
+                    console.log('all fine: up')
+                }
+                last_position = chat_msg.scrollTop;
+            }
+        })
+    }
+}
+unlockScroll();
