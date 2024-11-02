@@ -1,7 +1,4 @@
-/// {"authors": {"70%": "AI", "30%": "Human"}} :)
-
-const CACHE_VERSION = 'v12.0.6';
-
+const CACHE_VERSION = 'v1.0.7';
 const CACHE_NAME = `orion_cache_${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
@@ -33,102 +30,99 @@ self.addEventListener('install', event => {
         caches.open(CACHE_NAME)
             .then(cache => {
                 console.log('Caching static assets...');
-                return cache.addAll(STATIC_ASSETS)
-                    .then(() => {
-                        console.log('Static assets cached successfully');
-                        return self.skipWaiting();
-                    });
+                return Promise.all(
+                    STATIC_ASSETS.map(url => {
+                        return cache.add(url).catch(err => {
+                            console.error(`Failed to cache ${url}:`, err);
+                        });
+                    })
+                );
             })
-            .catch(error => {
-                console.error('Cache installation failed:', error);
-                throw error;
+            .then(() => {
+                console.log('Static assets cached successfully');
+                return self.skipWaiting();
             })
     );
 });
 
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys()
-            .then(cacheNames => {
-                return Promise.all(
-                    cacheNames
-                        .filter(cacheName => {
-                            return cacheName.startsWith('orion_cache_') && cacheName !== CACHE_NAME;
-                        })
-                        .map(cacheName => {
-                            console.log('Removing old cache:', cacheName);
-                            return caches.delete(cacheName);
-                        })
-                );
-            })
-            .then(() => {
-                console.log('New service worker activated');
-                return self.clients.claim();
-            })
+        Promise.all([
+            caches.keys()
+                .then(cacheNames => {
+                    return Promise.all(
+                        cacheNames
+                            .filter(cacheName => {
+                                return cacheName.startsWith('orion_cache_') && cacheName !== CACHE_NAME;
+                            })
+                            .map(cacheName => {
+                                console.log('Removing old cache:', cacheName);
+                                return caches.delete(cacheName);
+                            })
+                    );
+                }),
+            self.clients.claim()
+        ])
     );
 });
 
 self.addEventListener('fetch', event => {
-    // Ignore non-GET requests and requests from different origins
-    if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+    if (event.request.method !== 'GET') {
         return;
     }
 
-    // Check if the request is for an API or dynamic content
-    const url = new URL(event.request.url);
-    if (event.request.headers.get('accept')?.includes('application/json') ||
-        url.pathname.includes('/api/') ||
-        event.request.headers.get('x-requested-with') === 'XMLHttpRequest') {
-        // Don't cache API/XHR requests - just fetch from network
-        return;
-    }
+    // Create a clean URL for matching
+    const requestURL = new URL(event.request.url);
+    const cleanURL = requestURL.pathname.replace(/^\//, '');  // Remove leading slash
 
     event.respondWith(
-        Promise.race([
-            new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Timeout')), 5000);
-            }),
+        caches.match(event.request)
+            .then(cachedResponse => {
+                if (cachedResponse) {
+                    // Return cached response immediately
+                    return cachedResponse;
+                }
 
-            caches.match(event.request)
-                .then(cachedResponse => {
-                    if (cachedResponse) {
-                        // Return cached response immediately
-                        return cachedResponse;
-                    }
+                return fetch(event.request)
+                    .then(networkResponse => {
+                        if (!networkResponse || !networkResponse.ok) {
+                            throw new Error('Network response was not ok');
+                        }
 
-                    // If not in cache, fetch from network
-                    return fetch(event.request)
-                        .then(networkResponse => {
-                            if (!networkResponse || !networkResponse.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-
-                            // Cache only static assets
-                            if (STATIC_ASSETS.some(asset => event.request.url.endsWith(asset))) {
-                                const responseToCache = networkResponse.clone();
-                                caches.open(CACHE_NAME)
-                                    .then(cache => {
-                                        cache.put(event.request, responseToCache);
-                                    });
-                            }
-
-                            return networkResponse;
+                        // Check if this is a static asset that should be cached
+                        const shouldCache = STATIC_ASSETS.some(asset => {
+                            const cleanAsset = asset.replace(/^\.\//, '');  // Remove leading ./
+                            return cleanURL.endsWith(cleanAsset);
                         });
-                })
-        ]).catch(error => {
-            console.error('Fetch handler failed:', error);
 
-            if (event.request.mode === 'navigate') {
-                return caches.match('./index.html');
-            }
+                        if (shouldCache) {
+                            const responseToCache = networkResponse.clone();
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    cache.put(event.request, responseToCache);
+                                })
+                                .catch(err => {
+                                    console.error('Failed to cache response:', err);
+                                });
+                        }
 
-            return new Response('Network error', {
-                status: 408,
-                headers: new Headers({
-                    'Content-Type': 'text/plain'
-                })
-            });
-        })
+                        return networkResponse;
+                    });
+            })
+            .catch(error => {
+                console.error('Fetch handler failed:', error);
+
+                if (event.request.mode === 'navigate') {
+                    return caches.match('./index.html');
+                }
+
+                return new Response('Network error', {
+                    status: 408,
+                    headers: new Headers({
+                        'Content-Type': 'text/plain'
+                    })
+                });
+            })
     );
 });
 

@@ -2221,7 +2221,6 @@ function reloadPage(){
 
 // When in stream mode the scrolling may get blocked, this should free up the scrolling
 function unlockScroll(){
-    console.log('uls')
     let chat_msg = document.querySelector("#chat-messages");
     if(chat_msg){
         let last_position = chat_msg.scrollTop;
@@ -2231,7 +2230,7 @@ function unlockScroll(){
                   //  chat_msg.scrollTop += 40;
                     console.log('forcing scroll down')
                 }else{
-                    console.log('all fine: down')
+                  //  console.log('all fine: down')
                 }
                 last_position = chat_msg.scrollTop;
             }else if(event.key === "ArrowUp"){
@@ -2239,7 +2238,7 @@ function unlockScroll(){
                    // chat_msg.scrollTop -= 40;
                     console.log('forcing scroll up')
                 }else{
-                   console.log('all fine: up')
+                   //console.log('all fine: up')
                 }
                 last_position = chat_msg.scrollTop;
             }
