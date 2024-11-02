@@ -4,24 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="description"
-          content="Try Orion. An AI chat interface for interacting with AI models from multiple providers (Gemini, OpenAI, Claude, Cerebras, Groq and Ollama). Try it now!">
+    <meta name="description" content="Orion: Open source, unified AI chat interface.">
     <title>Orion</title>
     <script>
         let chat_id = new Date().getTime();
     </script>
     <link rel="icon" href="favicon.png">
-    <link rel="stylesheet" href="css/highlight_js/themes/github-dark-dimmed.css?v=1.1.2">
-    <link rel="stylesheet" href="css/chat.css?v=1.2.6">
+    <link rel="stylesheet" href="css/highlight_js/themes/github-dark-dimmed.css?v=1.0.2">
+    <link rel="stylesheet" href="css/chat.css?v=1.0.2">
     <link rel="manifest" href="manifest.json">
-
     <meta property="og:type" content="article">
-    <meta property="og:title" content="Orion - Chat interface for AI models.">
-    <meta property="og:description" content="Orion - Chat interface for IA models">
+    <meta property="og:title" content="Orion">
+    <meta property="og:description" content="Orion: Open source, unified AI chat interface.">
     <meta property="og:image" content="https://eliaspereirah.github.io/OrionChat/imgs/screenshot.png">
     <meta property="og:locale" content="en-US">
     <meta property="og:url" content="https://eliaspereirah.github.io/OrionChat/">
-
 </head>
 <body>
 <div class="container">
@@ -41,9 +38,8 @@
             </div>
         </div>
     </div>
-
     <div class="chat">
-        <div id="chat-messages">
+        <div tabindex="-1" id="chat-messages">
             <div class="message start_msg"><p>Welcome to Orion!</p><br></div>
         </div>
         <div id="loading">
@@ -64,15 +60,15 @@
 </div> <!-- end container -->
 
 <script src="js/library/showdown@2.1.0.js?v=2.1.0"></script>
-<script src="js/library/highlight.js?v=1.1.1"></script>
-<script src="js/stt.js?v=1.1.1"></script>
-<script src="js/tts.js?v=1.1.1"></script>
-<script src="js/md5.js?v=0.0.1"></script>
-<script src="js/google_cse.js?v=1.0.2"></script>
-<script src="js/4devs.js?v=1.0.1"></script>
-<script src="js/prompts.js?v=1.1.5"></script>
-<script src="js/tools_list.js?v=1.3.2"></script>
-<script src="js/script.js?v=2.2.2"></script>
+<script src="js/library/highlight.js?v=11.9.0"></script>
+<script src="js/stt.js?v=1.0.0"></script>
+<script src="js/tts.js?v=1.0.0"></script>
+<script src="js/md5.js?v=1.0.0"></script>
+<script src="js/google_cse.js?v=1.0.0"></script>
+<script src="js/4devs.js?v=1.0.0"></script>
+<script src="js/prompts.js?v=1.0.0"></script>
+<script src="js/tools_list.js?v=1.0.0"></script>
+<script src="js/script.js?v=1.0.0"></script>
 <script src="js/sw_register.js"></script>
 </body>
 </html>

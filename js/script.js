@@ -399,14 +399,15 @@ function removeChat(div, id) {
  **/
 function newChat() {
     document.title = SITE_TITLE;
+    chat_id = new Date().getTime(); // generate a new chat_id
     let new_url = document.URL;
     new_url = new_url.split('?')[0];
     new_url = new_url.split("#")[0];
+    new_url += "#"+chat_id;
     history.pushState({url: new_url}, '', new_url);
 
     removeScreenConversation();
     conversations.messages = []; // clean old conversation
-    chat_id = new Date().getTime(); // generate a new chat_id
 
 
 }
@@ -2212,21 +2213,22 @@ async function executeJsCode(code) {
 loadPlugins(); // load plugins
 
 function reloadPage(){
-    // don't remove
-    document.location = document.location.href;
+    // this code can be used be plugins
+    document.location.reload()
 }
 
 
 
 // When in stream mode the scrolling may get blocked, this should free up the scrolling
 function unlockScroll(){
+    console.log('uls')
     let chat_msg = document.querySelector("#chat-messages");
     if(chat_msg){
         let last_position = chat_msg.scrollTop;
-        document.addEventListener("keydown", (event)=>{
+        chat_msg.addEventListener("keydown", (event)=>{
             if(event.key === "ArrowDown"){
                 if(chat_msg.scrollTop <= last_position){
-                    chat_msg.scrollTop += 40;
+                  //  chat_msg.scrollTop += 40;
                     console.log('forcing scroll down')
                 }else{
                     console.log('all fine: down')
@@ -2234,10 +2236,10 @@ function unlockScroll(){
                 last_position = chat_msg.scrollTop;
             }else if(event.key === "ArrowUp"){
                 if(chat_msg.scrollTop >= last_position){
-                    chat_msg.scrollTop -= 40;
+                   // chat_msg.scrollTop -= 40;
                     console.log('forcing scroll up')
                 }else{
-                    console.log('all fine: up')
+                   console.log('all fine: up')
                 }
                 last_position = chat_msg.scrollTop;
             }
@@ -2245,3 +2247,18 @@ function unlockScroll(){
     }
 }
 unlockScroll();
+
+document.addEventListener('keydown', function(e) {
+    // Instead of reloading the page, a new chat opens when the user types ctrl + r
+    if (e.ctrlKey && e.key === 'r') {
+        newChat();
+        e.preventDefault();
+    }
+});
+
+
+let new_url = document.URL;
+new_url = new_url.split('?')[0];
+new_url = new_url.split("#")[0];
+new_url += "#"+chat_id;
+history.pushState({url: new_url}, '', new_url);

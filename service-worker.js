@@ -1,4 +1,7 @@
-const CACHE_VERSION = 'v1.0.2';
+/// {"authors": {"70%": "AI", "30%": "Human"}} :)
+
+const CACHE_VERSION = 'v12.0.6';
+
 const CACHE_NAME = `orion_cache_${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
@@ -66,7 +69,17 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    if (!event.request.url.startsWith(self.location.origin)) {
+    // Ignore non-GET requests and requests from different origins
+    if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
+        return;
+    }
+
+    // Check if the request is for an API or dynamic content
+    const url = new URL(event.request.url);
+    if (event.request.headers.get('accept')?.includes('application/json') ||
+        url.pathname.includes('/api/') ||
+        event.request.headers.get('x-requested-with') === 'XMLHttpRequest') {
+        // Don't cache API/XHR requests - just fetch from network
         return;
     }
 
@@ -79,30 +92,25 @@ self.addEventListener('fetch', event => {
             caches.match(event.request)
                 .then(cachedResponse => {
                     if (cachedResponse) {
-                        fetch(event.request)
-                            .then(networkResponse => {
-                                if (networkResponse.ok) {
-                                    caches.open(CACHE_NAME)
-                                        .then(cache => cache.put(event.request, networkResponse));
-                                }
-                            })
-                            .catch(() => {  });
-
+                        // Return cached response immediately
                         return cachedResponse;
                     }
 
+                    // If not in cache, fetch from network
                     return fetch(event.request)
                         .then(networkResponse => {
                             if (!networkResponse || !networkResponse.ok) {
                                 throw new Error('Network response was not ok');
                             }
 
-                            const responseToCache = networkResponse.clone();
-
-                            caches.open(CACHE_NAME)
-                                .then(cache => {
-                                    cache.put(event.request, responseToCache);
-                                });
+                            // Cache only static assets
+                            if (STATIC_ASSETS.some(asset => event.request.url.endsWith(asset))) {
+                                const responseToCache = networkResponse.clone();
+                                caches.open(CACHE_NAME)
+                                    .then(cache => {
+                                        cache.put(event.request, responseToCache);
+                                    });
+                            }
 
                             return networkResponse;
                         });

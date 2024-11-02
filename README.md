@@ -95,33 +95,31 @@ To do this, click on "Options" -> Plugins and paste the JavaScript code provided
 
 
 ```javascript
-let page_url = new URL(document.URL);
-page_url = page_url.origin + page_url.pathname;
-if (page_url.charAt(page_url.length - 1) === '/') {
-page_url = page_url.slice(0, -1);
-}
-endpoint = page_url+"/proxy.php?platform="+chosen_platform;
-
-function setProxyEndpoint(){
+let page_url =  window.location.origin + window.location.pathname;
 if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
-let proxy_endpoint = page_url+"/proxy.php?platform="+chosen_platform;
-if(proxy_endpoint !== endpoint){
-let ra = `<p>You have changed platforms and are now using <b>${chosen_platform}</b> which requires proxy usage.
-To activate the proxy, reload the page.</p><p><button onclick="reloadPage()">Reload Page</button></p>`;
-addWarning(ra,false, 'fail_dialog')
+  endpoint = page_url+"/proxy.php?platform="+chosen_platform;
 }
-}
+function setProxyEndpoint(){
+  if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
+    let proxy_endpoint = page_url+"/proxy.php?platform="+chosen_platform;
+    if(proxy_endpoint !== endpoint){
+      removeLastMessage();
+      let ra = `<p>You have changed platforms and are now using <b>${chosen_platform}</b> which requires proxy usage.
+            To activate the proxy, reload the page.</p><p><button onclick="reloadPage()">Reload Page</button></p>`;
+      addWarning(ra,false, 'fail_dialog')
+    }
+  }
 }
 
 let button_send = document.querySelector("#send");
 chat_textarea.addEventListener('keyup', (event) => {
-if (event.key === 'Enter' && !event.shiftKey) {
-setProxyEndpoint();
-}
+  if (event.key === 'Enter' && !event.shiftKey) {
+    setProxyEndpoint();
+  }
 });
 
 button_send.addEventListener("click", ()=>{
-setProxyEndpoint()
+  setProxyEndpoint()
 })
 ```
 

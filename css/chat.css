@@ -359,6 +359,9 @@ a {
     height: 80vh;
 
 }
+#chat-messages:focus{
+    outline: none;
+}
 
 .message {
     padding: 10px;
