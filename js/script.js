@@ -16,8 +16,6 @@ let SITE_TITLE = "Orion";
 let js_code = '';
 let temp_safe_mode = false;
 let azure_endpoint = localStorage.getItem('azure_endpoint');
-u = '';
-
 // Markdown to HTML
 showdown.setFlavor('github');
 showdown.setOption('ghMentions', false); // if true "@something" became github.com/something
@@ -104,6 +102,14 @@ let PLATFORM_DATA = {
         name: "Cerebras",
         endpoint: "https://api.cerebras.ai/v1/chat/completions"
     },
+    xai: {
+        models: [
+            "grok-beta"
+        ],
+        name: "xAI",
+        endpoint: "https://api.x.ai/v1/chat/completions"
+    },
+
     ollama: {
         models: [],
         name: "Ollama",
