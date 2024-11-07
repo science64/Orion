@@ -85,6 +85,18 @@ To search using Google, you will need Google CSE (Custom Search Engine) API Key 
 In some cases, AI may fail to provide an answer or provide an incorrect answer due to a lack of broader context. 
 Keep this in mind when using this tool.
 
+# Rag Endpoint
+### BETA
+For better search results, you can configure a search endpoint. 
+A POST request with `query` will be sent to this endpoint, where query is the search term,
+GOOGLE_SEARCH_API_KEY, and GOOGLE_SEARCH_CX.
+These configurations were created to be compatible with
+https://github.com/EliasPereirah/SearchAugmentedLLM/
+If you want to use any other endpoint, make sure it returns a JSON with the text field, where text will be 
+the content passed to the LLM.
+Important: Your Google CSE API key and CX ID will be sent in the request, so make sure you only use a trusted endpoint,
+preferably under your control.
+
 # Proxy
 To get around CORS errors when working with SambaNova or NVIDIA, a proxy may be necessary.
 

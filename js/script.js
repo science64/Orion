@@ -545,8 +545,16 @@ function chat() {
     return streamChat();
 }
 
-function removeLastMessage() {
+
+/**
+ * Remove the last message in the chat
+ * if from_user = true will remove just messages from the user
+ **/
+function removeLastMessage(from_user = true) {
     let ele = document.querySelector(".message:nth-last-of-type(1)");
+    if(!ele.classList.contains('user') && from_user) {
+        return false;
+    }
     if (ele) {
         document.querySelector(".chat-input textarea").value = ele.innerText;
         conversations.messages.pop();
@@ -978,6 +986,8 @@ function setApiKey() {
     }
 }
 
+
+
 function setApiKeyDialog() {
     let platform_name = PLATFORM_DATA[chosen_platform].name;
     let cnt =
@@ -990,6 +1000,43 @@ function setApiKeyDialog() {
     createDialog(cnt, 0, 'setApiDialog');
 }
 
+
+function ragEndpointDialog(){
+    let use_rag = localStorage.getItem('use_rag_endpoint');
+    let disable_advanced_rag = '';
+    if(use_rag =='yes' || use_rag == null){
+        disable_advanced_rag =  `
+             <div><p><b class="beta_warning">Warning</b> If you no longer wish to use or see this alert, click disable.</p>
+             <button onclick="disableRag()">Disable</button></div>`;
+    }
+    let cnt =
+        `<div>
+          <p>Configure an endpoint for advanced search.</p>
+         </div>
+         <input id="set_rag_endpoint" type="text" name="set_rag_endpoint" placeholder="RAG endpoint">
+         <button onclick="saveRagEndpoint()">Activate</button>
+         <div>
+         ${disable_advanced_rag}
+         <p>Learn more about this feature here:
+          <a href="https://github.com/EliasPereirah/OrionChat?tab=readme-ov-file#rag_endpoint">RAG endpoint</a></p>
+         </div>`;
+    createDialog(cnt, 0, 'optionsDialog');
+}
+function disableRag(){
+    localStorage.setItem('use_rag_endpoint', 'no');
+    closeDialogs();
+}
+function saveRagEndpoint(activate){
+    let input_ele = document.querySelector('#set_rag_endpoint');
+    if(input_ele){
+        let rag_endpoint = input_ele.value.trim();
+        if(rag_endpoint){
+            localStorage.setItem("rag_endpoint", rag_endpoint)
+            localStorage.setItem('use_rag_endpoint', 'yes');
+        }
+    }
+    closeDialogs()
+}
 
 function setOptions() {
     closeDialogs(); // close opened dialogs before show options dialog
@@ -1169,6 +1216,13 @@ function moreOptions(show = 'all') {
     <input type="text" id="cse_google_cx_id" name="cse_google_cx_id" placeholder="Google CX ID">
     <button onclick="enableGoogleCse()">Activate</button>
     `;
+
+    let rag_options = `
+             <div><hr>
+             <p>For a more efficient RAG configure advanced search</p>
+             <button onclick="ragEndpointDialog()">Advanced</button>
+             </div>`;
+
     let g_cse_status = '';
     if (isGoogleCseActive()) {
         g_cse_status = `<button id="disable_g_cse" class="disable_btn" onclick="disableGoogleCse()">Disable CSE</button`;
@@ -1189,6 +1243,7 @@ function moreOptions(show = 'all') {
          ${m_disable_audio_option}
          ${cse_option}
          ${g_cse_status}
+         ${rag_options}
          ${import_export_configs}
          </div>`;
     if (show === 'cse') {
@@ -2075,7 +2130,9 @@ async function googleSearch(data) {
         cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
         cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
         addWarning(cse_opt, false, 'dialog_warning');
-        toggleAnimation(true)
+        toggleAnimation(true);
+        enableChat();
+        removeLastMessage();
         return false;
     }
 
@@ -2091,12 +2148,15 @@ async function googleSearch(data) {
         results.items.forEach(item => {
             txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
         })
-    } else {
+    }else if(results.text){
+        txt_result = results.text;
+    }else {
         if (is_cse_active) {
             addWarning('Got no result from Google Search');
         }
         removeLastMessage();
         toggleAnimation();
+        enableChat();
         return false;
     }
     //  let last_input = conversations.messages[conversations.messages.length - 1].content;
@@ -2153,7 +2213,7 @@ function toolHandle(data) {
             this[fn_name](arguments);
         } else {
             addWarning(data, false);
-           // addWarning('A tool was expected, got none.', false)
+            // addWarning('A tool was expected, got none.', false)
         }
     }
 }
@@ -2234,18 +2294,18 @@ function unlockScroll(){
         chat_msg.addEventListener("keydown", (event)=>{
             if(event.key === "ArrowDown"){
                 if(chat_msg.scrollTop <= last_position){
-                  //  chat_msg.scrollTop += 40;
+                    //  chat_msg.scrollTop += 40;
                     console.log('forcing scroll down')
                 }else{
-                  //  console.log('all fine: down')
+                    //  console.log('all fine: down')
                 }
                 last_position = chat_msg.scrollTop;
             }else if(event.key === "ArrowUp"){
                 if(chat_msg.scrollTop >= last_position){
-                   // chat_msg.scrollTop -= 40;
+                    // chat_msg.scrollTop -= 40;
                     console.log('forcing scroll up')
                 }else{
-                   //console.log('all fine: up')
+                    //console.log('all fine: up')
                 }
                 last_position = chat_msg.scrollTop;
             }
