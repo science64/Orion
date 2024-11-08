@@ -1,4 +1,7 @@
 <?php
+exit("To use this proxy please comment out line ".__LINE__." in ".__FILE__);
+// Comment out the above line if you want to use this proxy.
+// If you are going to make this file public on the internet, be sure to implement login restrictions.
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, api-key, x-api-key, anthropic-version, anthropic-dangerous-direct-browser-access, Authorization");
