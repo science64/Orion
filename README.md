@@ -88,14 +88,20 @@ Keep this in mind when using this tool.
 # Rag Endpoint
 ### BETA
 For better search results, you can configure a search endpoint. 
-A POST request with `query` will be sent to this endpoint, where query is the search term,
-GOOGLE_SEARCH_API_KEY, and GOOGLE_SEARCH_CX.
+
+A POST request with `query` will be sent to this endpoint, where query is the search term.
+
 These configurations were created to be compatible with
-https://github.com/EliasPereirah/SearchAugmentedLLM/
+https://github.com/EliasPereirah/SearchAugmentedLLM/ (Not perfect, but better than just Google snippet)
+
 If you want to use any other endpoint, make sure it returns a JSON with the text field, where text will be 
 the content passed to the LLM.
-Important: Your Google CSE API key and CX ID will be sent in the request, so make sure you only use a trusted endpoint,
-preferably under your control.
+
+By adding such an endpoint you will be able to use it by writing at the beginning of the chat `s: what's the news today` 
+and the answer will be based on the context returning from the "rag endpoint"
+
+An advanced option for those using Google Gemini may be to use "Grounding with Google Search", this feature is not
+implemented here and has a cost of $35 / 1K grounding requests.
 
 # Proxy
 To get around CORS errors when working with SambaNova or NVIDIA, a proxy may be necessary.
