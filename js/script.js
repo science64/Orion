@@ -1257,6 +1257,28 @@ function moreOptions(show = 'all') {
 }
 
 
+
+function setYouTubeCaptionApiEndpoint(){
+    let ele = document.querySelector("#yt_down_caption_endpoint");
+    if(ele){
+         let yt_down_caption_endpoint = ele.value.trim();
+         localStorage.setItem('yt_down_caption_endpoint', yt_down_caption_endpoint);
+    }
+    closeDialogs();
+}
+
+function dialogSetYouTubeCaptionApiEndpoint(){
+    let cnt =
+        `
+        <p>Configure a YouTube caption extraction API endpoint.</p>
+        <input id="yt_down_caption_endpoint" name="yt_down_caption_endpoint" placeholder="API Endpoint">
+        <button onclick="setYouTubeCaptionApiEndpoint()">Save</button>
+        <p>This will allow you to use the command <span class="bash language-bash hljs cmd_example">yt: your prompt + YouTube video URL</span> allowing the AI to respond
+         based on the content of the video.</p>`
+    createDialog(cnt, 0, 'optionsDialog');
+}
+
+
 function orderTopics() {
     let topics = document.querySelectorAll('.topic');
     if (topics.length) {
@@ -1469,7 +1491,8 @@ function needToolUse(last_user_input) {
     let cmd = lui.match(/^[a-z]+:/i)?.[0];
     let cmd_list = [
         'search:', 's:',
-        'javascript:', 'js:'
+        'javascript:', 'js:',
+        'youtube:', 'yt:'
     ]
     return cmd_list.includes(cmd);
 }
@@ -1481,10 +1504,11 @@ function whichTool(last_user_input) {
         return 'googleSearch';
     } else if (cmd === 'javascript:' || cmd === 'js:') {
         return 'javascriptCodeExecution';
+    }else if (cmd === 'youtube:' || cmd === 'yt:') {
+        return 'youtubeCaption';
     }
     return '';
 }
-
 
 function commandManager(text) {
     text = text.trim() + " ";
@@ -1506,10 +1530,62 @@ function commandManager(text) {
 
     text = text.replace(/^[a-z]+:(.*?)\s/i, " ").trim();
     prompt = prompt.replaceAll("{{USER_INPUT}}", text);
+
     prompt = prompt.replaceAll("{{ARG1}}", args);
     return prompt; // return the new prompt formated
 
 }
+
+
+
+
+
+async function youtubeCaption(data) {
+    let yt_down_caption_endpoint = localStorage.getItem("yt_down_caption_endpoint") ?? ''
+    if (!yt_down_caption_endpoint) {
+        dialogSetYouTubeCaptionApiEndpoint();
+        removeLastMessage();
+        enableChat();
+        toggleAnimation(true);
+        return false;
+    }
+
+    let url = data.url ?? '';
+    if (!url) {
+        addWarning('youtubeCaption() received no URL param');
+    }
+    console.log('Extracting caption from ' + url);
+    let caption = '';
+    await fetch(yt_down_caption_endpoint+'?yt_url='+url).then(function(res) {
+        return res.json();
+    }).then(function(json) {
+        if(json.caption){
+            caption = json.caption;
+        }
+
+    });
+    if(caption === ''){
+        addWarning('Could not get subtitles for this video', false)
+        removeLastMessage();
+    }else {
+        let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
+        let ele = document.querySelector(".message:nth-last-of-type(1)");
+        if (ele) {
+            let cnt = `${last_input} <details><summary>Caption from ${url}: </summary>${caption}</details>`;
+            ele.innerHTML = converter.makeHtml(cnt);
+        }
+        conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n the caption of the video: <caption>${caption}</caption>`;
+        if (chosen_platform === 'google') {
+            await geminiChat()
+            toggleAnimation(true);
+        } else {
+            await streamChat(false); // false to prevent infinite loop
+            toggleAnimation(true);
+        }
+    }
+
+
+} // youtubeCaption
 
 
 async function streamChat(can_use_tools = true) {

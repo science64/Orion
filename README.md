@@ -33,6 +33,7 @@ user-friendly interface.
 - 🎛️ Customizable system prompts to tailor responses 🛠️
 - 🌐 Special command for quick and easy language translation tasks
 - 📁 Upload a variety of documents (text, PDF, images, video) to Google Gemini for analysis and processing
+- 🧠 Awesome Prompts 150+ awesome prompts most of them from [Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
 
 
 
@@ -59,6 +60,14 @@ Some companies offer free API access. Check their terms and conditions before yo
 # Special Commands
 Use special commands to perform an action quickly and easily.
 ### Translation
+**YouTube Summary**
+Ask the AI to summarize a YouTube video or answer any question based on the video's transcript.
+See an example of use below.
+- `yt: Summarize this video https://www.youtube.com/watch?v=cnTMh_4KHts`
+- `youtube: What did Michio Kaku say about the future? https://www.youtube.com/watch?v=cnTMh_4KHts`
+
+It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
+
 **Translate:** Translate text with ease using special command.
 - To translate "Hello everyone!" into Spanish, use: `translate:spanish Hello everyone!` or its short form `t:spanish Hello everyone!`.
 - AI will automatically detect the source language, requiring only the target language specification.
@@ -144,5 +153,7 @@ button_send.addEventListener("click", ()=>{
 Be careful when using any other proxy as sensitive data will be passed through it like your API key and messages. 
 Use only trusted services.
 
-## Awesome Prompts
-150+ awesome prompts from [🧠 Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
+# YouTube Captions
+To use the special `yt:` or `youtube:` command you will need to set up an endpoint for an API that pulls subtitles from YouTube. 
+
+Here's a code snippet you can use as a basis for easily implementing this. https://github.com/EliasPereirah/YoutubeSubtitlesDownloader

@@ -21,6 +21,26 @@ tools_list.openai_compatible = {
         },
         "strict": true
     },
+    youtubeCaption : {
+        "type": "function",
+        "function": {
+            "name": "youtubeCaption",
+            "description": "Extracting subtitles from a YouTube video. This function should be called when the user enters some YouTube URL",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The YouTube URL"
+                    }
+                },
+                "required": ["url"],
+                "additionalProperties": false
+            }
+        },
+        "strict": true
+    },
+
     javascriptCodeExecution: {
         "type": "function",
         "function": {
@@ -41,6 +61,8 @@ tools_list.openai_compatible = {
         "strict": true
     }
 }
+
+
 
 
 /* Google Gemini compatible tool/functions */
@@ -64,6 +86,26 @@ tools_list.google_compatible = {
                 }
             ]
         },
+
+    youtubeCaption: {
+        "functionDeclarations": [
+            {
+                "name": "youtubeCaption",
+                "description": "Extracting subtitles from a YouTube video. This function should be called when the user enters some YouTube URL",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "url"
+                    ]
+                }
+            }
+        ]
+    },
     javascriptCodeExecution: {
         "functionDeclarations": [
             {
@@ -102,7 +144,20 @@ tools_list.anthropic_compatible = {
             "required": ["term"]
         }
     },
-
+    youtubeCaption: {
+        "name": "youtubeCaption",
+        "description": "Extracting subtitles from a YouTube video. This function should be called when the user enters some YouTube URL",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "The YouTube URL"
+                }
+            },
+            "required": ["url"]
+        }
+    },
     javascriptCodeExecution: {
         "name": "javascriptCodeExecution",
         "description": "Use this function to interact with the user's computer by executing JavaScript code.",
@@ -139,6 +194,24 @@ tools_list.cohere_compatible = {
             }
         }
     },
+    youtubeCaption: {
+        "type": "function",
+        "function": {
+            "name": "youtubeCaption",
+            "description": "Extracting subtitles from a YouTube video. This function should be called when the user enters some YouTube URL",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The YouTube URL"
+                    }
+                },
+                "required": ["url"]
+            }
+        }
+    },
+
 
     javascriptCodeExecution: {
         "type": "function",

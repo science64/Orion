@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.1.6';
+const CACHE_VERSION = 'v1.10.4';
 const CACHE_NAME = `orion_cache_${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
