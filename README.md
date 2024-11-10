@@ -60,6 +60,10 @@ Some companies offer free API access. Check their terms and conditions before yo
 # Special Commands
 Use special commands to perform an action quickly and easily.
 ### Translation
+**Translate:** Translate text with ease using special command.
+- To translate "Hello everyone!" into Spanish, use: `translate:spanish Hello everyone!` or its short form `t:spanish Hello everyone!`.
+- AI will automatically detect the source language, requiring only the target language specification.
+
 **YouTube Summary**
 Ask the AI to summarize a YouTube video or answer any question based on the video's transcript.
 See an example of use below.
@@ -68,9 +72,6 @@ See an example of use below.
 
 It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
 
-**Translate:** Translate text with ease using special command.
-- To translate "Hello everyone!" into Spanish, use: `translate:spanish Hello everyone!` or its short form `t:spanish Hello everyone!`.
-- AI will automatically detect the source language, requiring only the target language specification.
 ### Retrieval-Augmented Generation (RAG)
 Search: Perform quick searches and retrieve relevant information with ease from Google.
 - Example: `search: What is the latest news?` or `s: What is the latest news?`
