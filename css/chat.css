@@ -324,11 +324,9 @@ th {
     border-radius: 4px;
 }
 .more_opt_btn, .plugin_opt_btn{
-    background-color: #07d95e !important;
-    color: #fff !important;
-    border-bottom-right-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    border-bottom: 4px solid #ffff00 !important;
+    background-color: #fff !important;
+    color: #000 !important;
+    border-bottom: 4px solid #7578e1 !important;
 }
 
 a {
