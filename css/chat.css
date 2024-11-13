@@ -12,6 +12,14 @@ html, body {
     border-radius: 3px; !important;
     margin: 2px 0; !important;
 }
+details{
+    background-color: #ffffff;
+    color: #423434;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #7d7d7d;
+}
 details a{
     color: #3b3636;
 }

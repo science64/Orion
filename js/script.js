@@ -1018,7 +1018,7 @@ function ragEndpointDialog(){
          <div>
          ${disable_advanced_rag}
          <p>Learn more about this feature here:
-          <a href="https://github.com/EliasPereirah/OrionChat?tab=readme-ov-file#rag_endpoint">RAG endpoint</a></p>
+          <a href="https://github.com/EliasPereirah/OrionChat#rag-endpoint">RAG endpoint</a></p>
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
 }
@@ -1540,7 +1540,8 @@ function commandManager(text) {
 
 
 
-async function youtubeCaption(data) {
+async function youtubeCaption(data){
+    let video_title = '';
     let yt_down_caption_endpoint = localStorage.getItem("yt_down_caption_endpoint") ?? ''
     if (!yt_down_caption_endpoint) {
         dialogSetYouTubeCaptionApiEndpoint();
@@ -1556,11 +1557,25 @@ async function youtubeCaption(data) {
     }
     console.log('Extracting caption from ' + url);
     let caption = '';
-    await fetch(yt_down_caption_endpoint+'?yt_url='+url).then(function(res) {
+
+
+    const urlencoded = new URLSearchParams();
+    urlencoded.append('yt_url', url);
+    let data_init = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: urlencoded
+    }
+    await fetch(yt_down_caption_endpoint, data_init).then(function(res) {
         return res.json();
     }).then(function(json) {
         if(json.caption){
             caption = json.caption;
+        }
+        if(json.title){
+            video_title = json.title;
         }
 
     });
@@ -1570,11 +1585,13 @@ async function youtubeCaption(data) {
     }else {
         let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
         let ele = document.querySelector(".message:nth-last-of-type(1)");
+        let cnt = `${last_input} <details><summary><b>Title</b>: ${video_title}</summary><br><b>Caption</b>: ${caption}</details>`;
         if (ele) {
-            let cnt = `${last_input} <details><summary>Caption from ${url}: </summary>${caption}</details>`;
-            ele.innerHTML = converter.makeHtml(cnt);
+            ele.innerHTML = cnt;
         }
-        conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n the caption of the video: <caption>${caption}</caption>`;
+     //   conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n the caption of the video: <caption>${caption}</caption>`;
+        conversations.messages[conversations.messages.length - 1].content = cnt;
+
         if (chosen_platform === 'google') {
             await geminiChat()
             toggleAnimation(true);
