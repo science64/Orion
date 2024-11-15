@@ -76,11 +76,14 @@ class GoogleSearch {
             return false;
         }
 
+
+        let lang = navigator.language.split("-")[0];
         let body_data = {
             query: term,
             GOOGLE_SEARCH_API_KEY: GOOGLE_SEARCH_API_KEY,
             GOOGLE_SEARCH_CX: GOOGLE_SEARCH_CX,
-            max_results: max_results
+            max_results: max_results,
+            language: lang
         };
 
         try {

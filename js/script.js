@@ -26,7 +26,7 @@ let converter = new showdown.Converter();
 let PLATFORM_DATA = {
     openai: {
         models: [
-            "o1-preview",
+            "o1",
             "o1-mini",
             "gpt-4o",
             "gpt-4o-mini",
@@ -34,29 +34,13 @@ let PLATFORM_DATA = {
         name: "OpenAI",
         endpoint: "https://api.openai.com/v1/chat/completions"
     },
-    sambanova: {
-        models : [
-            "Meta-Llama-3.1-405B-Instruct",
-            "Llama-3.2-90B-Vision-Instruct"
-        ],
-        name: "SambaNova",
-        endpoint : "https://api.sambanova.ai/v1/chat/completions"
-
-    },
-    nvidia: {
-        models: [
-            "meta/llama-3.1-405b-instruct",
-            "nvidia/llama-3.1-nemotron-70b-instruct"
-        ],
-        name: "NVIDIA",
-        endpoint: "https://integrate.api.nvidia.com/v1/chat/completions"
-    },
     google: {
         models: [
+            "gemini-exp-1114",
             "gemini-1.5-pro-002",
             "gemini-1.5-pro",
-            "gemini-1.5-flash",
             "gemini-1.5-flash-002",
+            "gemini-1.5-flash-8b"
         ],
         name: "Google",
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
@@ -95,6 +79,15 @@ let PLATFORM_DATA = {
         name: "Groq",
         endpoint: "https://api.groq.com/openai/v1/chat/completions"
     },
+    sambanova: {
+        models : [
+            "Meta-Llama-3.1-405B-Instruct",
+            "Llama-3.2-90B-Vision-Instruct"
+        ],
+        name: "SambaNova",
+        endpoint : "https://api.sambanova.ai/v1/chat/completions"
+
+    },
     cerebras: {
         models: [
             "llama3.1-8b",
@@ -110,12 +103,19 @@ let PLATFORM_DATA = {
         name: "xAI",
         endpoint: "https://api.x.ai/v1/chat/completions"
     },
-
     ollama: {
         models: [],
         name: "Ollama",
         get_models_endpoint: "http://localhost:11434/v1/models",
         endpoint: "http://localhost:11434/v1/chat/completions"
+    },
+    nvidia: {
+        models: [
+            "meta/llama-3.1-405b-instruct",
+            "nvidia/llama-3.1-nemotron-70b-instruct"
+        ],
+        name: "NVIDIA",
+        endpoint: "https://integrate.api.nvidia.com/v1/chat/completions"
     }
 }
 
@@ -535,12 +535,19 @@ function loadOldChatTopics() {
 loadOldChatTopics();
 
 function getSystemPrompt() {
-    return localStorage.getItem('system_prompt');
+    let system_prompt = localStorage.getItem('system_prompt');
+    if(!system_prompt) {
+        return system_prompt;
+    }
+    let today = new Date();
+    system_prompt = system_prompt.replaceAll("{{date}}", today);
+    system_prompt = system_prompt.replaceAll("{{lang}}", navigator.language)
+    return system_prompt;
 }
 
 function chat() {
     if (chosen_platform === 'google') {
-        return geminiChat();
+       return geminiChat();
     }
     return streamChat();
 }
@@ -1040,7 +1047,7 @@ function saveRagEndpoint(activate){
 
 function setOptions() {
     closeDialogs(); // close opened dialogs before show options dialog
-    let system_prompt = getSystemPrompt();
+    let system_prompt = localStorage.getItem('system_prompt');
     if (!system_prompt) {
         system_prompt = '';
     }
