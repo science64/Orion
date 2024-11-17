@@ -12,12 +12,10 @@ It provides a unified platform for chatting and exploring multiple large languag
 - 🟢 NVIDIA – With its powerful llama-3.1-nemotron-70b-instruct (proxy is needed)
 - 🟣 SambaNova - Fast inference and support for Meta-Llama-3.1-405B-Instruct 🦙🦙🦙.🦙
 
-It's like assembling the ultimate superhero team of AI
-
 ![Orion Screenshot](imgs/screenshot.png "Orion Screenshot")
 
 
-With Orion, users can easily navigate and assess the strengths and limitations of different AI models through an intuitive,
+With Orion, you can easily navigate and assess the strengths and limitations of different AI models through an intuitive,
 user-friendly interface.
 
 ## Key Features
@@ -65,10 +63,10 @@ Use special commands to perform an action quickly and easily.
 - AI will automatically detect the source language, requiring only the target language specification.
 
 **YouTube Summary**
-Ask the AI to summarize a YouTube video or answer any question based on the video's transcript.
+Ask AI to summarize a YouTube video or answer any question based on the video caption.
 See an example of use below.
-- `yt: Summarize this video https://www.youtube.com/watch?v=cnTMh_4KHts`
-- `youtube: What did Michio Kaku say about the future? https://www.youtube.com/watch?v=cnTMh_4KHts`
+- `Summarize this video https://www.youtube.com/watch?v=r7pEdhnS3tI`
+- `What is this video about? https://www.youtube.com/watch?v=qQviI1d_hFA`
 
 It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
 
@@ -155,6 +153,6 @@ Be careful when using any other proxy as sensitive data will be passed through i
 Use only trusted services.
 
 # YouTube Captions
-To use the special `yt:` or `youtube:` command you will need to set up an endpoint for an API that pulls subtitles from YouTube. 
+To enable AI responses based on YouTube video captions, create an API endpoint to fetch them.
 
 Here's a code snippet you can use as a basis for easily implementing this. https://github.com/EliasPereirah/YoutubeSubtitlesDownloader

@@ -1287,8 +1287,7 @@ function dialogSetYouTubeCaptionApiEndpoint(){
         <p>Configure a YouTube caption extraction API endpoint.</p>
         <input id="yt_down_caption_endpoint" name="yt_down_caption_endpoint" placeholder="API Endpoint">
         <button onclick="setYouTubeCaptionApiEndpoint()">Save</button>
-        <p>This will allow you to use the command <span class="bash language-bash hljs cmd_example">yt: your prompt + YouTube video URL</span> allowing the AI to respond
-         based on the content of the video.</p>`
+        <p>This will allow you to share a YouTube URL, and the AI will respond based on the caption of the shared video.</p>`
     createDialog(cnt, 0, 'optionsDialog');
 }
 
@@ -1506,7 +1505,7 @@ function needToolUse(last_user_input) {
     let cmd_list = [
         'search:', 's:',
         'javascript:', 'js:',
-        'youtube:', 'yt:'
+        //'youtube:', 'yt:'
     ]
     if(cmd_list.includes(cmd)){
         return true;
