@@ -11,10 +11,12 @@ let endpoint = localStorage.getItem('endpoint');
 let last_role = '';
 let last_cnt = '';
 let last_user_input = '';
+let last_auto_yt_fn_call = 0;
 let is_chat_enabled = true;
 let SITE_TITLE = "Orion";
 let js_code = '';
 let temp_safe_mode = false;
+let pre_function_text = '';
 let azure_endpoint = localStorage.getItem('azure_endpoint');
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -218,6 +220,7 @@ let conversations = {
 
 function addConversation(role, content, add_to_document = true, do_scroll = true) {
     closeDialogs();
+
     if (!content.trim()) {
         addWarning('Empty conversation', true);
         return false;
@@ -923,12 +926,16 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             return response.json();
         })
         .then(data => {
-            let text;
+            let text = '';
             if (typeof data === "object") {
                 try {
                     text = data.candidates[0].content.parts[0]?.text ?? '';
                     let g_tool = data.candidates[0].content.parts[0]?.functionCall ?? '';
+                    if(g_tool === ''){
+                        g_tool = data.candidates[0].content.parts[1]?.functionCall ?? '';
+                    }
                     if (g_tool) {
+                        pre_function_text = text;
                         toolHandle(g_tool);
                     }
                     if (!text && !g_tool) {
@@ -943,7 +950,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                     }
 
                 } catch {
-                    text = '<pre>' + JSON.stringify(data) + '</pre>';
+                    text += '<pre>' + JSON.stringify(data) + '</pre>';
                     try {
                         // Verify if it is an error with the api key being not valid
                         let tt = data.error.message;
@@ -958,7 +965,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             } else {
                 text = data;
             }
-            if (text) {
+            if (text !== '') {
                 addConversation('assistant', text);
             }
 
@@ -1501,7 +1508,17 @@ function needToolUse(last_user_input) {
         'javascript:', 'js:',
         'youtube:', 'yt:'
     ]
-    return cmd_list.includes(cmd);
+    if(cmd_list.includes(cmd)){
+        return true;
+    }else if(last_user_input.match(/youtube\.com|youtu\.be/)){
+        let time_now = new Date().getTime();
+        let past_seconds = (time_now - last_auto_yt_fn_call) / 1000;
+        if(past_seconds > 30){
+            last_auto_yt_fn_call = time_now;
+            return true
+        }
+    }
+    return false;
 }
 
 function whichTool(last_user_input) {
@@ -1513,13 +1530,15 @@ function whichTool(last_user_input) {
         return 'javascriptCodeExecution';
     }else if (cmd === 'youtube:' || cmd === 'yt:') {
         return 'youtubeCaption';
+    }else if(last_user_input.match(/youtube\.com|youtu\.be/)){
+        return 'youtubeCaption';
     }
     return '';
 }
 
-function commandManager(text) {
-    text = text.trim() + " ";
-    let arr = text.match(/^[a-z]+:(.*?)\s/i);
+function commandManager(input_text) {
+    input_text = input_text.trim() + " ";
+    let arr = input_text.match(/^[a-z]+:(.*?)\s/i);
     let cmd = '';
     let args = '';
     if (arr) {
@@ -1535,8 +1554,8 @@ function commandManager(text) {
         return false; // no command passed
     }
 
-    text = text.replace(/^[a-z]+:(.*?)\s/i, " ").trim();
-    prompt = prompt.replaceAll("{{USER_INPUT}}", text);
+    input_text = input_text.replace(/^[a-z]+:(.*?)\s/i, " ").trim();
+    prompt = prompt.replaceAll("{{USER_INPUT}}", input_text);
 
     prompt = prompt.replaceAll("{{ARG1}}", args);
     return prompt; // return the new prompt formated
@@ -1592,13 +1611,19 @@ async function youtubeCaption(data){
     }else {
         let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
         let ele = document.querySelector(".message:nth-last-of-type(1)");
+        if(pre_function_text){
+            last_input = pre_function_text;
+        }
         let cnt = `${last_input} <details><summary><b>Title</b>: ${video_title}</summary><br><b>Caption</b>: ${caption}</details>`;
         if (ele) {
             ele.innerHTML = cnt;
         }
+        pre_function_text = '';
      //   conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n the caption of the video: <caption>${caption}</caption>`;
         conversations.messages[conversations.messages.length - 1].content = cnt;
-
+        setTimeout(()=>{
+            loadVideo()
+        },1000)
         if (chosen_platform === 'google') {
             await geminiChat()
             toggleAnimation(true);
@@ -1606,6 +1631,7 @@ async function youtubeCaption(data){
             await streamChat(false); // false to prevent infinite loop
             toggleAnimation(true);
         }
+
     }
 
 
@@ -2414,12 +2440,54 @@ function unlockScroll(){
 }
 unlockScroll();
 
+
+function extractVideoId(text) {
+   let video_id = text.match(/youtube.com\/watch\?v=(.*)/)[1] ?? null;
+   if(video_id){
+       return video_id.substring(0,11);
+   }
+   return null;
+}
+
+function loadVideo() {
+    let all_user_msgs = document.querySelectorAll(".user");
+    if(all_user_msgs.length){
+        let last_user_msg_ele = all_user_msgs[all_user_msgs.length -1];
+        let last_user_msg = last_user_msg_ele.innerHTML;
+        let videoId = extractVideoId(last_user_msg);
+        if(!videoId){
+            return
+        }
+        let videoContainer = document.createElement("div");
+        videoContainer.className = "video-container";
+        const videoFrame = document.createElement("iframe");
+        videoFrame.id = "videoFrame";
+        videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+        videoContainer.append(videoFrame);
+        last_user_msg_ele.prepend(videoContainer)
+
+    }
+
+
+
+}
+
+
+
 document.addEventListener('keydown', function(e) {
     // Instead of reloading the page, a new chat opens when the user types ctrl + r
     if (e.ctrlKey && e.key === 'r') {
         newChat();
         e.preventDefault();
+    }else if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.key) {
+        let active_tagName = document.activeElement.tagName
+        if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
+            if(/^[a-zA-Z0-9]$/.test(e.key)){
+                document.getElementById('ta_chat').focus();
+            }
+        }
     }
+
 });
 
 

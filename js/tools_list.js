@@ -78,6 +78,7 @@ tools_list.google_compatible = {
                             "term": {
                                 "type": "string"
                             }
+
                         },
                         "required": [
                             "term"

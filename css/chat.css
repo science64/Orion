@@ -5,6 +5,22 @@ html, body {
     background-color: #fbfbfb;
 }
 
+.video-container {
+    margin: 5px;
+    position: relative;
+    width: 100%;
+    padding-bottom: 35%;
+}
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 70%;
+    height: 100%;
+    border: none;
+    margin: 0 15%;
+    border-radius: 5px;
+}
 
 .cmd_example{
     padding: 3px; !important;
