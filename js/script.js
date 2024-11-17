@@ -1512,7 +1512,7 @@ function needToolUse(last_user_input) {
     }else if(last_user_input.match(/youtube\.com|youtu\.be/)){
         let time_now = new Date().getTime();
         let past_seconds = (time_now - last_auto_yt_fn_call) / 1000;
-        if(past_seconds > 30){
+        if(past_seconds > 10){
             last_auto_yt_fn_call = time_now;
             return true
         }
@@ -2287,11 +2287,15 @@ async function googleSearch(data) {
     //  let last_input = conversations.messages[conversations.messages.length - 1].content;
 
     let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
+    if(pre_function_text){
+        last_input = pre_function_text;
+    }
     let ele = document.querySelector(".message:nth-last-of-type(1)");
     if (ele) {
         let cnt = `${last_input} <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
         ele.innerHTML = converter.makeHtml(cnt);
     }
+    pre_function_text = '';
 
     conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n respond based on this context: <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
     if (chosen_platform === 'google') {
