@@ -121,21 +121,22 @@ To do this, click on "Options" -> Plugins and paste the JavaScript code provided
 
 
 ```javascript
-let page_url =  window.location.origin + window.location.pathname;
+
+let proxy_url =  window.location.origin + window.location.pathname + "/proxy.php";
+// This assumes that the proxy url is on the same host, if not enter it here
 if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
-  endpoint = page_url+"/proxy.php?platform="+chosen_platform;
+  endpoint = proxy_url+"?platform="+chosen_platform;
 }
-function setProxyEndpoint(){
+function setProxyEndpoint(event){
   if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
-    let proxy_endpoint = page_url+"/proxy.php?platform="+chosen_platform;
+    let proxy_endpoint = proxy_url+"/proxy.php?platform="+chosen_platform;
     if(proxy_endpoint !== endpoint){
+      endpoint = proxy_endpoint;
       removeLastMessage();
-      let ra = `<p>You have changed platforms and are now using <b>${chosen_platform}</b> which requires proxy usage.
-            To activate the proxy, reload the page.</p><p><button onclick="reloadPage()">Reload Page</button></p>`;
-      addWarning(ra,false, 'fail_dialog')
     }
   }
 }
+
 
 let button_send = document.querySelector("#send");
 chat_textarea.addEventListener('keyup', (event) => {

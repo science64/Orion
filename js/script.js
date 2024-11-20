@@ -28,10 +28,10 @@ let converter = new showdown.Converter();
 let PLATFORM_DATA = {
     openai: {
         models: [
-            "o1",
-            "o1-mini",
             "gpt-4o",
             "gpt-4o-mini",
+            "o1-mini",
+            "o1-preview"
         ],
         name: "OpenAI",
         endpoint: "https://api.openai.com/v1/chat/completions"
@@ -69,14 +69,12 @@ let PLATFORM_DATA = {
     },
     groq: {
         models: [
-            "llama-3.2-90b-text-preview",
+            "llama-3.2-90b-vision-preview",
+            "llama3-groq-70b-8192-tool-use-preview",
             "llama-3.1-70b-versatile",
             "llama3-70b-8192",
             "mixtral-8x7b-32768",
-            "llama-3.2-11b-vision-preview",
-            "llama3-groq-8b-8192-tool-use-preview",
             "gemma2-9b-it",
-            "llama3-groq-70b-8192-tool-use-preview"
         ],
         name: "Groq",
         endpoint: "https://api.groq.com/openai/v1/chat/completions"
@@ -170,7 +168,7 @@ let settings = document.querySelector("#settings");
 settings.onclick = () => {
     let conversations = document.querySelector(".conversations");
     conversations.style.display = 'block';
-    localStorage.setItem("hide_conversations", '0');
+    //localStorage.setItem("hide_conversations", '0');
     let hasTopic = document.querySelector(".conversations .topic");
     if (!hasTopic) {
         let ele = document.createElement('div');
@@ -204,7 +202,7 @@ new_chat.addEventListener('click', () => {
 jsClose = document.querySelector(".jsClose");
 jsClose.onclick = () => {
     document.querySelector('.conversations').style.display = 'none';
-    localStorage.setItem("hide_conversations", '1');
+    //localStorage.setItem("hide_conversations", '1');
 }
 
 
@@ -408,6 +406,7 @@ function removeChat(div, id) {
  * Starts a new chat without any context from past conversation
  **/
 function newChat() {
+    toggleAnimation(true);
     document.title = SITE_TITLE;
     chat_id = new Date().getTime(); // generate a new chat_id
     let new_url = document.URL;
@@ -415,7 +414,6 @@ function newChat() {
     new_url = new_url.split("#")[0];
     new_url += "#"+chat_id;
     history.pushState({url: new_url}, '', new_url);
-
     removeScreenConversation();
     conversations.messages = []; // clean old conversation
 
@@ -542,7 +540,7 @@ function getSystemPrompt() {
     if(!system_prompt) {
         return system_prompt;
     }
-    let today = new Date();
+    let today = whatTimeIsIt();
     system_prompt = system_prompt.replaceAll("{{date}}", today);
     system_prompt = system_prompt.replaceAll("{{lang}}", navigator.language)
     return system_prompt;
@@ -1363,10 +1361,10 @@ function saveModel() {
 
 let hc = localStorage.getItem("hide_conversations");
 if (hc === '1') {
-    document.querySelector('.conversations').style.display = 'none';
+  //  document.querySelector('.conversations').style.display = 'none';
 } else {
     if (!is_mobile) {
-        document.querySelector('.conversations').style.display = 'block';
+      //  document.querySelector('.conversations').style.display = 'block';
     }
 }
 
@@ -2443,6 +2441,11 @@ function unlockScroll(){
 }
 unlockScroll();
 
+function whatTimeIsIt(){
+    const today = new Date();
+    return today.toLocaleDateString('en-US') +" "+today.toLocaleTimeString();
+    // ex: 11/19/2024 10:18:57
+}
 
 function extractVideoId(text) {
    let video_id = text.match(/youtube.com\/watch\?v=(.*)/)[1] ?? null;
