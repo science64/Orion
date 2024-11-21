@@ -45,7 +45,7 @@ let PLATFORM_DATA = {
             "gemini-1.5-flash-8b"
         ],
         name: "Google",
-        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}'
+        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{{model}}:{{gen_mode}}?key={{api_key}}'
     },
     anthropic: {
         models: [
@@ -109,14 +109,14 @@ let PLATFORM_DATA = {
         get_models_endpoint: "http://localhost:11434/v1/models",
         endpoint: "http://localhost:11434/v1/chat/completions"
     },
-    nvidia: {
+   /* nvidia: {
         models: [
             "meta/llama-3.1-405b-instruct",
             "nvidia/llama-3.1-nemotron-70b-instruct"
         ],
         name: "NVIDIA",
         endpoint: "https://integrate.api.nvidia.com/v1/chat/completions"
-    }
+    }*/
 }
 
 
@@ -548,6 +548,7 @@ function getSystemPrompt() {
 
 function chat() {
     if (chosen_platform === 'google') {
+       // endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
        return geminiChat();
     }
     return streamChat();
@@ -911,9 +912,13 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
         return geminiStreamChat(fileUri, data);
     }
 
-    let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${api_key}`
+//    let endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:generateContent?key=${{api_key}}`
+    let gemini_endpoint = endpoint.replaceAll("{{model}}", model);
+    gemini_endpoint = gemini_endpoint.replaceAll("{{api_key}}", api_key);
+    gemini_endpoint = gemini_endpoint.replaceAll("{{gen_mode}}", "generateContent");
+
     let invalid_key = false;
-    fetch(endpoint, {
+    fetch(gemini_endpoint, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -1788,6 +1793,7 @@ async function streamChat(can_use_tools = true) {
     }
 
 
+
     const requestOptions = {
         method: 'POST',
         headers: HTTP_HEADERS,
@@ -2053,7 +2059,12 @@ async function geminiStreamChat(fileUri, data) {
             console.log('has not tool')
         }
     }
-    const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${api_key}`;
+   // const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:streamGenerateContent?alt=sse&key=${{api_key}}`;
+
+    let endpoint_stream = endpoint.replaceAll("{{model}}",model);
+    endpoint_stream = endpoint_stream.replaceAll("{{gen_mode}}","streamGenerateContent");
+    endpoint_stream = endpoint_stream.replaceAll("{{api_key}}",api_key+"&alt=sse");
+
     let first_response = true;
     try {
         const the_response = await fetch(endpoint_stream, {

@@ -9,7 +9,6 @@ It provides a unified platform for chatting and exploring multiple large languag
 - 🟡 Anthropic (Claude models)
 - 🚀 Groq Inc. – Optimized for fast inference (open source models) ⚡️
 - ⚡️ Cerebras – Also optimized for fast inference 🚀
-- 🟢 NVIDIA – With its powerful llama-3.1-nemotron-70b-instruct (proxy is needed)
 - 🟣 SambaNova - Fast inference and support for Meta-Llama-3.1-405B-Instruct 🦙🦙🦙.🦙
 
 ![Orion Screenshot](imgs/screenshot.png "Orion Screenshot")
@@ -47,7 +46,6 @@ Some companies offer free API access. Check their terms and conditions before yo
 - **Cerebras:** [Sign up for an API key](https://cloud.cerebras.ai/platform/)
 - **Cohere** [Get your key](https://dashboard.cohere.com/api-keys)
 - **Groq:** [Request a key](https://console.groq.com/keys)
-- **NVIDIA:** [NVIDIA Key](https://build.nvidia.com/nvidia/llama-3_1-nemotron-70b-instruct)
 - **SambaNova** [SambaNova Key](https://cloud.sambanova.ai/apis)
 
 ### Paid API Keys
@@ -112,7 +110,7 @@ An advanced option for those using Google Gemini may be to use "Grounding with G
 implemented here and has a cost of $35 / 1K grounding requests.
 
 # Proxy
-To get around CORS errors when working with SambaNova or NVIDIA, a proxy may be necessary.
+To get around CORS errors when working with SambaNova a proxy may be necessary.
 
 If you are using Orion via localhost or a hosting with PHP support, you can use the PHP proxy code available in this 
 repository (`proxy.php` file) for this you will also need to add the following JavaScript code in plugins.
