@@ -344,7 +344,8 @@ th {
 
 .optionsDialog button {
     padding: 7px;
-    border: 1px solid #232323;
+    /*border: 1px solid #232323;*/
+    border: none;
     border-radius: 4px;
 }
 .more_opt_btn, .plugin_opt_btn{

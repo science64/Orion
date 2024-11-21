@@ -38,6 +38,9 @@ let PLATFORM_DATA = {
     },
     google: {
         models: [
+
+            "gemini-exp-1121",
+            "learnlm-1.5-pro-experimental",
             "gemini-exp-1114",
             "gemini-1.5-pro-002",
             "gemini-1.5-pro",
