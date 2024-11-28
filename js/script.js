@@ -38,13 +38,11 @@ let PLATFORM_DATA = {
     },
     google: {
         models: [
-
             "gemini-exp-1121",
             "learnlm-1.5-pro-experimental",
             "gemini-exp-1114",
-            "gemini-1.5-pro-002",
             "gemini-1.5-pro",
-            "gemini-1.5-flash-002",
+            "gemini-1.5-flash",
             "gemini-1.5-flash-8b"
         ],
         name: "Google",
@@ -261,6 +259,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
                 div.prepend(videoEle);
                 videoEle.className = 'appended_video';
             }
+
         }
 
     } else {
@@ -286,6 +285,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
 
     }
     document.querySelector('#chat-messages').append(div);
+    mediaFull();
     if (do_scroll) {
         div.scrollIntoView();
 
@@ -1511,7 +1511,7 @@ function needToolUse(last_user_input) {
     let cmd_list = [
         'search:', 's:',
         'javascript:', 'js:',
-        //'youtube:', 'yt:'
+        'youtube:', 'yt:'
     ]
     if(cmd_list.includes(cmd)){
         return true;
@@ -2488,10 +2488,20 @@ function loadVideo() {
 
     }
 
-
-
 }
 
+
+
+function mediaFull() {
+    const all_images = document.querySelectorAll(".user img");
+    all_images.forEach(media => {
+        media.onclick = () => {
+            let newTab = window.open();
+            newTab.document.body.innerHTML = `<img src="${media.src}" alt="Imagem Base64">`;
+        };
+    });
+}
+mediaFull();
 
 
 document.addEventListener('keydown', function(e) {
@@ -2499,7 +2509,7 @@ document.addEventListener('keydown', function(e) {
     if (e.ctrlKey && e.key === 'r') {
         newChat();
         e.preventDefault();
-    }else if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.key) {
+    }else if (!e.ctrlKey && !e.altKey && e.key) {
         let active_tagName = document.activeElement.tagName
         if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
             if(/^[a-zA-Z0-9]$/.test(e.key)){
