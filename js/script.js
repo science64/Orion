@@ -70,10 +70,10 @@ let PLATFORM_DATA = {
     },
     groq: {
         models: [
+            "llama-3.3-70b-versatile",
             "llama-3.2-90b-vision-preview",
             "llama3-groq-70b-8192-tool-use-preview",
-            "llama-3.1-70b-versatile",
-            "llama3-70b-8192",
+            "llama-3.3-70b-specdec",
             "mixtral-8x7b-32768",
             "gemma2-9b-it",
         ],
