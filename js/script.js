@@ -15,6 +15,7 @@ let last_auto_yt_fn_call = 0;
 let is_chat_enabled = true;
 let SITE_TITLE = "Orion";
 let js_code = '';
+let original_code = '';
 let temp_safe_mode = false;
 let pre_function_text = '';
 let azure_endpoint = localStorage.getItem('azure_endpoint');
@@ -81,12 +82,12 @@ let PLATFORM_DATA = {
         endpoint: "https://api.groq.com/openai/v1/chat/completions"
     },
     sambanova: {
-        models : [
+        models: [
             "Meta-Llama-3.1-405B-Instruct",
             "Llama-3.2-90B-Vision-Instruct"
         ],
         name: "SambaNova",
-        endpoint : "https://api.sambanova.ai/v1/chat/completions"
+        endpoint: "https://api.sambanova.ai/v1/chat/completions"
 
     },
     cerebras: {
@@ -110,14 +111,14 @@ let PLATFORM_DATA = {
         get_models_endpoint: "http://localhost:11434/v1/models",
         endpoint: "http://localhost:11434/v1/chat/completions"
     },
-   /* nvidia: {
-        models: [
-            "meta/llama-3.1-405b-instruct",
-            "nvidia/llama-3.1-nemotron-70b-instruct"
-        ],
-        name: "NVIDIA",
-        endpoint: "https://integrate.api.nvidia.com/v1/chat/completions"
-    }*/
+    /* nvidia: {
+         models: [
+             "meta/llama-3.1-405b-instruct",
+             "nvidia/llama-3.1-nemotron-70b-instruct"
+         ],
+         name: "NVIDIA",
+         endpoint: "https://integrate.api.nvidia.com/v1/chat/completions"
+     }*/
 }
 
 
@@ -415,7 +416,7 @@ function newChat() {
     let new_url = document.URL;
     new_url = new_url.split('?')[0];
     new_url = new_url.split("#")[0];
-    new_url += "#"+chat_id;
+    new_url += "#" + chat_id;
     history.pushState({url: new_url}, '', new_url);
     removeScreenConversation();
     conversations.messages = []; // clean old conversation
@@ -540,7 +541,7 @@ loadOldChatTopics();
 
 function getSystemPrompt() {
     let system_prompt = localStorage.getItem('system_prompt');
-    if(!system_prompt) {
+    if (!system_prompt) {
         return system_prompt;
     }
     let today = whatTimeIsIt();
@@ -551,8 +552,8 @@ function getSystemPrompt() {
 
 function chat() {
     if (chosen_platform === 'google') {
-       // endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-       return geminiChat();
+        // endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+        return geminiChat();
     }
     return streamChat();
 }
@@ -564,7 +565,7 @@ function chat() {
  **/
 function removeLastMessage(from_user = true) {
     let ele = document.querySelector(".message:nth-last-of-type(1)");
-    if(!ele.classList.contains('user') && from_user) {
+    if (!ele.classList.contains('user') && from_user) {
         return false;
     }
     if (ele) {
@@ -937,7 +938,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
                 try {
                     text = data.candidates[0].content.parts[0]?.text ?? '';
                     let g_tool = data.candidates[0].content.parts[0]?.functionCall ?? '';
-                    if(g_tool === ''){
+                    if (g_tool === '') {
                         g_tool = data.candidates[0].content.parts[1]?.functionCall ?? '';
                     }
                     if (g_tool) {
@@ -1007,7 +1008,6 @@ function setApiKey() {
 }
 
 
-
 function setApiKeyDialog() {
     let platform_name = PLATFORM_DATA[chosen_platform].name;
     let cnt =
@@ -1021,11 +1021,11 @@ function setApiKeyDialog() {
 }
 
 
-function ragEndpointDialog(){
+function ragEndpointDialog() {
     let use_rag = localStorage.getItem('use_rag_endpoint');
     let disable_advanced_rag = '';
-    if(use_rag =='yes' || use_rag == null){
-        disable_advanced_rag =  `
+    if (use_rag == 'yes' || use_rag == null) {
+        disable_advanced_rag = `
              <div><p><b class="beta_warning">Warning</b> If you no longer wish to use or see this alert, click disable.</p>
              <button onclick="disableRag()">Disable</button></div>`;
     }
@@ -1042,15 +1042,17 @@ function ragEndpointDialog(){
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
 }
-function disableRag(){
+
+function disableRag() {
     localStorage.setItem('use_rag_endpoint', 'no');
     closeDialogs();
 }
-function saveRagEndpoint(activate){
+
+function saveRagEndpoint(activate) {
     let input_ele = document.querySelector('#set_rag_endpoint');
-    if(input_ele){
+    if (input_ele) {
         let rag_endpoint = input_ele.value.trim();
-        if(rag_endpoint){
+        if (rag_endpoint) {
             localStorage.setItem("rag_endpoint", rag_endpoint)
             localStorage.setItem('use_rag_endpoint', 'yes');
         }
@@ -1145,15 +1147,15 @@ function setOptions() {
 
 }
 
-function loadPlugins(){
-    let plugin_url =  localStorage.getItem("plugin_url");
-    if(plugin_url){
+function loadPlugins() {
+    let plugin_url = localStorage.getItem("plugin_url");
+    if (plugin_url) {
         let sc = document.createElement('script');
         sc.src = plugin_url.trim();
         document.body.append(sc);
     }
-    let plugin_code =  localStorage.getItem("plugin_code");
-    if(plugin_code){
+    let plugin_code = localStorage.getItem("plugin_code");
+    if (plugin_code) {
         let sc_inline = document.createElement('script');
         sc_inline.innerHTML = plugin_code.trim();
         document.body.append(sc_inline);
@@ -1161,23 +1163,23 @@ function loadPlugins(){
     }
 }
 
-function savePlugin(){
+function savePlugin() {
     let plugin_url = document.querySelector("#plugin_url");
-    let plugin_code =  document.querySelector("#plugin_code");
-    if(plugin_code && plugin_code.value.trim()){
+    let plugin_code = document.querySelector("#plugin_code");
+    if (plugin_code && plugin_code.value.trim()) {
         plugin_code = plugin_code.value.trim();
-        if(plugin_code){
+        if (plugin_code) {
             localStorage.setItem("plugin_code", plugin_code);
         }
-    }else {
+    } else {
         localStorage.removeItem("plugin_code");
     }
-    if(plugin_url && plugin_url.value.trim()){
+    if (plugin_url && plugin_url.value.trim()) {
         plugin_url = plugin_url.value.trim();
-        if(plugin_url){
+        if (plugin_url) {
             localStorage.setItem('plugin_url', plugin_url)
         }
-    }else {
+    } else {
         localStorage.removeItem("plugin_url");
     }
     closeDialogs();
@@ -1185,15 +1187,15 @@ function savePlugin(){
 
 function pluginOptions() {
     closeDialogs(); // close opened dialogs before show options dialog
-    let plugin_url =  localStorage.getItem("plugin_url")
-    let plugin_code =  localStorage.getItem("plugin_code");
+    let plugin_url = localStorage.getItem("plugin_url")
+    let plugin_code = localStorage.getItem("plugin_code");
     let value_plugin_code = '';
-    if(plugin_code){
+    if (plugin_code) {
         value_plugin_code = `${plugin_code}`;
     }
 
     let value_plugin_url = '';
-    if(plugin_url){
+    if (plugin_url) {
         value_plugin_url = `value="${plugin_url}"`;
     }
     let cnt =
@@ -1277,17 +1279,16 @@ function moreOptions(show = 'all') {
 }
 
 
-
-function setYouTubeCaptionApiEndpoint(){
+function setYouTubeCaptionApiEndpoint() {
     let ele = document.querySelector("#yt_down_caption_endpoint");
-    if(ele){
-         let yt_down_caption_endpoint = ele.value.trim();
-         localStorage.setItem('yt_down_caption_endpoint', yt_down_caption_endpoint);
+    if (ele) {
+        let yt_down_caption_endpoint = ele.value.trim();
+        localStorage.setItem('yt_down_caption_endpoint', yt_down_caption_endpoint);
     }
     closeDialogs();
 }
 
-function dialogSetYouTubeCaptionApiEndpoint(){
+function dialogSetYouTubeCaptionApiEndpoint() {
     let cnt =
         `
         <p>Configure a YouTube caption extraction API endpoint.</p>
@@ -1369,10 +1370,10 @@ function saveModel() {
 
 let hc = localStorage.getItem("hide_conversations");
 if (hc === '1') {
-  //  document.querySelector('.conversations').style.display = 'none';
+    //  document.querySelector('.conversations').style.display = 'none';
 } else {
     if (!is_mobile) {
-      //  document.querySelector('.conversations').style.display = 'block';
+        //  document.querySelector('.conversations').style.display = 'block';
     }
 }
 
@@ -1513,12 +1514,12 @@ function needToolUse(last_user_input) {
         'javascript:', 'js:',
         'youtube:', 'yt:'
     ]
-    if(cmd_list.includes(cmd)){
+    if (cmd_list.includes(cmd)) {
         return true;
-    }else if(last_user_input.match(/youtube\.com|youtu\.be/)){
+    } else if (last_user_input.match(/youtube\.com|youtu\.be/)) {
         let time_now = new Date().getTime();
         let past_seconds = (time_now - last_auto_yt_fn_call) / 1000;
-        if(past_seconds > 10){
+        if (past_seconds > 10) {
             last_auto_yt_fn_call = time_now;
             return true
         }
@@ -1533,9 +1534,9 @@ function whichTool(last_user_input) {
         return 'googleSearch';
     } else if (cmd === 'javascript:' || cmd === 'js:') {
         return 'javascriptCodeExecution';
-    }else if (cmd === 'youtube:' || cmd === 'yt:') {
+    } else if (cmd === 'youtube:' || cmd === 'yt:') {
         return 'youtubeCaption';
-    }else if(last_user_input.match(/youtube\.com|youtu\.be/)){
+    } else if (last_user_input.match(/youtube\.com|youtu\.be/)) {
         return 'youtubeCaption';
     }
     return '';
@@ -1568,10 +1569,7 @@ function commandManager(input_text) {
 }
 
 
-
-
-
-async function youtubeCaption(data){
+async function youtubeCaption(data) {
     let video_title = '';
     let yt_down_caption_endpoint = localStorage.getItem("yt_down_caption_endpoint") ?? ''
     if (!yt_down_caption_endpoint) {
@@ -1599,24 +1597,24 @@ async function youtubeCaption(data){
         },
         body: urlencoded
     }
-    await fetch(yt_down_caption_endpoint, data_init).then(function(res) {
+    await fetch(yt_down_caption_endpoint, data_init).then(function (res) {
         return res.json();
-    }).then(function(json) {
-        if(json.caption){
+    }).then(function (json) {
+        if (json.caption) {
             caption = json.caption;
         }
-        if(json.title){
+        if (json.title) {
             video_title = json.title;
         }
 
     });
-    if(caption === ''){
+    if (caption === '') {
         addWarning('Could not get subtitles for this video', false)
         removeLastMessage();
-    }else {
+    } else {
         let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
         let ele = document.querySelector(".message:nth-last-of-type(1)");
-        if(pre_function_text){
+        if (pre_function_text) {
             last_input = pre_function_text;
         }
         let cnt = `${last_input} <details><summary><b>Title</b>: ${video_title}</summary><br><b>Caption</b>: ${caption}</details>`;
@@ -1624,11 +1622,11 @@ async function youtubeCaption(data){
             ele.innerHTML = cnt;
         }
         pre_function_text = '';
-     //   conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n the caption of the video: <caption>${caption}</caption>`;
+        //   conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n the caption of the video: <caption>${caption}</caption>`;
         conversations.messages[conversations.messages.length - 1].content = cnt;
-        setTimeout(()=>{
+        setTimeout(() => {
             loadVideo()
-        },1000)
+        }, 1000)
         if (chosen_platform === 'google') {
             await geminiChat()
             toggleAnimation(true);
@@ -1796,7 +1794,6 @@ async function streamChat(can_use_tools = true) {
     }
 
 
-
     const requestOptions = {
         method: 'POST',
         headers: HTTP_HEADERS,
@@ -1852,7 +1849,7 @@ async function streamChat(can_use_tools = true) {
                             hljs.highlightAll();
                         } else {
                             // probably not stream - tool use
-                            toggleAnimation();
+                            toggleAnimation(true);
                             toolHandle(data);
                             return false;
                         }
@@ -1911,6 +1908,7 @@ async function streamChat(can_use_tools = true) {
     } finally {
         enableCopyForCode();
         enableChat();
+        toggleAnimation(true);
     }
 }
 
@@ -2062,11 +2060,11 @@ async function geminiStreamChat(fileUri, data) {
             console.log('has not tool')
         }
     }
-   // const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:streamGenerateContent?alt=sse&key=${{api_key}}`;
+    // const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:streamGenerateContent?alt=sse&key=${{api_key}}`;
 
-    let endpoint_stream = endpoint.replaceAll("{{model}}",model);
-    endpoint_stream = endpoint_stream.replaceAll("{{gen_mode}}","streamGenerateContent");
-    endpoint_stream = endpoint_stream.replaceAll("{{api_key}}",api_key+"&alt=sse");
+    let endpoint_stream = endpoint.replaceAll("{{model}}", model);
+    endpoint_stream = endpoint_stream.replaceAll("{{gen_mode}}", "streamGenerateContent");
+    endpoint_stream = endpoint_stream.replaceAll("{{api_key}}", api_key + "&alt=sse");
 
     let first_response = true;
     try {
@@ -2285,9 +2283,9 @@ async function googleSearch(data) {
         results.items.forEach(item => {
             txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
         })
-    }else if(results.text){
+    } else if (results.text) {
         txt_result = results.text;
-    }else {
+    } else {
         if (is_cse_active) {
             addWarning('Got no result from Google Search');
         }
@@ -2299,7 +2297,7 @@ async function googleSearch(data) {
     //  let last_input = conversations.messages[conversations.messages.length - 1].content;
 
     let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
-    if(pre_function_text){
+    if (pre_function_text) {
         last_input = pre_function_text;
     }
     let ele = document.querySelector(".message:nth-last-of-type(1)");
@@ -2389,8 +2387,8 @@ window.addEventListener('offline', () => {
 
 function javascriptCodeExecution(obj) {
     toggleAnimation(true);
-    js_code = obj.code
-        .replace(/\\n/g, "\n")
+    js_code = obj.code;
+    js_code.replace(/\\n/g, "\n")
         .replace(/\\"/g, "'")
         .replace(/\\'/g, "'")
         .replace(/console\.log/g, "")
@@ -2398,54 +2396,58 @@ function javascriptCodeExecution(obj) {
         .replace("<script>", "")
         .replace("<script", "")
         .replace("</script>", "");
-    let msg = `The AI want to execute the following code: <button class="accept_code_execution" onclick="executeJsCode(js_code)">Accept</button> <pre><code class="javascript language-javascript hljs">${js_code}</code></pre>`;
+    original_code = obj.code;
+    let msg = `The AI want to execute the following code: <button class="accept_code_execution" onclick="executeJsCode(js_code, original_code)">Accept</button> <pre><code class="javascript language-javascript hljs">${obj.code}</code></pre>`;
     addWarning(msg, false)
     setTimeout(() => {
         hljs.highlightAll();
     }, 500)
 }
 
-async function executeJsCode(code) {
+async function executeJsCode(code, realCode = '') {
     js_code = ''; // reset
+    original_code = '' // reset
     let response;
     try {
         response = await eval(code)
     } catch (error) {
         response = error;
     }
-    //temp_safe_mode = true; // if true disable html
+    if (realCode) {
+        // code that will be showed
+        code = realCode;
+    }
     chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${response}</span>`;
     document.querySelector("#send").click();
 }
 
 loadPlugins(); // load plugins
 
-function reloadPage(){
+function reloadPage() {
     // this code can be used be plugins
     document.location.reload()
 }
 
 
-
 // When in stream mode the scrolling may get blocked, this should free up the scrolling
-function unlockScroll(){
+function unlockScroll() {
     let chat_msg = document.querySelector("#chat-messages");
-    if(chat_msg){
+    if (chat_msg) {
         let last_position = chat_msg.scrollTop;
-        chat_msg.addEventListener("keydown", (event)=>{
-            if(event.key === "ArrowDown"){
-                if(chat_msg.scrollTop <= last_position){
+        chat_msg.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowDown") {
+                if (chat_msg.scrollTop <= last_position) {
                     //  chat_msg.scrollTop += 40;
                     console.log('forcing scroll down')
-                }else{
+                } else {
                     //  console.log('all fine: down')
                 }
                 last_position = chat_msg.scrollTop;
-            }else if(event.key === "ArrowUp"){
-                if(chat_msg.scrollTop >= last_position){
+            } else if (event.key === "ArrowUp") {
+                if (chat_msg.scrollTop >= last_position) {
                     // chat_msg.scrollTop -= 40;
                     console.log('forcing scroll up')
-                }else{
+                } else {
                     //console.log('all fine: up')
                 }
                 last_position = chat_msg.scrollTop;
@@ -2453,29 +2455,30 @@ function unlockScroll(){
         })
     }
 }
+
 unlockScroll();
 
-function whatTimeIsIt(){
+function whatTimeIsIt() {
     const today = new Date();
-    return today.toLocaleDateString('en-US') +" "+today.toLocaleTimeString();
+    return today.toLocaleDateString('en-US') + " " + today.toLocaleTimeString();
     // ex: 11/19/2024 10:18:57
 }
 
 function extractVideoId(text) {
-   let video_id = text.match(/youtube.com\/watch\?v=(.*)/)[1] ?? null;
-   if(video_id){
-       return video_id.substring(0,11);
-   }
-   return null;
+    let video_id = text.match(/youtube.com\/watch\?v=(.*)/)[1] ?? null;
+    if (video_id) {
+        return video_id.substring(0, 11);
+    }
+    return null;
 }
 
 function loadVideo() {
     let all_user_msgs = document.querySelectorAll(".user");
-    if(all_user_msgs.length){
-        let last_user_msg_ele = all_user_msgs[all_user_msgs.length -1];
+    if (all_user_msgs.length) {
+        let last_user_msg_ele = all_user_msgs[all_user_msgs.length - 1];
         let last_user_msg = last_user_msg_ele.innerHTML;
         let videoId = extractVideoId(last_user_msg);
-        if(!videoId){
+        if (!videoId) {
             return
         }
         let videoContainer = document.createElement("div");
@@ -2491,7 +2494,6 @@ function loadVideo() {
 }
 
 
-
 function mediaFull() {
     const all_images = document.querySelectorAll(".user img");
     all_images.forEach(media => {
@@ -2501,18 +2503,19 @@ function mediaFull() {
         };
     });
 }
+
 mediaFull();
 
 
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     // Instead of reloading the page, a new chat opens when the user types ctrl + r
     if (e.ctrlKey && e.key === 'r') {
         newChat();
         e.preventDefault();
-    }else if (!e.ctrlKey && !e.altKey && e.key) {
+    } else if (!e.ctrlKey && !e.altKey && e.key) {
         let active_tagName = document.activeElement.tagName
         if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
-            if(/^[a-zA-Z0-9]$/.test(e.key)){
+            if (/^[a-zA-Z0-9]$/.test(e.key)) {
                 document.getElementById('ta_chat').focus();
             }
         }
@@ -2524,5 +2527,5 @@ document.addEventListener('keydown', function(e) {
 let new_url = document.URL;
 new_url = new_url.split('?')[0];
 new_url = new_url.split("#")[0];
-new_url += "#"+chat_id;
+new_url += "#" + chat_id;
 history.pushState({url: new_url}, '', new_url);
