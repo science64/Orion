@@ -31,14 +31,15 @@ let PLATFORM_DATA = {
         models: [
             "gpt-4o",
             "gpt-4o-mini",
-            "o1-mini",
-            "o1-preview"
+            "o1-preview",
+            "o1-mini"
         ],
         name: "OpenAI",
         endpoint: "https://api.openai.com/v1/chat/completions"
     },
     google: {
         models: [
+            "gemini-exp-1206",
             "gemini-exp-1121",
             "learnlm-1.5-pro-experimental",
             "gemini-exp-1114",
