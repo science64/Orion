@@ -84,6 +84,7 @@ let PLATFORM_DATA = {
     },
     sambanova: {
         models: [
+            "Qwen2.5-Coder-32B-Instruct",
             "Meta-Llama-3.1-405B-Instruct",
             "Llama-3.2-90B-Vision-Instruct"
         ],
