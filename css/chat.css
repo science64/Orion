@@ -204,7 +204,15 @@ code.hljs::-webkit-scrollbar-track {
     cursor: pointer;
     border-radius: 4px;
     margin: 0 2px;
-
+}
+.btn-ft-group{
+    text-align: end;
+}
+.btn-ft-group .copy-btn{
+    color: #484646;
+    border: 1px solid #cccccc70;
+    margin-top: 5px;
+    background: #fff;
 }
 
 .container {

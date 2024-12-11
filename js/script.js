@@ -688,9 +688,11 @@ function enableCopyForCode(enable_down_too = true) {
             div_ele.className = 'btn-group';
             button.className = 'copy-btn';
             button.innerText = 'Copy';
+            button.title = "Copy code";
             const btn_down = button.cloneNode(false);
             btn_down.className = 'down-btn';
             btn_down.innerText = 'Down';
+            btn_down.title = "Download code";
             div_ele.append(button);
             if (enable_down_too) {
                 div_ele.append(btn_down);
@@ -711,7 +713,62 @@ function enableCopyForCode(enable_down_too = true) {
     if (enable_down_too) {
         enableCodeDownload();
     }
+    enableFullTextCopy();
 }
+
+
+
+
+
+function enableFullTextCopy() {
+    document.querySelectorAll('.chat .bot').forEach(div => {
+        let div_copy = document.createElement('div');
+        div_copy.innerHTML = div.innerHTML;
+        let btn_groups = div_copy.querySelectorAll(".btn-group");
+        btn_groups.forEach(btn => {
+            // So that it is not copied along with the text
+            btn.remove();
+        })
+
+        let all_ele = div_copy.querySelectorAll("*");
+        all_ele.forEach(element=>{
+            element.removeAttribute('id');
+        })
+
+        let play_audio_btn = div_copy.querySelector(".play_audio_btn");
+        if(play_audio_btn){
+            // So that it is not copied along with the text
+            play_audio_btn.remove();
+        }
+
+        let has_copy_btn = div.classList.contains('has_full_text_copy_btn')
+        if (!has_copy_btn) {   // to not be added more the one time
+            const button = document.createElement('button');
+            const ele = document.createElement('div');
+            ele.className = 'btn-ft-group';
+            button.className = 'copy-btn';
+            button.innerText = 'Copy full text';
+            ele.append(button);
+            div.append(ele);
+            button.addEventListener('click', () => {
+                const full_text = div_copy.innerHTML;
+                navigator.clipboard.writeText(full_text)
+                    .then(() => {
+                        button.innerText = 'Copied!';
+                        setTimeout(() => button.innerText = 'Copy full text', 2000);
+                    })
+                    .catch(err => console.error('Error:', err));
+            });
+            div.classList.add('has_full_text_copy_btn');
+        }
+    });
+
+}
+
+
+
+
+
 
 
 function enableCodeDownload() {
@@ -1026,7 +1083,7 @@ function setApiKeyDialog() {
 function ragEndpointDialog() {
     let use_rag = localStorage.getItem('use_rag_endpoint');
     let disable_advanced_rag = '';
-    if (use_rag == 'yes' || use_rag == null) {
+    if (use_rag === 'yes' || use_rag == null) {
         disable_advanced_rag = `
              <div><p><b class="beta_warning">Warning</b> If you no longer wish to use or see this alert, click disable.</p>
              <button onclick="disableRag()">Disable</button></div>`;
@@ -2510,10 +2567,10 @@ mediaFull();
 
 
 document.addEventListener('keydown', function (e) {
-    // Instead of reloading the page, a new chat opens when the user types ctrl + r
     if (e.ctrlKey && e.key === 'r') {
-        newChat();
-        e.preventDefault();
+        // Instead of reloading the page, a new chat opens when the user types ctrl + r
+        // newChat();
+        //e.preventDefault();
     } else if (!e.ctrlKey && !e.altKey && e.key) {
         let active_tagName = document.activeElement.tagName
         if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
