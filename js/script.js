@@ -747,7 +747,7 @@ function enableFullTextCopy() {
             const ele = document.createElement('div');
             ele.className = 'btn-ft-group';
             button.className = 'copy-btn';
-            button.innerText = 'Copy full text';
+            button.innerText = 'Copy text';
             ele.append(button);
             div.append(ele);
             button.addEventListener('click', () => {
@@ -755,7 +755,7 @@ function enableFullTextCopy() {
                 navigator.clipboard.writeText(full_text)
                     .then(() => {
                         button.innerText = 'Copied!';
-                        setTimeout(() => button.innerText = 'Copy full text', 2000);
+                        setTimeout(() => button.innerText = 'Copy text', 2000);
                     })
                     .catch(err => console.error('Error:', err));
             });
