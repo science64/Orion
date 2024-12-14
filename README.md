@@ -79,6 +79,8 @@ Please perform this functionality with caution and always check code before acce
 - When using Google Gemini you can ask it to execute codes directly in Google's own remote environment. For now only 
 Python codes are executed. The code and output will be returned.
 - Command example: `py: Run a python code to write "tseb eht sI noirO" in the inverse order`
+- Another example: `The United States has a population of 342,524,968, of which 480,000 die annually due to tobacco use. 
+What percentage is that?`
 
 # Google CSE API Key
 To search using Google, you will need Google CSE (Custom Search Engine) API Key and CX.

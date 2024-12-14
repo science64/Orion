@@ -15,6 +15,8 @@ let last_auto_yt_fn_call = 0;
 let is_chat_enabled = true;
 let SITE_TITLE = "Orion";
 let js_code = '';
+let js_code_exec_finished = true;
+let js_code_exec_output = '';
 let original_code = '';
 let temp_safe_mode = false;
 let pre_function_text = '';
@@ -2184,7 +2186,8 @@ async function geminiStreamChat(fileUri, data) {
                             story += code;
                         } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
                             let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
-                            let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output
+                            let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output;
+                            ce_output = ce_output.replaceAll("\n","<br>");
                             story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
                         }
 
@@ -2434,12 +2437,26 @@ chatButton.onmouseleave = () => {
     document.title = doc_title;
 }
 
+function removeOnlineOfflineMessages(){
+    let off_ele = document.querySelectorAll(".offline");
+    off_ele.forEach(ele=>{
+        ele.remove();
+    });
+
+    let on_ele = document.querySelectorAll(".online");
+    on_ele.forEach(ele=>{
+        ele.remove();
+    })
+}
+
 window.addEventListener('online', () => {
-    addWarning("You are online again!", false, 'success_dialog')
+    removeOnlineOfflineMessages();
+    addWarning("You are online again!", false, 'online')
 });
 
 window.addEventListener('offline', () => {
-    addWarning("You are offline!", false, 'fail_dialog')
+    removeOnlineOfflineMessages();
+    addWarning("You are offline!", false, 'offline')
 });
 
 
@@ -2455,7 +2472,7 @@ function javascriptCodeExecution(obj) {
         .replace("<script", "")
         .replace("</script>", "");
     original_code = obj.code;
-    let msg = `The AI want to execute the following code: <button class="accept_code_execution" onclick="executeJsCode(js_code, original_code)">Accept</button> <pre><code class="javascript language-javascript hljs">${obj.code}</code></pre>`;
+    let msg = `The AI want to execute the following code: <div class="center"><button class="accept_code_execution" onclick="executeJsCode(js_code, original_code)">Accept</button></div> <pre class="exclude_btn_group"><code class="javascript language-javascript hljs">${obj.code}</code></pre>`;
     addWarning(msg, false)
     setTimeout(() => {
         hljs.highlightAll();
@@ -2467,16 +2484,61 @@ async function executeJsCode(code, realCode = '') {
     original_code = '' // reset
     let response;
     try {
-        response = await eval(code)
+       // response = await eval(code)
+        response = await jsCodeExecutionSandbox(code);
     } catch (error) {
         response = error;
     }
     if (realCode) {
-        // code that will be showed
+        // code that will be shown
         code = realCode;
     }
-    chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${response}</span>`;
-    document.querySelector("#send").click();
+   let timer_jc = setInterval(() => {
+       if(js_code_exec_finished){
+           clearInterval(timer_jc);
+           chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${js_code_exec_output}</span>`;
+           document.querySelector("#send").click();
+       }
+   })
+}
+
+
+async function jsCodeExecutionSandbox(code) {
+    js_code_exec_finished  = false;
+    js_code_exec_output = '';
+    let old_iframe = document.querySelector("iframe#sandbox");
+    if(old_iframe){
+        old_iframe.remove();
+    }
+    let results = '';
+    const targetOrigin = window.location.origin;
+    const iframe = document.createElement("iframe");
+    iframe.id = 'sandbox';
+    iframe.style.display = 'none';
+    iframe.src = "sandbox.html";
+    document.body.append(iframe)
+    iframe.onload = () => {
+        iframe.contentWindow.postMessage({code: code}, targetOrigin);
+    };
+    window.onmessage = (event) => {
+        if(event.data){
+            console.log(event.data)
+            let clog = event.data?.args?.[0] ?? false;
+            if (clog !== false) {
+                clog = stringifyComplexValue(clog)
+                results += clog + '<br>';
+            } else{
+                results += stringifyComplexValue(event.data);
+                if(event.data.type === undefined){
+                    js_code_exec_output = results;
+                    js_code_exec_finished = true;
+                }
+            }
+        }else {
+            js_code_exec_output = results;
+            js_code_exec_finished = true;
+        }
+    }
 }
 
 loadPlugins(); // load plugins
@@ -2515,6 +2577,26 @@ function unlockScroll() {
 }
 
 unlockScroll();
+
+
+function stringifyComplexValue(value, indent = 0) {
+    const indentString = "  ".repeat(indent); // Two spaces for indentation
+    if (value === null) {
+        return "null";
+    } else if (typeof value === 'undefined') {
+        return "undefined";
+    } else if (typeof value !== 'object') { //Handle non-object and non-array values
+        return String(value); // Convert to string for non-objects, non arrays and null values
+    } else if (Array.isArray(value)) {
+        const elements = value.map(item => stringifyComplexValue(item, indent + 1));
+        return `[\n${indentString}  ${elements.join(`,\n${indentString}  `)}\n${indentString}]`;
+    } else { // Handle objects
+        const properties = Object.entries(value)
+            .map(([key, val]) => `${indentString}  "${key}": ${stringifyComplexValue(val, indent + 1)}`)
+            .join(`,\n`);
+        return `{\n${properties}\n${indentString}}`;
+    }
+}
 
 function whatTimeIsIt() {
     const today = new Date();
