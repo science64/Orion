@@ -2554,19 +2554,20 @@ function unlockScroll() {
     let chat_msg = document.querySelector("#chat-messages");
     if (chat_msg) {
         let last_position = chat_msg.scrollTop;
-        chat_msg.addEventListener("keydown", (event) => {
+        //  chat_msg.addEventListener("keydown", (event) => {
+        window.addEventListener("keydown", (event) => {
             if (event.key === "ArrowDown") {
                 if (chat_msg.scrollTop <= last_position) {
-                    //  chat_msg.scrollTop += 40;
-                    console.log('forcing scroll down')
+                    chat_msg.scrollTop += 35;
+                    //console.log('forcing scroll down')
                 } else {
                     //  console.log('all fine: down')
                 }
                 last_position = chat_msg.scrollTop;
             } else if (event.key === "ArrowUp") {
                 if (chat_msg.scrollTop >= last_position) {
-                    // chat_msg.scrollTop -= 40;
-                    console.log('forcing scroll up')
+                    chat_msg.scrollTop -= 35;
+                    //console.log('forcing scroll up')
                 } else {
                     //console.log('all fine: up')
                 }
