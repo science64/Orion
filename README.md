@@ -65,8 +65,10 @@ Ask AI to summarize a YouTube video or answer any question based on the video ca
 See an example of use below.
 - `Summarize this video https://www.youtube.com/watch?v=r7pEdhnS3tI`
 - `What is this video about? https://www.youtube.com/watch?v=qQviI1d_hFA`
-
 It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
+
+### Keyboard shortcut. 
+Press `Ctrl + Q` to close the current chat and start a new one.
 
 ### Retrieval-Augmented Generation (RAG)
 Search: Perform quick searches and retrieve relevant information with ease from Google.

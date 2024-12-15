@@ -2648,10 +2648,10 @@ mediaFull();
 
 
 document.addEventListener('keydown', function (e) {
-    if (e.ctrlKey && e.key === 'r') {
-        // Instead of reloading the page, a new chat opens when the user types ctrl + r
-        // newChat();
-        //e.preventDefault();
+    if (e.ctrlKey && e.key === 'q') {
+        //Closes the current chat and starts a new one
+         newChat();
+        e.preventDefault();
     } else if (!e.ctrlKey && !e.altKey && e.key) {
         let active_tagName = document.activeElement.tagName
         if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
