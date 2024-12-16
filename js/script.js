@@ -108,12 +108,34 @@ let PLATFORM_DATA = {
         name: "xAI",
         endpoint: "https://api.x.ai/v1/chat/completions"
     },
+    openrouter: {
+        models: [
+            "google/gemini-2.0-flash-exp:free"
+        ],
+        name: "OpenRouter",
+        endpoint: "https://openrouter.ai/api/v1/chat/completions"
+    },
+
+    together: {
+        models: [
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+        ],
+        name: "Together AI",
+        endpoint: "https://api.together.xyz/v1/chat/completions"
+    },
+    deepinfra: {
+        models: [
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+        ],
+        name: "Deep Infra",
+        endpoint: "https://api.deepinfra.com/v1/openai/chat/completions"
+    },
     ollama: {
         models: [],
         name: "Ollama",
         get_models_endpoint: "http://localhost:11434/v1/models",
         endpoint: "http://localhost:11434/v1/chat/completions"
-    },
+    }
     /* nvidia: {
          models: [
              "meta/llama-3.1-405b-instruct",
@@ -1913,9 +1935,12 @@ async function streamChat(can_use_tools = true) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${api_key}`,
         'x-api-key': `${api_key}`, // for Anthropic
-        "anthropic-version": "2023-06-01", // for Anthropic
-        "anthropic-dangerous-direct-browser-access": "true"
+
     };
+    if(chosen_platform === 'anthropic'){
+        HTTP_HEADERS["anthropic-version"] = "2023-06-01";
+        HTTP_HEADERS['anthropic-dangerous-direct-browser-access'] = "true";
+    }
 
     if (chosen_platform === "azure") {
         HTTP_HEADERS['api-key'] = api_key;
@@ -1998,19 +2023,22 @@ async function streamChat(can_use_tools = true) {
             const {done, value} = await reader.read();
             if (done) {
                 if (story === '') {
-                    cloned_response.json().then(data => {
-                        processFullData(data);
-                        if (story) {
-                            addConversation('assistant', story, true, true);
-                            enableCopyForCode(true);
-                            hljs.highlightAll();
-                        } else {
-                            // probably not stream - tool use
-                            toggleAnimation(true);
-                            toolHandle(data);
-                            return false;
-                        }
-                    })
+                       cloned_response.json().then(data => {
+                           processFullData(data);
+                           if (story) {
+                               addConversation('assistant', story, true, true);
+                               enableCopyForCode(true);
+                               hljs.highlightAll();
+                           } else {
+                               // probably not stream - tool use
+                               toggleAnimation(true);
+                               toolHandle(data);
+                               return false;
+                           }
+                       },error =>{
+                          addWarning(error)
+                       })
+
                 } else {
                     processBuffer(buffer);
                     addConversation('assistant', story, false, false);
