@@ -1593,7 +1593,7 @@ function ollamaGuide() {
   <pre><code>systemctl edit ollama.service</code></pre>
   <p>Add the following:</p>
   <pre><code>[Service]
-Environment=OLLAMA_ORIGINS=${this_domain}</code></pre>
+Environment="OLLAMA_ORIGINS=${this_domain}"</code></pre>
   <p><br>This will allow <strong>${this_domain}</strong> to access http://localhost:11434/</p>
 </div>`
 
