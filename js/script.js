@@ -583,7 +583,7 @@ function removeLastMessage(from_user = true) {
     }
 }
 
-let chatButton = document.querySelector(".chat-input button");
+let chatButton = document.querySelector("#send");
 let chat_textarea = document.querySelector(".chat-input textarea");
 
 function startChat() {
@@ -1161,6 +1161,7 @@ function setOptions() {
     platform_options += `</select></div>`;
 
     let plugin_option = `<button class="plugin_opt_btn" onclick="pluginOptions()">Plugins</button>`;
+    let add_new_models = `<button class="more_opt_btn" onclick="addModelsOptions()">Add Models</button>`;
     let more_option = `<button class="more_opt_btn" onclick="moreOptions()">More Options</button>`;
 
     let cnt =
@@ -1172,6 +1173,7 @@ function setOptions() {
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
          <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
          ${platform_info}
+          <p>${add_new_models}</p>
          <p>${plugin_option}</p>
          <p>${more_option}</p>
         
@@ -1339,6 +1341,101 @@ function moreOptions(show = 'all') {
 }
 
 
+function addModelsOptions(){
+    closeDialogs(); // close opened dialogs before show new one
+    let provider_options =
+        '<div><p>Add a new AI model</p>' +
+        '<p>Select the provider for which you want to add the new model.</p>' +
+        '<select name="provider">' +
+        '<option disabled="disabled" selected="selected">Select</option>';
+
+    Object.keys(PLATFORM_DATA).forEach(platform => {
+        if(platform !== 'ollama'){
+            // Ollama models is fetched automatically
+            let platform_name = PLATFORM_DATA[platform].name;
+            provider_options += `<option value="${platform}">${platform_name}</option>`;
+        }
+
+    })
+
+
+    let extra_models = localStorage.getItem("extra_models");
+    extra_models = JSON.parse(extra_models);
+    let remove_models = '';
+    if(extra_models){
+        remove_models = '<div><p>You can also remove these models!</p>';
+    }
+    for (const provider in extra_models) {
+        if (extra_models.hasOwnProperty(provider)) {
+            let provide_name = PLATFORM_DATA[provider].name;
+            let idx = 0;
+            extra_models[provider].forEach(model=>{
+                remove_models += `<button class="remove_model_btn" data-id="js_btn_${idx}" onclick="removeModel('${provider}', '${model}', ${idx})" title="From ${provide_name}">Remove ${model}</button>`;
+                let has_model = PLATFORM_DATA[provider].models.includes(model);
+                if(!has_model){
+                    PLATFORM_DATA[provider].models.push(model);
+                }
+                idx++;
+            })
+        }
+    }
+    if(remove_models){
+        remove_models += '</div>';
+    }
+
+    provider_options += `</select></div>`;
+
+    let new_model =
+        '<input name="new_model" placeholder="Model ID">' +
+        '<button onclick="addNewModel()" class="save_new_model">Add Model</button>';
+    let cnt =
+        `<div>${provider_options}</div><div>${new_model}</div>${remove_models}`;
+    createDialog(cnt, 0, 'optionsDialog');
+}
+
+
+function removeModel(provider, model, id){
+    let extra_models = localStorage.getItem('extra_models');
+    extra_models = JSON.parse(extra_models);
+    extra_models[provider] = extra_models[provider].filter(item => item !== model);
+    localStorage.setItem('extra_models', JSON.stringify(extra_models));
+    let btn = document.querySelector(`[data-id=js_btn_${id}]`);
+    btn.remove();
+    loadExtraModels();
+}
+
+function addNewModel(){
+    let provider = document.querySelector("select[name=provider]");
+    let new_model = document.querySelector("input[name=new_model]");
+    new_model = new_model.value.trim();
+    provider = provider.value.trim().toLowerCase();
+    if(provider === 'select'){
+        addWarning('Please select a provider', true, 'fail_dialog');
+        provider = '';
+    }
+    if(provider && new_model){
+        let has_model = PLATFORM_DATA[provider]?.models?.includes(new_model) ?? false;
+        if(!has_model){
+            let extra_models = localStorage.getItem("extra_models");
+            if(extra_models === null){
+                extra_models = '{}';
+            }
+            extra_models = JSON.parse(extra_models);
+            if(extra_models[provider]){
+                extra_models[provider].push(new_model);
+            }else {
+                extra_models[provider] = [new_model];
+            }
+            localStorage.setItem('extra_models', JSON.stringify(extra_models));
+            addWarning('New model added successfully!',true, 'success_dialog');
+        }else {
+            let msg = `Model ${new_model} for ${provider} already exists!`;
+            addWarning(msg, true, 'fail_dialog');
+        }
+    }
+    loadExtraModels();
+}
+
 function setYouTubeCaptionApiEndpoint() {
     let ele = document.querySelector("#yt_down_caption_endpoint");
     if (ele) {
@@ -1350,8 +1447,7 @@ function setYouTubeCaptionApiEndpoint() {
 
 function dialogSetYouTubeCaptionApiEndpoint() {
     let cnt =
-        `
-        <p>Configure a YouTube caption extraction API endpoint.</p>
+        `<p>Configure a YouTube caption extraction API endpoint.</p>
         <input id="yt_down_caption_endpoint" name="yt_down_caption_endpoint" placeholder="API Endpoint">
         <button onclick="setYouTubeCaptionApiEndpoint()">Save</button>
         <p>This will allow you to share a YouTube URL, and the AI will respond based on the caption of the shared video.</p>`
@@ -1863,8 +1959,9 @@ async function streamChat(can_use_tools = true) {
 
     if (!endpoint) {
         setOptions();
-        toggleAnimation();
+        toggleAnimation(true);
         removeLastMessage();
+        enableChat();
         return false;
     }
 
@@ -1876,7 +1973,7 @@ async function streamChat(can_use_tools = true) {
                     addWarning(data);
                 }, 500)
                 removeLastMessage();
-                toggleAnimation();
+                toggleAnimation(true);
                 enableChat();
                 let the_code = data.code ?? data.error?.code ?? data.error?.message ?? data.message ?? '';
                 if (the_code === "wrong_api_key" || the_code === "invalid_api_key" || the_code === "invalid x-api-key" || the_code === "invalid api token") {
@@ -1947,7 +2044,7 @@ async function streamChat(can_use_tools = true) {
             hljs.highlightAll();
             if (first_response) {
                 first_response = false;
-                toggleAnimation();
+                toggleAnimation(true);
                 botMessageDiv.scrollIntoView();
             }
 
@@ -2647,6 +2744,24 @@ function mediaFull() {
 
 mediaFull();
 
+
+
+function loadExtraModels(){
+    let extra_models = localStorage.getItem("extra_models");
+    extra_models = JSON.parse(extra_models);
+    for (const provider in extra_models) {
+        if (extra_models.hasOwnProperty(provider)) {
+            extra_models[provider].forEach(model=>{
+                let has_model =  PLATFORM_DATA[provider].models.includes(model);
+                if(!has_model){
+                    PLATFORM_DATA[provider].models.push(model);
+                }
+            })
+        }
+    }
+}
+
+loadExtraModels();
 
 document.addEventListener('keydown', function (e) {
     if (e.ctrlKey && e.key === 'q') {

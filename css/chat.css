@@ -4,6 +4,7 @@ html, body {
     padding: 0;
     background-color: #fbfbfb;
 }
+
 .exclude_btn_group .btn-group{
     display: none;
 }
@@ -166,6 +167,11 @@ button.play_audio_btn {
 .red_btn {
     background-color: #ff0000 !important;
     border: 1px solid #ccc !important;
+}
+
+.remove_model_btn{
+    background-color: #ff5353 !important;
+    color: #000 !important;
 }
 
 .cl_justify {
@@ -356,6 +362,7 @@ th {
 .optionsDialog {
     background-color: #fff !important;
     z-index: 999;
+    min-height: 300px;
 }
 
 .optionsDialog button {
@@ -785,6 +792,12 @@ textarea.system_prompt {
     }
 }
 
+
+@media all and (min-width: 800px) {
+    .chat-input button{
+        padding: 0 11px;
+    }
+}
 
 @media all and (max-width: 1200px) {
     .chat {
