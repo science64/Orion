@@ -1468,11 +1468,18 @@ function setYouTubeCaptionApiEndpoint() {
 }
 
 function dialogSetYouTubeCaptionApiEndpoint() {
+    let path_name = location.pathname.replace(/\/$/,""); // remove "/" at the end
+    let caption_api_endpoint = `${location.origin}${path_name}/plugins/php/yt_caption.php`;
+    let input_value = '';
+    if(!location.hostname.match("github.io")){
+        input_value = `value="${caption_api_endpoint}"`;
+    }
     let cnt =
         `<p>Configure a YouTube caption extraction API endpoint.</p>
-        <input id="yt_down_caption_endpoint" name="yt_down_caption_endpoint" placeholder="API Endpoint">
+        <input ${input_value} id="yt_down_caption_endpoint" name="yt_down_caption_endpoint" placeholder="API Endpoint">
         <button onclick="setYouTubeCaptionApiEndpoint()">Save</button>
         <p>This will allow you to share a YouTube URL, and the AI will respond based on the caption of the shared video.</p>`
+
     createDialog(cnt, 0, 'optionsDialog');
 }
 
@@ -2681,6 +2688,9 @@ function unlockScroll() {
         let last_position = chat_msg.scrollTop;
         //  chat_msg.addEventListener("keydown", (event) => {
         window.addEventListener("keydown", (event) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                return; // focus is in input or textarea
+            }
             if (event.key === "ArrowDown") {
                 if (chat_msg.scrollTop <= last_position) {
                     chat_msg.scrollTop += 35;
@@ -2731,7 +2741,7 @@ function whatTimeIsIt() {
 }
 
 function extractVideoId(text) {
-    let video_id = text.match(/youtube.com\/watch\?v=(.*)/)[1] ?? null;
+    let video_id = text.match(/youtube.com\/watch\?v=(.*)/)?.[1] ?? null;
     if (video_id) {
         return video_id.substring(0, 11);
     }

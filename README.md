@@ -123,9 +123,8 @@ To do this, click on "Options" -> Plugins and paste the JavaScript code provided
 
 
 ```javascript
-
 let proxy_url =  window.location.origin + window.location.pathname + "/proxy.php";
-// This assumes that the proxy url is on the same host, if not enter it here
+// ^^ This assumes the proxy URL is on the same host, otherwise enter it above. ^^
 if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
   endpoint = proxy_url+"?platform="+chosen_platform;
 }
@@ -155,7 +154,14 @@ button_send.addEventListener("click", ()=>{
 Be careful when using any other proxy as sensitive data will be passed through it like your API key and messages. 
 Use only trusted services.
 
-# YouTube Captions
-To enable AI responses based on YouTube video captions, create an API endpoint to fetch them.
+# YouTube Caption
+To enable AI responses based on YouTube video subtitles, set up an API endpoint to get them.
 
-Here's a code snippet you can use as a basis for easily implementing this. https://github.com/EliasPereirah/YoutubeSubtitlesDownloader
+When submitting a YouTube URL in the chat, a popup will open allowing you to set up this endpoint.
+
+This repository already provides this functionality in the plugins folder, to use it you will need to have
+PHP enabled on your server.
+
+If you wish, you can implement the following code on another server of your choice and point to the correct endpoint.
+
+Code: https://github.com/EliasPereirah/YoutubeSubtitlesDownloader
