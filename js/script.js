@@ -365,8 +365,9 @@ function getPreviousChatTopic() {
     return all_topics;
 }
 
-function removeChat(div, id) {
-    if (can_delete_history) {
+// force=true will ignore can_delete_history
+function removeChat(div, id, force = false) {
+    if (can_delete_history || force) {
         let the_chat = JSON.parse(localStorage.getItem(id));
         if (div.classList.contains('confirm_deletion')) {
             localStorage.removeItem(id);
@@ -1475,10 +1476,13 @@ function dialogSetYouTubeCaptionApiEndpoint() {
         input_value = `value="${caption_api_endpoint}"`;
     }
     let cnt =
-        `<p>Configure a YouTube caption extraction API endpoint.</p>
+        `<div><p>Configure a YouTube caption extraction API endpoint.</p>
         <input ${input_value} id="yt_down_caption_endpoint" name="yt_down_caption_endpoint" placeholder="API Endpoint">
         <button onclick="setYouTubeCaptionApiEndpoint()">Save</button>
-        <p>This will allow you to share a YouTube URL, and the AI will respond based on the caption of the shared video.</p>`
+        <p>This will allow you to share a YouTube URL, and the AI will respond based on the caption of the shared video.</p></div>
+        <div><p>For more information check out the 
+        <a target="_blank" href="https://github.com/EliasPereirah/OrionChat/tree/master#youtube-caption">link</a></p></div>
+        `
 
     createDialog(cnt, 0, 'optionsDialog');
 }
@@ -2812,6 +2816,13 @@ document.addEventListener('keydown', function (e) {
             if (/^[a-zA-Z0-9]$/.test(e.key)) {
                 document.getElementById('ta_chat').focus();
             }
+        }
+    }else if (e.ctrlKey && e.key === 'Delete') {
+        console.log('xx')
+        let div_topic = document.querySelector(`[data-id='${chat_id}']`);
+        if(div_topic){
+            console.log(div_topic)
+            removeChat(div_topic, chat_id, true);
         }
     }
 
