@@ -436,6 +436,7 @@ function removeChat(div, id, force = false) {
  **/
 function newChat() {
     toggleAnimation(true);
+    closeDialogs();
     document.title = SITE_TITLE;
     chat_id = new Date().getTime(); // generate a new chat_id
     let new_url = document.URL;
@@ -1835,6 +1836,7 @@ async function youtubeCaption(data) {
 
 async function streamChat(can_use_tools = true) {
     let first_response = true;
+    addFileToPrompt();
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
     let all_parts = [];
@@ -1852,7 +1854,6 @@ async function streamChat(can_use_tools = true) {
         }
     }
 
-    addFileToPrompt();
     conversations.messages.forEach(part => {
             //let role = part.role === 'assistant' ? 'model' : part.role;
             let cnt = part.content;
