@@ -2876,7 +2876,6 @@ function addFileToPrompt() {
         }else if (e.ctrlKey && e.key === 'Delete') {
             let div_topic = document.querySelector(`[data-id='${chat_id}']`);
             if(div_topic){
-                console.log(div_topic)
                 removeChat(div_topic, chat_id, true);
             }
         }
