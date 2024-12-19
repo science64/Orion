@@ -1,6 +1,6 @@
-// Text-to-Speech
-let elabs_model_id = "pFZP5JQG7iQjIQuC4Bku"; // Lily - ElevenLabs model_id
-// More models here: https://elevenlabs.io/docs/voices/default-voices
+// Text-to-Speech With ElevenLabs
+let voice_id  = "pFZP5JQG7iQjIQuC4Bku"; // Lily - ElevenLabs voice_id
+// More voices here: https://elevenlabs.io/docs/product/voices/default-voices
 let elabs_api_key = localStorage.getItem("elabs_api_key");
 let audio_in_queue = false;
 let pause_svg_btn = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -45,13 +45,14 @@ function genAudio(text, div){
         already_generated = true;
         const fields = {
             text: text,
-            model_id: "eleven_multilingual_v2",
+           // model_id: "eleven_multilingual_v2",
+            model_id: "eleven_flash_v2_5",
             voice_settings: {
                 stability: 0.5,
                 similarity_boost: 0.75
             }
         };
-        let endpoint = `https://api.elevenlabs.io/v1/text-to-speech/${elabs_model_id}`;
+        let endpoint = `https://api.elevenlabs.io/v1/text-to-speech/${voice_id}`;
         audio_in_queue = true;
         fetch(endpoint, {
             method: "POST",
