@@ -1,4 +1,4 @@
-// Speech-to-Text
+// Speech-to-Text With Groq
 let media_file = '';
 let input_file = '';
 let groq_api_key = '';

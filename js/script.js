@@ -27,7 +27,6 @@ showdown.setOption('ghMentions', false); // if true "@something" became github.c
 showdown.setOption("openLinksInNewWindow", true);
 let converter = new showdown.Converter();
 
-
 let PLATFORM_DATA = {
     openai: {
         models: [
@@ -876,6 +875,7 @@ function createDialog(text, duration_seconds = 0, add_class_name = '', can_delet
 function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     let all_parts = [];
     let system_prompt = getSystemPrompt();
+    addFileToPrompt();
     conversations.messages.forEach(part => {
         let role = part.role === 'assistant' ? 'model' : part.role;
         all_parts.push({
@@ -887,6 +887,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             ]
         });
     })
+
 
     if (base64String) {
         geminiUploadImage().then(response => {
@@ -926,7 +927,9 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
 
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
-    if (cmd) {
+    if (cmd && base64String !== '') {
+        // cmd from user prompt will be removed just if it has no base64String
+        // this is because if it has, the prompt will be submitted fot geminiChat function again
         data.contents[0].pop(); // remove the last input - something like cmd: prompt
 
         // add the last input but without the "cmd:", just the prompt
@@ -988,7 +991,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     }
 
     if (!data.tools) {
-        if (last_user_input.match(/^py:|python:/)) {
+        if (last_user_input.match(/^py:|python:/i)) {
             // code execution command
             data.tools = [{'code_execution': {}}];
         }
@@ -1849,25 +1852,7 @@ async function streamChat(can_use_tools = true) {
         }
     }
 
-    let mime = mimeType.split("/")[0];
-    let modelAcceptedMimes = ['audio','video','image'];
-    let appended_txt_file = '';
-    if(!modelAcceptedMimes.includes(mime)){
-        let real_b64 = base64String.split(',')[1];
-        appended_txt_file = atob(real_b64)
-        let ele = document.querySelector(".message:nth-last-of-type(1)");
-        if(appended_txt_file.trim().length > 0){
-            last_user_input = `${last_user_input} \n <pre><code>${appended_txt_file}</code></pre>`;
-        }
-        if (ele.classList.contains('user')) {
-            ele.innerHTML = last_user_input;
-        }
-        conversations.messages[conversations.messages.length - 1].content = last_user_input;
-        base64String = '';
-        mimeType = '';
-    }
-
-
+    addFileToPrompt();
     conversations.messages.forEach(part => {
             //let role = part.role === 'assistant' ? 'model' : part.role;
             let cnt = part.content;
@@ -2126,729 +2111,782 @@ async function streamChat(can_use_tools = true) {
     }
 }
 
-function detectAttachment() {
-    const fileInput = document.getElementById('fileInput');
-    if (fileInput) {
-        fileInput.onchange = () => {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                mimeType = file.type;
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    base64String = event.target.result;
-                    fileInput.parentElement.classList.add('has_attachment')
-                    fileInput.value = '';
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-    }
-}
 
-detectAttachment();
-
-
-async function geminiUploadImage() {
-    if (!base64String) {
+// add file like json, md, txt to user prompt
+// the addition will occur if it is not an audio, video or image file
+function addFileToPrompt() {
+    if(base64String === ''){
         return false;
     }
 
-    // the same content will not be uploaded again in less than 23 hours for Google Gemini
-    let md5_value = MD5(decodeURIComponent(encodeURIComponent(base64String)));
-    let upload_date = localStorage.getItem(md5_value);
-    let today_date = new Date().getTime();
-    if (upload_date) {
-        upload_date = parseInt(upload_date);
-        upload_date = new Date(upload_date);
-        const differ_ms = today_date - upload_date;
-        const d_seconds = Math.floor(differ_ms / 1000);
-        const d_minutes = Math.floor(d_seconds / 60);
-        const d_hours = Math.floor(d_minutes / 60);
-        if (d_hours < 48) {
-            let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
-            if (store_fileUri) {
-                return store_fileUri;
-            }
+    let gemini_supported_mimeTypes = [
+        "application/pdf",
+        "application/x-javascript",
+        "text/javascript",
+        "application/x-python",
+        "text/x-python",
+        "text/plain",
+        "text/html",
+        "text/css",
+        "text/md",
+        "text/csv",
+        "text/xml",
+        "text/rtf"
+    ]
+
+    if(chosen_platform === 'google' && gemini_supported_mimeTypes.includes(mimeType)){
+        // No need to convert to text, gemini can handle that type of file
+        return false;
+    }
+
+
+    let last_input_from_user = conversations.messages[conversations.messages.length - 1].content;
+    let mime = mimeType.split("/")[0].toLowerCase();
+    let the_type = mimeType.split("/")[1];
+    if(the_type && the_type.toLowerCase() === 'pdf'){
+        return false;
+    }
+    let except = ['audio', 'video', 'image'];
+    let appended_txt_file = '';
+    if (!except.includes(mime)) {
+        let real_b64 = base64String.split(',')[1];
+        appended_txt_file = atob(real_b64)
+        let ele = document.querySelector(".message:nth-last-of-type(1)");
+        if (appended_txt_file.trim().length > 0) {
+            last_input_from_user = `${last_input_from_user} \n <pre><code>${appended_txt_file}</code></pre>`;
         }
-
-    } else {
-        console.log('file is new')
-    }
-
-    let baseUrl = 'https://generativelanguage.googleapis.com';
-
-    mimeType = base64String.substring(base64String.indexOf(":") + 1, base64String.indexOf(";"));
-
-    const byteCharacters = atob(base64String.split(',')[1]);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    let imgBlob = new Blob([byteArray], {type: mimeType});
-    try {
-        // Define headers and initiate the resumable upload
-        const startUploadOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Goog-Upload-Protocol': 'resumable',
-                'X-Goog-Upload-Command': 'start',
-                'X-Goog-Upload-Header-Content-Length': imgBlob.size,
-                'X-Goog-Upload-Header-Content-Type': imgBlob.type,
-            },
-            body: JSON.stringify({'file': {'display_name': 'TEXT'}}),
-        };
-
-        const startRes = await fetch(`${baseUrl}/upload/v1beta/files?key=${api_key}`, startUploadOptions);
-        const uploadUrl = startRes.headers.get('X-Goog-Upload-URL');
-
-        // Upload the actual bytes
-        const uploadOptions = {
-            method: 'POST',
-            headers: {
-                'Content-Length': imgBlob.size,
-                'X-Goog-Upload-Offset': '0',
-                'X-Goog-Upload-Command': 'upload, finalize',
-            },
-            body: imgBlob,
-        };
-
-        const uploadRes = await fetch(uploadUrl, uploadOptions);
-        const fileInfo = await uploadRes.json();
-        const fileUri = fileInfo.file.uri;
-
-
-        let file_state = ''
-        let start_time = new Date().getTime();
-        while (file_state !== 'ACTIVE') {
-            console.log('while: file_state:' + file_state)
-            await fetch(fileUri + "?key=" + api_key)
-                .then(response => response.json())
-                .then(data => {
-                    file_state = data.state;
-                })
-                .catch(error => {
-                    console.error('Request error:', error);
-                });
-            if (file_state === 'ACTIVE') {
-                break;
-            } else {
-                await delay(5000); // wait 5 seconds
-                // wait 5 secs before verify again
-            }
-            let past_time = new Date().getTime() - start_time;
-            let past_seconds = past_time / 1000;
-            if (past_seconds > 180) {
-                addWarning('Upload is taking to much time. Try again later.', false)
-                console.log('Upload is taking to much time')
-                break;
-            }
-
-
+        if (ele.classList.contains('user')) {
+            ele.innerHTML = last_input_from_user;
         }
-
-        localStorage.setItem('file_' + md5_value, fileUri);
-        localStorage.setItem(md5_value, new Date().getTime().toString());
-
-        return fileUri;
-
-
-    } catch (error) {
-        console.error('Error:', error);
+        conversations.messages[conversations.messages.length - 1].content = last_input_from_user;
+        base64String = '';
+        mimeType = '';
     }
-    return false;
 }
 
-
-async function geminiStreamChat(fileUri, data) {
-    last_user_input = conversations.messages[conversations.messages.length - 1].content;
-    if (needToolUse(last_user_input)) {
-        let tool_name = whichTool(last_user_input);
-        let tool_compatibility = `google_compatible`;
-        let the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
-        if (the_tool) {
-            geminiChat(fileUri, false)
-        } else {
-            console.log('has not tool')
+    function detectAttachment() {
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput) {
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    mimeType = file.type;
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        base64String = event.target.result;
+                        fileInput.parentElement.classList.add('has_attachment')
+                        fileInput.value = '';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            }
         }
     }
-    // const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:streamGenerateContent?alt=sse&key=${{api_key}}`;
 
-    let endpoint_stream = endpoint.replaceAll("{{model}}", model);
-    endpoint_stream = endpoint_stream.replaceAll("{{gen_mode}}", "streamGenerateContent");
-    endpoint_stream = endpoint_stream.replaceAll("{{api_key}}", api_key + "&alt=sse");
 
-    let first_response = true;
-    try {
-        const the_response = await fetch(endpoint_stream, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
+    detectAttachment();
 
-        if (!the_response.ok) {
-            the_response.json().then(data => {
-                setTimeout(() => {
-                    addWarning(data);
-                }, 500)
-                removeLastMessage();
-                toggleAnimation(true);
-                enableChat();
-                let tt = data.error?.message ?? 'nada';
-                if (tt.match(/API key not valid/)) {
-                    setApiKeyDialog();
-                }
-            })
+    async function geminiUploadImage() {
+        if (!base64String) {
             return false;
         }
-        const reader = the_response.body.getReader();
-        let chatContainer = document.querySelector('#chat-messages'); // Get the chat container
-        const botMessageDiv = document.createElement('div');  // Create the bot message div
-        botMessageDiv.classList.add('message', 'bot');      // Add the classes
-        chatContainer.append(botMessageDiv);           // Append to the chat
 
-        story = '';
-
-        while (true) {
-            const {done, value} = await reader.read();
-            if (done) {
-                if (story) {
-                    addConversation('assistant', story, false, false)
-                    toggleAnimation(true)
+        // the same content will not be uploaded again in less than 23 hours for Google Gemini
+        let md5_value = MD5(decodeURIComponent(encodeURIComponent(base64String)));
+        let upload_date = localStorage.getItem(md5_value);
+        let today_date = new Date().getTime();
+        if (upload_date) {
+            upload_date = parseInt(upload_date);
+            upload_date = new Date(upload_date);
+            const differ_ms = today_date - upload_date;
+            const d_seconds = Math.floor(differ_ms / 1000);
+            const d_minutes = Math.floor(d_seconds / 60);
+            const d_hours = Math.floor(d_minutes / 60);
+            if (d_hours < 48) {
+                let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
+                if (store_fileUri) {
+                    return store_fileUri;
                 }
-                break;
             }
 
-            const textDecoder = new TextDecoder('utf-8');
-            const chunk = textDecoder.decode(value);
-            // Parse the SSE stream
-            chunk.split('\n').forEach(part => {
-                if (part.startsWith('data: ')) {
-                    try {
-                        let jsonData = JSON.parse(part.substring('data: '.length));
-                        if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            story += jsonData.candidates[0].content?.parts[0].text;
-                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code) {
-                            let code = jsonData.candidates[0].content.parts[0].executableCode.code;
-                            let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
-                            code_lang = code_lang.toLowerCase();
-                            code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
-                            story += code;
-                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
-                            let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
-                            let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output;
-                            ce_output = ce_output.replaceAll("\n","<br>");
-                            story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
-                        }
+        } else {
+            console.log('file is new')
+        }
 
-                        let finished_reason = jsonData.candidates[0].finishReason ?? '';
-                        if (finished_reason && finished_reason !== 'STOP') {
-                            setTimeout(() => {
-                                addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
-                            }, 500)
-                        }
+        let baseUrl = 'https://generativelanguage.googleapis.com';
 
-                    } catch (error) {
-                        addWarning(error, false);
-                        console.error("Error:", error);
-                    }
+        mimeType = base64String.substring(base64String.indexOf(":") + 1, base64String.indexOf(";"));
+
+        const byteCharacters = atob(base64String.split(',')[1]);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        let imgBlob = new Blob([byteArray], {type: mimeType});
+        try {
+            // Define headers and initiate the resumable upload
+            const startUploadOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'start',
+                    'X-Goog-Upload-Header-Content-Length': imgBlob.size,
+                    'X-Goog-Upload-Header-Content-Type': imgBlob.type,
+                },
+                body: JSON.stringify({'file': {'display_name': 'TEXT'}}),
+            };
+
+            const startRes = await fetch(`${baseUrl}/upload/v1beta/files?key=${api_key}`, startUploadOptions);
+            const uploadUrl = startRes.headers.get('X-Goog-Upload-URL');
+
+            // Upload the actual bytes
+            const uploadOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Length': imgBlob.size,
+                    'X-Goog-Upload-Offset': '0',
+                    'X-Goog-Upload-Command': 'upload, finalize',
+                },
+                body: imgBlob,
+            };
+
+            const uploadRes = await fetch(uploadUrl, uploadOptions);
+            const fileInfo = await uploadRes.json();
+            const fileUri = fileInfo.file.uri;
+
+
+            let file_state = ''
+            let start_time = new Date().getTime();
+            while (file_state !== 'ACTIVE') {
+                console.log('while: file_state:' + file_state)
+                await fetch(fileUri + "?key=" + api_key)
+                    .then(response => response.json())
+                    .then(data => {
+                        file_state = data.state;
+                    })
+                    .catch(error => {
+                        console.error('Request error:', error);
+                    });
+                if (file_state === 'ACTIVE') {
+                    break;
+                } else {
+                    await delay(5000); // wait 5 seconds
+                    // wait 5 secs before verify again
                 }
+                let past_time = new Date().getTime() - start_time;
+                let past_seconds = past_time / 1000;
+                if (past_seconds > 180) {
+                    addWarning('Upload is taking to much time. Try again later.', false)
+                    console.log('Upload is taking to much time')
+                    break;
+                }
+
+
+            }
+
+            localStorage.setItem('file_' + md5_value, fileUri);
+            localStorage.setItem(md5_value, new Date().getTime().toString());
+
+            return fileUri;
+
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+        return false;
+    }
+
+
+    async function geminiStreamChat(fileUri, data) {
+        last_user_input = conversations.messages[conversations.messages.length - 1].content;
+        if (needToolUse(last_user_input)) {
+            let tool_name = whichTool(last_user_input);
+            let tool_compatibility = `google_compatible`;
+            let the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
+            if (the_tool) {
+                geminiChat(fileUri, false)
+            } else {
+                console.log('has not tool')
+            }
+        }
+        // const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:streamGenerateContent?alt=sse&key=${{api_key}}`;
+
+        let endpoint_stream = endpoint.replaceAll("{{model}}", model);
+        endpoint_stream = endpoint_stream.replaceAll("{{gen_mode}}", "streamGenerateContent");
+        endpoint_stream = endpoint_stream.replaceAll("{{api_key}}", api_key + "&alt=sse");
+
+        let first_response = true;
+        try {
+            const the_response = await fetch(endpoint_stream, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             });
-            if (first_response) {
-                first_response = false;
-                toggleAnimation(true);
-                botMessageDiv.scrollIntoView();
+
+            if (!the_response.ok) {
+                the_response.json().then(data => {
+                    setTimeout(() => {
+                        addWarning(data);
+                    }, 500)
+                    removeLastMessage();
+                    toggleAnimation(true);
+                    enableChat();
+                    let tt = data.error?.message ?? 'nada';
+                    if (tt.match(/API key not valid/)) {
+                        setApiKeyDialog();
+                    }
+                })
+                return false;
             }
-            if (story) {
-                botMessageDiv.innerHTML = converter.makeHtml(story);
+            const reader = the_response.body.getReader();
+            let chatContainer = document.querySelector('#chat-messages'); // Get the chat container
+            const botMessageDiv = document.createElement('div');  // Create the bot message div
+            botMessageDiv.classList.add('message', 'bot');      // Add the classes
+            chatContainer.append(botMessageDiv);           // Append to the chat
+
+            story = '';
+
+            while (true) {
+                const {done, value} = await reader.read();
+                if (done) {
+                    if (story) {
+                        addConversation('assistant', story, false, false)
+                        toggleAnimation(true)
+                    }
+                    break;
+                }
+
+                const textDecoder = new TextDecoder('utf-8');
+                const chunk = textDecoder.decode(value);
+                // Parse the SSE stream
+                chunk.split('\n').forEach(part => {
+                    if (part.startsWith('data: ')) {
+                        try {
+                            let jsonData = JSON.parse(part.substring('data: '.length));
+                            if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                                story += jsonData.candidates[0].content?.parts[0].text;
+                            } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code) {
+                                let code = jsonData.candidates[0].content.parts[0].executableCode.code;
+                                let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
+                                code_lang = code_lang.toLowerCase();
+                                code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
+                                story += code;
+                            } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
+                                let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
+                                let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output;
+                                ce_output = ce_output.replaceAll("\n","<br>");
+                                story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
+                            }
+
+                            let finished_reason = jsonData.candidates[0].finishReason ?? '';
+                            if (finished_reason && finished_reason !== 'STOP') {
+                                setTimeout(() => {
+                                    addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
+                                }, 500)
+                            }
+
+                        } catch (error) {
+                            addWarning(error, false);
+                            console.error("Error:", error);
+                        }
+                    }
+                });
+                if (first_response) {
+                    first_response = false;
+                    toggleAnimation(true);
+                    botMessageDiv.scrollIntoView();
+                }
+                if (story) {
+                    botMessageDiv.innerHTML = converter.makeHtml(story);
+                }
+                hljs.highlightAll();
             }
-            hljs.highlightAll();
-        }
 
-    } catch (error) {
-        console.error("Error:", error);
-        addWarning('Error: ' + error.message)
-        toggleAnimation(true);
-        enableChat();
-    } finally {
-        enableCopyForCode();
-        enableChat();
-        toggleAnimation(true)
-    }
-} // geminiStreamChat
-
-
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-function processDataPart(part) {
-    let jsonData;
-    if (chosen_platform === 'anthropic') {
-        jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
-        if (jsonData.delta?.text) {
-            story += jsonData.delta.text;
-        }
-    } else {
-        jsonData = JSON.parse(part.toString().substring('data: '.length));
-        if (chosen_platform === 'cohere') {
-            if (jsonData.delta?.message?.content?.text) {
-                story += jsonData.delta.message.content.text;
-            }
-        } else {
-            if (jsonData.choices?.[0]?.delta?.content) {
-                story += jsonData.choices[0].delta.content;
-            }
-        }
-    }
-}
-
-
-function processFullData(jsonData) {
-    if (chosen_platform === 'anthropic') {
-        if (jsonData.content?.[0].text) {
-            story += jsonData.content[0].text;
-        }
-    } else {
-        if (chosen_platform === 'cohere') {
-            if (jsonData.message?.content?.[0]?.text) {
-                story += jsonData.message.content[0].text;
-            }
-        } else {
-            if (jsonData.choices?.[0]?.message?.content) {
-                story += jsonData.choices[0].message.content;
-            }
-        }
-    }
-}
-
-function processBuffer(remainingBuffer) {
-    if (remainingBuffer.trim().length > 0) {
-        try {
-            processDataPart(remainingBuffer);
         } catch (error) {
-            console.error('Error processing final buffer', error);
-            addWarning(JSON.stringify(error));
+            console.error("Error:", error);
+            addWarning('Error: ' + error.message)
+            toggleAnimation(true);
+            enableChat();
+        } finally {
+            enableCopyForCode();
+            enableChat();
+            toggleAnimation(true)
+        }
+    } // geminiStreamChat
+
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+
+    function processDataPart(part) {
+        let jsonData;
+        if (chosen_platform === 'anthropic') {
+            jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
+            if (jsonData.delta?.text) {
+                story += jsonData.delta.text;
+            }
+        } else {
+            jsonData = JSON.parse(part.toString().substring('data: '.length));
+            if (chosen_platform === 'cohere') {
+                if (jsonData.delta?.message?.content?.text) {
+                    story += jsonData.delta.message.content.text;
+                }
+            } else {
+                if (jsonData.choices?.[0]?.delta?.content) {
+                    story += jsonData.choices[0].delta.content;
+                }
+            }
         }
     }
-}
 
-function enableGoogleCse() {
-    let g_api_key = document.querySelector("#cse_google_api_key")?.value.trim() ?? '';
-    let g_cx_id = document.querySelector("#cse_google_cx_id")?.value.trim() ?? '';
-    if (g_api_key && g_cx_id) {
-        localStorage.setItem('cse_google_api_key', g_api_key)
-        localStorage.setItem('cse_google_cx_id', g_cx_id)
+
+    function processFullData(jsonData) {
+        if (chosen_platform === 'anthropic') {
+            if (jsonData.content?.[0].text) {
+                story += jsonData.content[0].text;
+            }
+        } else {
+            if (chosen_platform === 'cohere') {
+                if (jsonData.message?.content?.[0]?.text) {
+                    story += jsonData.message.content[0].text;
+                }
+            } else {
+                if (jsonData.choices?.[0]?.message?.content) {
+                    story += jsonData.choices[0].message.content;
+                }
+            }
+        }
+    }
+
+    function processBuffer(remainingBuffer) {
+        if (remainingBuffer.trim().length > 0) {
+            try {
+                processDataPart(remainingBuffer);
+            } catch (error) {
+                console.error('Error processing final buffer', error);
+                addWarning(JSON.stringify(error));
+            }
+        }
+    }
+
+    function enableGoogleCse() {
+        let g_api_key = document.querySelector("#cse_google_api_key")?.value.trim() ?? '';
+        let g_cx_id = document.querySelector("#cse_google_cx_id")?.value.trim() ?? '';
+        if (g_api_key && g_cx_id) {
+            localStorage.setItem('cse_google_api_key', g_api_key)
+            localStorage.setItem('cse_google_cx_id', g_cx_id)
+            closeDialogs();
+            addWarning('Google CSE successfully defined!', true, 'success_dialog');
+        } else {
+            addWarning("Error: API Key and/or CX ID not defined for Google Custom Search", true, 'fail_dialog')
+        }
+    }
+
+    function disableGoogleCse() {
+        localStorage.removeItem('cse_google_api_key')
+        localStorage.removeItem('cse_google_cx_id')
+        let disable_g_cse = document.querySelector("#disable_g_cse");
+        if (disable_g_cse) {
+            disable_g_cse.remove();
+        }
         closeDialogs();
-        addWarning('Google CSE successfully defined!', true, 'success_dialog');
-    } else {
-        addWarning("Error: API Key and/or CX ID not defined for Google Custom Search", true, 'fail_dialog')
-    }
-}
-
-function disableGoogleCse() {
-    localStorage.removeItem('cse_google_api_key')
-    localStorage.removeItem('cse_google_cx_id')
-    let disable_g_cse = document.querySelector("#disable_g_cse");
-    if (disable_g_cse) {
-        disable_g_cse.remove();
-    }
-    closeDialogs();
-}
-
-function isGoogleCseActive() {
-    let g_api_key = localStorage.getItem('cse_google_api_key')
-    let g_cx_id = localStorage.getItem('cse_google_cx_id')
-    return !!(g_api_key && g_cx_id);
-
-}
-
-async function gcseActive() {
-    return isGoogleCseActive();
-}
-
-
-async function googleSearch(data) {
-    let is_cse_active = await isGoogleCseActive();
-    if (!is_cse_active) {
-        let cse_opt = `<button class="more_opt_btn" onclick="moreOptions('cse')">See Options</button>`;
-        cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
-        cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
-        addWarning(cse_opt, false, 'dialog_warning');
-        toggleAnimation(true);
-        enableChat();
-        removeLastMessage();
-        return false;
     }
 
-    let term = data.term ?? '';
-    if (!term) {
-        addWarning('googleSearch() received no search param');
+    function isGoogleCseActive() {
+        let g_api_key = localStorage.getItem('cse_google_api_key')
+        let g_cx_id = localStorage.getItem('cse_google_cx_id')
+        return !!(g_api_key && g_cx_id);
+
     }
-    console.log('Searching for ' + term);
-    let gs = new GoogleSearch();
-    let results = await gs.search(term);
-    let txt_result = '';
-    if (results.items) {
-        results.items.forEach(item => {
-            txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
+
+    async function gcseActive() {
+        return isGoogleCseActive();
+    }
+
+
+    async function googleSearch(data) {
+        let is_cse_active = await isGoogleCseActive();
+        if (!is_cse_active) {
+            let cse_opt = `<button class="more_opt_btn" onclick="moreOptions('cse')">See Options</button>`;
+            cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
+            cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
+            addWarning(cse_opt, false, 'dialog_warning');
+            toggleAnimation(true);
+            enableChat();
+            removeLastMessage();
+            return false;
+        }
+
+        let term = data.term ?? '';
+        if (!term) {
+            addWarning('googleSearch() received no search param');
+        }
+        console.log('Searching for ' + term);
+        let gs = new GoogleSearch();
+        let results = await gs.search(term);
+        let txt_result = '';
+        if (results.items) {
+            results.items.forEach(item => {
+                txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
+            })
+        } else if (results.text) {
+            txt_result = results.text;
+        } else {
+            if (is_cse_active) {
+                addWarning('Got no result from Google Search');
+            }
+            removeLastMessage();
+            toggleAnimation();
+            enableChat();
+            return false;
+        }
+        //  let last_input = conversations.messages[conversations.messages.length - 1].content;
+
+        let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
+        if (pre_function_text) {
+            last_input = pre_function_text;
+        }
+        let ele = document.querySelector(".message:nth-last-of-type(1)");
+        if (ele) {
+            let cnt = `${last_input} <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
+            ele.innerHTML = converter.makeHtml(cnt);
+        }
+        pre_function_text = '';
+
+        conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n respond based on this context: <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
+        if (chosen_platform === 'google') {
+            await geminiChat()
+            toggleAnimation(true);
+        } else {
+            await streamChat(false); // false to prevent infinite loop
+            toggleAnimation(true);
+
+        }
+
+    }
+
+    function toolHandle(data) {
+        if (chosen_platform === 'google') {
+            try {
+                let fn_name = data.name;
+                let arguments = data.args;
+                this[fn_name](arguments);
+            } catch (error) {
+                console.log(error)
+            }
+        } else if (chosen_platform === 'anthropic') {
+            if (data.content?.[0]) {
+                let fn_name = data.content[0].name;
+                let arguments = data.content[0].input;
+                this[fn_name](arguments);
+            } else {
+                addWarning('A tool was expected, got none.', false)
+            }
+        } else if (chosen_platform === 'cohere') {
+            if (data.message?.tool_calls?.[0]?.function) {
+                let fn_name = data.message.tool_calls[0]?.function.name
+                let arguments = JSON.parse(data.message.tool_calls[0]?.function.arguments)
+                this[fn_name](arguments);
+            } else {
+                addWarning('A tool was expected, got none.', false)
+            }
+        } else {
+            if (data.choices?.[0]?.message?.tool_calls?.[0]?.function) {
+                let tool = data.choices[0].message.tool_calls[0].function;
+                let fn_name = tool.name;
+                let arguments = JSON.parse(tool.arguments);
+                this[fn_name](arguments);
+            } else {
+                addWarning(data, false);
+                // addWarning('A tool was expected, got none.', false)
+            }
+        }
+    }
+
+    let start_msg = document.querySelector(".start_msg");
+    let doc_title = document.title;
+    start_msg.onmouseover = () => {
+        document.title = model + ' -> ' + chosen_platform;
+        start_msg.title = document.title;
+    }
+    start_msg.onmouseleave = () => {
+        document.title = doc_title;
+        start_msg.removeAttribute('title');
+    }
+
+    chatButton.onmouseover = () => {
+        document.title = 'Send to ' + model + ' -> ' + chosen_platform;
+    }
+
+    chatButton.onmouseleave = () => {
+        document.title = doc_title;
+    }
+
+    function removeOnlineOfflineMessages(){
+        let off_ele = document.querySelectorAll(".offline");
+        off_ele.forEach(ele=>{
+            ele.remove();
+        });
+
+        let on_ele = document.querySelectorAll(".online");
+        on_ele.forEach(ele=>{
+            ele.remove();
         })
-    } else if (results.text) {
-        txt_result = results.text;
-    } else {
-        if (is_cse_active) {
-            addWarning('Got no result from Google Search');
-        }
-        removeLastMessage();
-        toggleAnimation();
-        enableChat();
-        return false;
-    }
-    //  let last_input = conversations.messages[conversations.messages.length - 1].content;
-
-    let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
-    if (pre_function_text) {
-        last_input = pre_function_text;
-    }
-    let ele = document.querySelector(".message:nth-last-of-type(1)");
-    if (ele) {
-        let cnt = `${last_input} <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
-        ele.innerHTML = converter.makeHtml(cnt);
-    }
-    pre_function_text = '';
-
-    conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n respond based on this context: <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
-    if (chosen_platform === 'google') {
-        await geminiChat()
-        toggleAnimation(true);
-    } else {
-        await streamChat(false); // false to prevent infinite loop
-        toggleAnimation(true);
-
     }
 
-}
-
-function toolHandle(data) {
-    if (chosen_platform === 'google') {
-        try {
-            let fn_name = data.name;
-            let arguments = data.args;
-            this[fn_name](arguments);
-        } catch (error) {
-            console.log(error)
-        }
-    } else if (chosen_platform === 'anthropic') {
-        if (data.content?.[0]) {
-            let fn_name = data.content[0].name;
-            let arguments = data.content[0].input;
-            this[fn_name](arguments);
-        } else {
-            addWarning('A tool was expected, got none.', false)
-        }
-    } else if (chosen_platform === 'cohere') {
-        if (data.message?.tool_calls?.[0]?.function) {
-            let fn_name = data.message.tool_calls[0]?.function.name
-            let arguments = JSON.parse(data.message.tool_calls[0]?.function.arguments)
-            this[fn_name](arguments);
-        } else {
-            addWarning('A tool was expected, got none.', false)
-        }
-    } else {
-        if (data.choices?.[0]?.message?.tool_calls?.[0]?.function) {
-            let tool = data.choices[0].message.tool_calls[0].function;
-            let fn_name = tool.name;
-            let arguments = JSON.parse(tool.arguments);
-            this[fn_name](arguments);
-        } else {
-            addWarning(data, false);
-            // addWarning('A tool was expected, got none.', false)
-        }
-    }
-}
-
-let start_msg = document.querySelector(".start_msg");
-let doc_title = document.title;
-start_msg.onmouseover = () => {
-    document.title = model + ' -> ' + chosen_platform;
-    start_msg.title = document.title;
-}
-start_msg.onmouseleave = () => {
-    document.title = doc_title;
-    start_msg.removeAttribute('title');
-}
-
-chatButton.onmouseover = () => {
-    document.title = 'Send to ' + model + ' -> ' + chosen_platform;
-}
-
-chatButton.onmouseleave = () => {
-    document.title = doc_title;
-}
-
-function removeOnlineOfflineMessages(){
-    let off_ele = document.querySelectorAll(".offline");
-    off_ele.forEach(ele=>{
-        ele.remove();
+    window.addEventListener('online', () => {
+        removeOnlineOfflineMessages();
+        addWarning("You are online again!", false, 'online')
     });
 
-    let on_ele = document.querySelectorAll(".online");
-    on_ele.forEach(ele=>{
-        ele.remove();
-    })
-}
-
-window.addEventListener('online', () => {
-    removeOnlineOfflineMessages();
-    addWarning("You are online again!", false, 'online')
-});
-
-window.addEventListener('offline', () => {
-    removeOnlineOfflineMessages();
-    addWarning("You are offline!", false, 'offline')
-});
+    window.addEventListener('offline', () => {
+        removeOnlineOfflineMessages();
+        addWarning("You are offline!", false, 'offline')
+    });
 
 
-function javascriptCodeExecution(obj) {
-    toggleAnimation(true);
-    js_code = obj.code;
-    js_code.replace(/\\n/g, "\n")
-        .replace(/\\"/g, "'")
-        .replace(/\\'/g, "'")
-        .replace(/console\.log/g, "")
-        .replace(/document\.write/, "")
-        .replace("<script>", "")
-        .replace("<script", "")
-        .replace("</script>", "");
-    original_code = obj.code;
-    let msg = `The AI want to execute the following code: <div class="center"><button class="accept_code_execution" onclick="executeJsCode(js_code, original_code)">Accept</button></div> <pre class="exclude_btn_group"><code class="javascript language-javascript hljs">${obj.code}</code></pre>`;
-    addWarning(msg, false)
-    setTimeout(() => {
-        hljs.highlightAll();
-    }, 500)
-}
-
-async function executeJsCode(code, realCode = '') {
-    js_code = ''; // reset
-    original_code = '' // reset
-    let response;
-    try {
-        // response = await eval(code)
-        response = await jsCodeExecutionSandbox(code);
-    } catch (error) {
-        response = error;
+    function javascriptCodeExecution(obj) {
+        toggleAnimation(true);
+        js_code = obj.code;
+        js_code.replace(/\\n/g, "\n")
+            .replace(/\\"/g, "'")
+            .replace(/\\'/g, "'")
+            .replace(/console\.log/g, "")
+            .replace(/document\.write/, "")
+            .replace("<script>", "")
+            .replace("<script", "")
+            .replace("</script>", "");
+        original_code = obj.code;
+        let msg = `The AI want to execute the following code: <div class="center"><button class="accept_code_execution" onclick="executeJsCode(js_code, original_code)">Accept</button></div> <pre class="exclude_btn_group"><code class="javascript language-javascript hljs">${obj.code}</code></pre>`;
+        addWarning(msg, false)
+        setTimeout(() => {
+            hljs.highlightAll();
+        }, 500)
     }
-    if (realCode) {
-        // code that will be shown
-        code = realCode;
-    }
-    let timer_jc = setInterval(() => {
-        if(js_code_exec_finished){
-            clearInterval(timer_jc);
-            chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${js_code_exec_output}</span>`;
-            document.querySelector("#send").click();
+
+    async function executeJsCode(code, realCode = '') {
+        js_code = ''; // reset
+        original_code = '' // reset
+        let response;
+        try {
+            // response = await eval(code)
+            response = await jsCodeExecutionSandbox(code);
+        } catch (error) {
+            response = error;
         }
-    })
-}
-
-
-async function jsCodeExecutionSandbox(code) {
-    js_code_exec_finished  = false;
-    js_code_exec_output = '';
-    let old_iframe = document.querySelector("iframe#sandbox");
-    if(old_iframe){
-        old_iframe.remove();
-    }
-    let results = '';
-    const targetOrigin = window.location.origin;
-    const iframe = document.createElement("iframe");
-    iframe.id = 'sandbox';
-    iframe.style.display = 'none';
-    iframe.src = "sandbox.html";
-    document.body.append(iframe)
-    iframe.onload = () => {
-        iframe.contentWindow.postMessage({code: code}, targetOrigin);
-    };
-    window.onmessage = (event) => {
-        if(event.data){
-            console.log(event.data)
-            let clog = event.data?.args?.[0] ?? false;
-            if (clog !== false) {
-                clog = stringifyComplexValue(clog)
-                results += clog + '<br>';
-            } else{
-                results += stringifyComplexValue(event.data);
-                if(event.data.type === undefined){
-                    js_code_exec_output = results;
-                    js_code_exec_finished = true;
-                }
+        if (realCode) {
+            // code that will be shown
+            code = realCode;
+        }
+        let timer_jc = setInterval(() => {
+            if(js_code_exec_finished){
+                clearInterval(timer_jc);
+                chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${js_code_exec_output}</span>`;
+                document.querySelector("#send").click();
             }
-        }else {
-            js_code_exec_output = results;
-            js_code_exec_finished = true;
+        })
+    }
+
+
+    async function jsCodeExecutionSandbox(code) {
+        js_code_exec_finished  = false;
+        js_code_exec_output = '';
+        let old_iframe = document.querySelector("iframe#sandbox");
+        if(old_iframe){
+            old_iframe.remove();
+        }
+        let results = '';
+        const targetOrigin = window.location.origin;
+        const iframe = document.createElement("iframe");
+        iframe.id = 'sandbox';
+        iframe.style.display = 'none';
+        iframe.src = "sandbox.html";
+        document.body.append(iframe)
+        iframe.onload = () => {
+            iframe.contentWindow.postMessage({code: code}, targetOrigin);
+        };
+        window.onmessage = (event) => {
+            if(event.data){
+                console.log(event.data)
+                let clog = event.data?.args?.[0] ?? false;
+                if (clog !== false) {
+                    clog = stringifyComplexValue(clog)
+                    results += clog + '<br>';
+                } else{
+                    results += stringifyComplexValue(event.data);
+                    if(event.data.type === undefined){
+                        js_code_exec_output = results;
+                        js_code_exec_finished = true;
+                    }
+                }
+            }else {
+                js_code_exec_output = results;
+                js_code_exec_finished = true;
+            }
         }
     }
-}
 
-loadPlugins(); // load plugins
+    loadPlugins(); // load plugins
 
-function reloadPage() {
-    // this code can be used be plugins
-    document.location.reload()
-}
+    function reloadPage() {
+        // this code can be used be plugins
+        document.location.reload()
+    }
 
 
 // When in stream mode the scrolling may get blocked, this should free up the scrolling
-function unlockScroll() {
-    let chat_msg = document.querySelector("#chat-messages");
-    if (chat_msg) {
-        let last_position = chat_msg.scrollTop;
-        //  chat_msg.addEventListener("keydown", (event) => {
-        window.addEventListener("keydown", (event) => {
-            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                return; // focus is in input or textarea
-            }
-            if (event.key === "ArrowDown") {
-                if (chat_msg.scrollTop <= last_position) {
-                    chat_msg.scrollTop += 35;
-                    //console.log('forcing scroll down')
-                } else {
-                    //  console.log('all fine: down')
+    function unlockScroll() {
+        let chat_msg = document.querySelector("#chat-messages");
+        if (chat_msg) {
+            let last_position = chat_msg.scrollTop;
+            //  chat_msg.addEventListener("keydown", (event) => {
+            window.addEventListener("keydown", (event) => {
+                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                    return; // focus is in input or textarea
                 }
-                last_position = chat_msg.scrollTop;
-            } else if (event.key === "ArrowUp") {
-                if (chat_msg.scrollTop >= last_position) {
-                    chat_msg.scrollTop -= 35;
-                    //console.log('forcing scroll up')
-                } else {
-                    //console.log('all fine: up')
-                }
-                last_position = chat_msg.scrollTop;
-            }
-        })
-    }
-}
-
-unlockScroll();
-
-
-function stringifyComplexValue(value, indent = 0) {
-    const indentString = "  ".repeat(indent); // Two spaces for indentation
-    if (value === null) {
-        return "null";
-    } else if (typeof value === 'undefined') {
-        return "undefined";
-    } else if (typeof value !== 'object') { //Handle non-object and non-array values
-        return String(value); // Convert to string for non-objects, non arrays and null values
-    } else if (Array.isArray(value)) {
-        const elements = value.map(item => stringifyComplexValue(item, indent + 1));
-        return `[\n${indentString}  ${elements.join(`,\n${indentString}  `)}\n${indentString}]`;
-    } else { // Handle objects
-        const properties = Object.entries(value)
-            .map(([key, val]) => `${indentString}  "${key}": ${stringifyComplexValue(val, indent + 1)}`)
-            .join(`,\n`);
-        return `{\n${properties}\n${indentString}}`;
-    }
-}
-
-function whatTimeIsIt() {
-    const today = new Date();
-    return today.toLocaleDateString('en-US') + " " + today.toLocaleTimeString();
-    // ex: 11/19/2024 10:18:57
-}
-
-function extractVideoId(text) {
-    let video_id = text.match(/youtube.com\/watch\?v=(.*)/)?.[1] ?? null;
-    if (video_id) {
-        return video_id.substring(0, 11);
-    }
-    return null;
-}
-
-function loadVideo() {
-    let all_user_msgs = document.querySelectorAll(".user");
-    if (all_user_msgs.length) {
-        let last_user_msg_ele = all_user_msgs[all_user_msgs.length - 1];
-        let last_user_msg = last_user_msg_ele.innerHTML;
-        let videoId = extractVideoId(last_user_msg);
-        if (!videoId) {
-            return
-        }
-        let videoContainer = document.createElement("div");
-        videoContainer.className = "video-container";
-        const videoFrame = document.createElement("iframe");
-        videoFrame.id = "videoFrame";
-        videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
-        videoContainer.append(videoFrame);
-        last_user_msg_ele.prepend(videoContainer)
-
-    }
-
-}
-
-
-function mediaFull() {
-    const all_images = document.querySelectorAll(".user img");
-    all_images.forEach(media => {
-        media.onclick = () => {
-            let newTab = window.open();
-            newTab.document.body.innerHTML = `<img src="${media.src}" alt="Imagem Base64">`;
-        };
-    });
-}
-
-mediaFull();
-
-
-
-function loadExtraModels(){
-    let extra_models = localStorage.getItem("extra_models");
-    extra_models = JSON.parse(extra_models);
-    for (const provider in extra_models) {
-        if (extra_models.hasOwnProperty(provider)) {
-            extra_models[provider].forEach(model=>{
-                let has_model =  PLATFORM_DATA[provider].models.includes(model);
-                if(!has_model){
-                    PLATFORM_DATA[provider].models.push(model);
+                if (event.key === "ArrowDown") {
+                    if (chat_msg.scrollTop <= last_position) {
+                        chat_msg.scrollTop += 35;
+                        //console.log('forcing scroll down')
+                    } else {
+                        //  console.log('all fine: down')
+                    }
+                    last_position = chat_msg.scrollTop;
+                } else if (event.key === "ArrowUp") {
+                    if (chat_msg.scrollTop >= last_position) {
+                        chat_msg.scrollTop -= 35;
+                        //console.log('forcing scroll up')
+                    } else {
+                        //console.log('all fine: up')
+                    }
+                    last_position = chat_msg.scrollTop;
                 }
             })
         }
     }
-}
 
-loadExtraModels();
+    unlockScroll();
 
-document.addEventListener('keydown', function (e) {
-    if (e.ctrlKey && e.key === 'q') {
-        //Closes the current chat and starts a new one
-        newChat();
-        e.preventDefault();
-    } else if (!e.ctrlKey && !e.altKey && e.key) {
-        let active_tagName = document.activeElement.tagName
-        if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
-            if (/^[a-zA-Z0-9]$/.test(e.key)) {
-                document.getElementById('ta_chat').focus();
-            }
-        }
-    }else if (e.ctrlKey && e.key === 'Delete') {
-        console.log('xx')
-        let div_topic = document.querySelector(`[data-id='${chat_id}']`);
-        if(div_topic){
-            console.log(div_topic)
-            removeChat(div_topic, chat_id, true);
+
+    function stringifyComplexValue(value, indent = 0) {
+        const indentString = "  ".repeat(indent); // Two spaces for indentation
+        if (value === null) {
+            return "null";
+        } else if (typeof value === 'undefined') {
+            return "undefined";
+        } else if (typeof value !== 'object') { //Handle non-object and non-array values
+            return String(value); // Convert to string for non-objects, non arrays and null values
+        } else if (Array.isArray(value)) {
+            const elements = value.map(item => stringifyComplexValue(item, indent + 1));
+            return `[\n${indentString}  ${elements.join(`,\n${indentString}  `)}\n${indentString}]`;
+        } else { // Handle objects
+            const properties = Object.entries(value)
+                .map(([key, val]) => `${indentString}  "${key}": ${stringifyComplexValue(val, indent + 1)}`)
+                .join(`,\n`);
+            return `{\n${properties}\n${indentString}}`;
         }
     }
 
-});
+    function whatTimeIsIt() {
+        const today = new Date();
+        return today.toLocaleDateString('en-US') + " " + today.toLocaleTimeString();
+        // ex: 11/19/2024 10:18:57
+    }
+
+    function extractVideoId(text) {
+        let video_id = text.match(/youtube.com\/watch\?v=(.*)/)?.[1] ?? null;
+        if (video_id) {
+            return video_id.substring(0, 11);
+        }
+        return null;
+    }
+
+    function loadVideo() {
+        let all_user_msgs = document.querySelectorAll(".user");
+        if (all_user_msgs.length) {
+            let last_user_msg_ele = all_user_msgs[all_user_msgs.length - 1];
+            let last_user_msg = last_user_msg_ele.innerHTML;
+            let videoId = extractVideoId(last_user_msg);
+            if (!videoId) {
+                return
+            }
+            let videoContainer = document.createElement("div");
+            videoContainer.className = "video-container";
+            const videoFrame = document.createElement("iframe");
+            videoFrame.id = "videoFrame";
+            videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+            videoContainer.append(videoFrame);
+            last_user_msg_ele.prepend(videoContainer)
+
+        }
+
+    }
 
 
-let new_url = document.URL;
-new_url = new_url.split('?')[0];
-new_url = new_url.split("#")[0];
-new_url += "#" + chat_id;
-history.pushState({url: new_url}, '', new_url);
+    function mediaFull() {
+        const all_images = document.querySelectorAll(".user img");
+        all_images.forEach(media => {
+            media.onclick = () => {
+                let newTab = window.open();
+                newTab.document.body.innerHTML = `<img src="${media.src}" alt="Imagem Base64">`;
+            };
+        });
+    }
+
+    mediaFull();
+
+
+
+    function loadExtraModels(){
+        let extra_models = localStorage.getItem("extra_models");
+        extra_models = JSON.parse(extra_models);
+        for (const provider in extra_models) {
+            if (extra_models.hasOwnProperty(provider)) {
+                extra_models[provider].forEach(model=>{
+                    let has_model =  PLATFORM_DATA[provider].models.includes(model);
+                    if(!has_model){
+                        PLATFORM_DATA[provider].models.push(model);
+                    }
+                })
+            }
+        }
+    }
+
+    loadExtraModels();
+
+    document.addEventListener('keydown', function (e) {
+        if (e.ctrlKey && e.key === 'q') {
+            //Closes the current chat and starts a new one
+            newChat();
+            e.preventDefault();
+        } else if (!e.ctrlKey && !e.altKey && e.key) {
+            let active_tagName = document.activeElement.tagName
+            if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
+                if (/^[a-zA-Z0-9]$/.test(e.key)) {
+                    document.getElementById('ta_chat').focus();
+                }
+            }
+        }else if (e.ctrlKey && e.key === 'Delete') {
+            let div_topic = document.querySelector(`[data-id='${chat_id}']`);
+            if(div_topic){
+                console.log(div_topic)
+                removeChat(div_topic, chat_id, true);
+            }
+        }
+
+    });
+
+
+    let new_url = document.URL;
+    new_url = new_url.split('?')[0];
+    new_url = new_url.split("#")[0];
+    new_url += "#" + chat_id;
+    history.pushState({url: new_url}, '', new_url);
+
