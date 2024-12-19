@@ -1849,6 +1849,25 @@ async function streamChat(can_use_tools = true) {
         }
     }
 
+    let mime = mimeType.split("/")[0];
+    let modelAcceptedMimes = ['audio','video','image'];
+    let appended_txt_file = '';
+    if(!modelAcceptedMimes.includes(mime)){
+        let real_b64 = base64String.split(',')[1];
+        appended_txt_file = atob(real_b64)
+        let ele = document.querySelector(".message:nth-last-of-type(1)");
+        if(appended_txt_file.trim().length > 0){
+            last_user_input = `${last_user_input} \n <pre><code>${appended_txt_file}</code></pre>`;
+        }
+        if (ele.classList.contains('user')) {
+            ele.innerHTML = last_user_input;
+        }
+        conversations.messages[conversations.messages.length - 1].content = last_user_input;
+        base64String = '';
+        mimeType = '';
+    }
+
+
     conversations.messages.forEach(part => {
             //let role = part.role === 'assistant' ? 'model' : part.role;
             let cnt = part.content;
@@ -1910,7 +1929,6 @@ async function streamChat(can_use_tools = true) {
         });
         base64String = '';
         mimeType = '';
-
     }
 
     if (cmd) {
@@ -2034,21 +2052,21 @@ async function streamChat(can_use_tools = true) {
             const {done, value} = await reader.read();
             if (done) {
                 if (story === '') {
-                       cloned_response.json().then(data => {
-                           processFullData(data);
-                           if (story) {
-                               addConversation('assistant', story, true, true);
-                               enableCopyForCode(true);
-                               hljs.highlightAll();
-                           } else {
-                               // probably not stream - tool use
-                               toggleAnimation(true);
-                               toolHandle(data);
-                               return false;
-                           }
-                       },error =>{
-                          addWarning(error)
-                       })
+                    cloned_response.json().then(data => {
+                        processFullData(data);
+                        if (story) {
+                            addConversation('assistant', story, true, true);
+                            enableCopyForCode(true);
+                            hljs.highlightAll();
+                        } else {
+                            // probably not stream - tool use
+                            toggleAnimation(true);
+                            toolHandle(data);
+                            return false;
+                        }
+                    },error =>{
+                        addWarning(error)
+                    })
 
                 } else {
                     processBuffer(buffer);
@@ -2620,7 +2638,7 @@ async function executeJsCode(code, realCode = '') {
     original_code = '' // reset
     let response;
     try {
-       // response = await eval(code)
+        // response = await eval(code)
         response = await jsCodeExecutionSandbox(code);
     } catch (error) {
         response = error;
@@ -2629,13 +2647,13 @@ async function executeJsCode(code, realCode = '') {
         // code that will be shown
         code = realCode;
     }
-   let timer_jc = setInterval(() => {
-       if(js_code_exec_finished){
-           clearInterval(timer_jc);
-           chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${js_code_exec_output}</span>`;
-           document.querySelector("#send").click();
-       }
-   })
+    let timer_jc = setInterval(() => {
+        if(js_code_exec_finished){
+            clearInterval(timer_jc);
+            chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${js_code_exec_output}</span>`;
+            document.querySelector("#send").click();
+        }
+    })
 }
 
 
@@ -2808,7 +2826,7 @@ loadExtraModels();
 document.addEventListener('keydown', function (e) {
     if (e.ctrlKey && e.key === 'q') {
         //Closes the current chat and starts a new one
-         newChat();
+        newChat();
         e.preventDefault();
     } else if (!e.ctrlKey && !e.altKey && e.key) {
         let active_tagName = document.activeElement.tagName
