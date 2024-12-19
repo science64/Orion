@@ -1,4 +1,4 @@
-//Downloads chat history stored in localStorage.
+// Downloads/Upload chat history and configuration
 // Please be caution where to keep this files
 // the file will be saved in JSON and is not encrypted
 // This file will have sensitive info, as your conversations and API key

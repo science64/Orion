@@ -245,6 +245,11 @@ let conversations = {
 function addConversation(role, content, add_to_document = true, do_scroll = true) {
     closeDialogs();
 
+    let has_att = document.querySelector(".has_attachment");
+    if (has_att) {
+        has_att.classList.remove('has_attachment');
+    }
+
     if (!content.trim()) {
         addWarning('Empty conversation', true);
         return false;
@@ -288,10 +293,6 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
         }
 
     } else {
-        let has_att = document.querySelector(".has_attachment");
-        if (has_att) {
-            has_att.classList.remove('has_attachment');
-        }
         if (add_to_document) {
             div.classList.add('bot');
 
@@ -1190,6 +1191,7 @@ function setOptions() {
     let plugin_option = `<button class="plugin_opt_btn" onclick="pluginOptions()">Plugins</button>`;
     let add_new_models = `<button class="more_opt_btn" onclick="addModelsOptions()">Add Models</button>`;
     let more_option = `<button class="more_opt_btn" onclick="moreOptions()">More Options</button>`;
+    let btn_youtube_api = `<button class="more_opt_btn" onclick="dialogSetYouTubeCaptionApiEndpoint()">YouTube Captions</button>`;
 
     let cnt =
         `<div>${platform_options}
@@ -1200,9 +1202,10 @@ function setOptions() {
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
          <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
          ${platform_info}
-          <p>${add_new_models}</p>
-         <p>${plugin_option}</p>
-         <p>${more_option}</p>
+          <span>${add_new_models}</span>
+         <span>${plugin_option}</span>
+         <span>${more_option}</span>
+         <span>${btn_youtube_api}</span>
         
          </div>`;
     createDialog(cnt, 0, 'optionsDialog');
