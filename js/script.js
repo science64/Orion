@@ -929,21 +929,11 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
 
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let cmd = commandManager(last_user_input)
-    if (cmd && base64String !== '') {
-        // cmd from user prompt will be removed just if it has no base64String
-        // this is because if it has, the prompt will be submitted fot geminiChat function again
-        data.contents[0].pop(); // remove the last input - something like cmd: prompt
-
-        // add the last input but without the "cmd:", just the prompt
-        // note: cmd variable will be clean at this point
-        data.contents[0].push({
-            "role": 'user',
-            "parts": [
-                {
-                    "text": cmd
-                }
-            ]
-        });
+    if (cmd) {
+        let last_part = data.contents[0].pop();
+        last_part.parts[0].text = cmd+"..";
+        console.log(last_part)
+        data.contents[0].push(last_part);
     }
 
     data.safetySettings = [
@@ -2120,6 +2110,7 @@ async function streamChat(can_use_tools = true) {
 // the addition will occur if it is not an audio, video or image file
 function addFileToPrompt() {
     if(base64String === ''){
+        console.log('empty b64')
         return false;
     }
 
