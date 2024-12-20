@@ -10,8 +10,8 @@
         let chat_id = new Date().getTime();
     </script>
     <link rel="icon" href="favicon.png">
-    <link rel="stylesheet" href="css/highlight_js/themes/github-dark-dimmed.css?v=1.0.2">
-    <link rel="stylesheet" href="css/chat.css?v=2.0.7">
+    <link rel="stylesheet" href="css/highlight_js/themes/github-dark-dimmed.css?v=1.0.3">
+    <link rel="stylesheet" href="css/chat.css?v=2.0.8">
     <link rel="manifest" href="manifest.json">
     <meta property="og:type" content="article">
     <meta property="og:title" content="Orion">
@@ -53,20 +53,22 @@
                 <label title="Upload file" class="upload_picture">
                     <input id="fileInput" class="ds_none" type="file" name="fileInput">
                 </label>
-                <button id="send">Send</button>
+                <button title="Send" class="ds_none" id="send"></button>
+                <div class="wrap_mic_icon"><button id="voice_rec"></button></div>
             </div>
         </div>
     </div>
 </div> <!-- end container -->
 <script src="js/library/showdown@2.1.0.js?v=2.1.0"></script>
 <script src="js/library/highlight.js?v=11.9.0"></script>
-<script src="js/stt.js?v=1.0.0"></script>
-<script src="js/tts.js?v=1.0.1"></script>
-<script src="js/md5.js?v=1.0.0"></script>
+<script src="js/stt.js?v=1.0.2"></script>
+<script src="js/tts.js?v=1.0.2"></script>
+<script src="js/md5.js?v=1.0.1"></script>
 <script src="js/google_cse.js?v=1.0.8"></script>
 <script src="js/4devs.js?v=1.0.0"></script>
 <script src="js/prompts.js?v=1.0.3"></script>
 <script src="js/tools_list.js?v=1.1.1"></script>
-<script src="js/script.js?v=2.5.2"></script>
+<script src="js/script.js?v=2.5.3"></script>
+<script src="js/voice_rec.js?v=1.0.4"></script>
 </body>
 </html>

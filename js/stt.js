@@ -1,4 +1,4 @@
-// Speech-to-Text With Groq
+// Speech-to-Text
 let media_file = '';
 let input_file = '';
 let groq_api_key = '';
@@ -40,16 +40,18 @@ async function transcribeAudio() {
             hljs.highlightAll();
             setTimeout(() => {
                 enableCopyForCode();
-                let ele = document.querySelector(".message:nth-last-of-type(1)");
-                let transcription_ele = ele.querySelector("code");
-                if (transcription_ele) {
-                    //transcription_ele.style.whiteSpace = "pre-line";
-                }
             }, 1000)
         } else {
-            let res_text = JSON.stringify(result);
-            addWarning("<b>Groq transcription error:</b> "+res_text);
-            console.log('not expected result: '+result)
+            let err_code = result.error?.code ?? '';
+            if(err_code === 'invalid_api_key'){
+                addWarning('Please add a valid <a target="_blank" href="https://console.groq.com/keys">Groq API</a> to use this functionality.');
+            }else {
+                let res_text = JSON.stringify(result);
+                addWarning("<b>Groq transcription error:</b> "+res_text);
+                console.log('not expected result: '+result)
+            }
+
+
         }
         media_file = '';
         input_file.value = '';
@@ -81,3 +83,65 @@ if (input_file) {
 }
 
 
+
+
+async function transcribeAudioFromRecording() {
+    toggleAnimation();
+    const apiUrl = 'https://api.groq.com/openai/v1/audio/transcriptions';
+    const formData = new FormData();
+    const audioBlob = base64toBlob(base64String, 'audio/wav');
+    formData.append('file', audioBlob, 'recording.wav');
+    formData.append('model', 'whisper-large-v3-turbo');
+    // formData.append('temperature', '0');
+    formData.append('response_format', 'json');
+    //formData.append('language', 'en');
+    base64String = '';
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${groq_api_key}`,
+            },
+            body: formData
+        });
+
+        const result = await response.json();
+        toggleAnimation();
+        let text = result.text ?? '';
+        if (text) {
+            //addConversation("assistant", text);
+            chat_textarea.value = text;
+            startChat();
+            toggleBtnOptions();
+        } else {
+            let err_code = result.error?.code ?? '';
+            if(err_code === 'invalid_api_key'){
+                addWarning('Please add a valid <a target="_blank" href="https://console.groq.com/keys">Groq API</a> to use this functionality.');
+            }else {
+                let res_text = JSON.stringify(result);
+                addWarning("<b>Groq transcription error:</b> "+res_text);
+                console.log('not expected result: '+result)
+            }
+            toggleBtnOptions();
+        }
+    } catch (error) {
+        addWarning(error);
+        console.error(error)
+        toggleAnimation(true);
+        toggleBtnOptions();
+    }finally {
+        media_file = '';
+        input_file.value = '';
+    }
+
+}
+
+function base64toBlob(base64, mimeType) {
+    const byteString = atob(base64);
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const intArray = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < byteString.length; i++) {
+        intArray[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([intArray], { type: mimeType });
+}

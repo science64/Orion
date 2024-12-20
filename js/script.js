@@ -609,8 +609,37 @@ function removeLastMessage(from_user = true) {
 
 let chatButton = document.querySelector("#send");
 let chat_textarea = document.querySelector(".chat-input textarea");
+let voice_rec = document.getElementById('voice_rec');
+function toggleBtnOptions(){
+    // when not fired by addEventListener
+    if(chat_textarea.value.trim().length){
+        chatButton.classList.remove('ds_none');
+        voice_rec.classList.add('ds_none');
+    }else{
+        voice_rec.classList.remove('ds_none');
+        chatButton.classList.add('ds_none');
+    }
+    // when fired by addEventListener
+    chat_textarea.addEventListener('input', ()=>{
+        if(chat_textarea.value.trim().length){
+            chatButton.classList.remove('ds_none');
+            voice_rec.classList.add('ds_none');
+        }else{
+            voice_rec.classList.remove('ds_none');
+            chatButton.classList.add('ds_none');
+        }
+    })
+}
+toggleBtnOptions();
+voice_rec.addEventListener('click', ()=>{
+    chatButton.classList.remove('ds_none');
+    voice_rec.classList.add('ds_none');
+    recordVoice();
+})
+
 
 function startChat() {
+    stopRecorder();
     if (!is_chat_enabled) {
         //addWarning('Chat is busy. Please wait!');
         return false;
@@ -619,6 +648,7 @@ function startChat() {
     if (input_text.trim().length > 0) {
         toggleAnimation();
         chat_textarea.value = '';
+        toggleBtnOptions();
         disableChat()
         addConversation('user', input_text);
         chat();
@@ -931,8 +961,7 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
     let cmd = commandManager(last_user_input)
     if (cmd) {
         let last_part = data.contents[0].pop();
-        last_part.parts[0].text = cmd+"..";
-        console.log(last_part)
+        last_part.parts[0].text = cmd;
         data.contents[0].push(last_part);
     }
 
@@ -1190,7 +1219,7 @@ function setOptions() {
          <div><strong>System Prompt</strong>
          ${prompts_options}
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
-         <button onclick="savePrompt()" class="save_prompt">Save Prompt</button>
+         <button onclick="savePrompt()" class="save_prompt">Save Prompt</button><br>
          ${platform_info}
           <span>${add_new_models}</span>
          <span>${plugin_option}</span>
@@ -2110,7 +2139,6 @@ async function streamChat(can_use_tools = true) {
 // the addition will occur if it is not an audio, video or image file
 function addFileToPrompt() {
     if(base64String === ''){
-        console.log('empty b64')
         return false;
     }
 
