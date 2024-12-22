@@ -5,6 +5,18 @@ html, body {
     background-color: #fbfbfb;
 }
 
+.code_header:before{
+    display: block;
+    background-color: #3d3e3f;
+    padding: 11px 11px;
+    content: '';
+    color: #e6e1e1;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    font-weight: 700;
+}
+
+
 .exclude_btn_group .btn-group{
     display: none;
 }
@@ -200,8 +212,10 @@ button.play_audio_btn {
 /**Reset hljs**/
 pre code.hljs {
     padding: 6px;
-    border-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
     min-height: 22px;
+    border-top: 4px solid #3d3e3f;
 
 }
 
@@ -225,12 +239,15 @@ code.hljs::-webkit-scrollbar-track {
     margin-top: -31px;
     text-align: end;
 }
+.btn-group-top{
+    margin-top: -33px;
+}
 
 .copy-btn, .down-btn {
-    padding: 5px;
-    background-color: #39404a;
-    color: white;
-    border: 1px solid #f7f7ff;
+    padding: 3px 5px;
+    background-color: transparent;
+    color: #b8b8b8;
+    border: 1px solid #979797;
     cursor: pointer;
     border-radius: 4px;
     margin: 0 2px;
@@ -961,6 +978,143 @@ textarea.system_prompt {
 
 .dot_ai:nth-child(3) {
     animation: pulse 1.4s infinite 0.4s;
+}
+
+
+
+pre:has(> .language-python.hljs):before {
+    content: 'Python';
+}
+
+pre:has(> .language-markdown.hljs):before {
+    content: 'Markdown';
+}
+
+pre:has(> .language-javascript.hljs):before {
+    content: 'JavaScript';
+}
+
+
+pre:has(> .language-java.hljs):before {
+    content: 'Java';
+}
+
+pre:has(> .language-c.hljs):before {
+    content: 'C';
+}
+
+pre:has(> .language-cpp.hljs):before {
+    content: 'C++';
+}
+
+pre:has(> .language-csharp.hljs):before {
+    content: 'C#';
+}
+
+pre:has(> .language-ruby.hljs):before {
+    content: 'Ruby';
+}
+
+pre:has(> .language-go.hljs):before {
+    content: 'Go';
+}
+
+pre:has(> .language-swift.hljs):before {
+    content: 'Swift';
+}
+
+pre:has(> .language-kotlin.hljs):before {
+    content: 'Kotlin';
+}
+
+pre:has(> .language-php.hljs):before {
+    content: 'PHP';
+}
+
+pre:has(> .language-typescript.hljs):before {
+    content: 'TypeScript';
+}
+
+pre:has(> .language-rust.hljs):before {
+    content: 'Rust';
+}
+
+pre:has(> .language-dart.hljs):before {
+    content: 'Dart';
+}
+
+pre:has(> .language-scala.hljs):before {
+    content: 'Scala';
+}
+
+pre:has(> .language-perl.hljs):before {
+    content: 'Perl';
+}
+
+pre:has(> .language-r.hljs):before, pre:has(> .language-R):before {
+    content: 'R';
+}
+
+pre:has(> .language-shell.hljs):before {
+    content: 'Shell';
+}
+
+pre:has(> .language-haskell.hljs):before {
+    content: 'Haskell';
+}
+
+pre:has(> .language-lua.hljs):before {
+    content: 'Lua';
+}
+
+pre:has(> .language-objectivec.hljs):before {
+    content: 'Objective-C';
+}
+
+pre:has(> .language-matlab.hljs):before {
+    content: 'MATLAB';
+}
+
+pre:has(> .language-sql.hljs):before {
+    content: 'SQL';
+}
+
+
+pre:has(> .language-css.hljs):before {
+    content: 'CSS';
+}
+
+pre:has(> .language-json.hljs):before {
+    content: 'JSON';
+}
+
+pre:has(> .language-xml.hljs):before {
+    content: 'XML';
+}
+pre:has(> .language-html.hljs):before {
+    content: 'HTML';
+}
+
+pre:has(> .language-yaml.hljs):before {
+    content: 'YAML';
+}
+
+pre:has(> .language-txt.hljs):before {
+    content: 'Text';
+}
+
+pre:has(> .language-vbnet.hljs):before {
+    content: 'VB.NET';
+}
+
+pre:has(> .language-bash.hljs):before {
+    content: 'Bash';
+}
+
+
+
+pre:before{
+    display: block;
 }
 
 @keyframes pulse {

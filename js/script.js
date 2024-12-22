@@ -785,16 +785,21 @@ function enableCopyForCode(enable_down_too = true) {
             if (enable_down_too) {
                 div_ele.append(btn_down);
             }
-            block.parentElement.append(div_ele);
-            button.addEventListener('click', () => {
-                const codeText = block.innerText.replace('Copy', '');
-                navigator.clipboard.writeText(codeText)
-                    .then(() => {
-                        button.innerText = 'Copied!';
-                        setTimeout(() => button.innerText = 'Copy', 2000);
-                    })
-                    .catch(err => console.error('Error:', err));
-            });
+            let pre = block.parentElement;
+            pre.classList.add('code_header');
+            pre.append(div_ele);
+
+            let code_lines_length = block.innerText.split("\n").length
+            if(code_lines_length > 30){
+                // if code have more then x lines, button will be on the top too
+                const div_ele_bottom = div_ele.cloneNode(true);
+                div_ele_bottom.classList.add('btn-group-top');
+                pre.prepend(div_ele_bottom);
+                let btn_top = div_ele_bottom.querySelector(".copy-btn");
+                addEventClickToDownAndCopyBtn(btn_top, block);
+            }
+
+            addEventClickToDownAndCopyBtn(button, block);
         }
     });
 
@@ -802,6 +807,18 @@ function enableCopyForCode(enable_down_too = true) {
         enableCodeDownload();
     }
     enableFullTextCopy();
+}
+
+function addEventClickToDownAndCopyBtn(button, block) {
+    button.addEventListener('click', () => {
+        const codeText = block.innerText.replace('Copy', '');
+        navigator.clipboard.writeText(codeText)
+            .then(() => {
+                button.innerText = 'Copied!';
+                setTimeout(() => button.innerText = 'Copy', 2000);
+            })
+            .catch(err => console.error('Error:', err));
+    });
 }
 
 
