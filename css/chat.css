@@ -881,6 +881,9 @@ textarea.system_prompt {
     position: fixed;
     top: 50%;
     left: calc(50% - 40px);
+    padding: 8px;
+    background-color: #fff;
+    box-sizing: border-box;
 }
 
 .bar {
