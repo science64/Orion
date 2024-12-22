@@ -50,11 +50,15 @@
         <div class="chat-input">
             <div class="chat_wrap">
                 <label><textarea id="ta_chat" placeholder="Let's talk"></textarea></label>
-                <label title="Upload file" class="upload_picture">
-                    <input id="fileInput" class="ds_none" type="file" name="fileInput">
-                </label>
-                <button title="Send" class="ds_none" id="send"></button>
-                <div class="wrap_mic_icon"><button id="voice_rec"></button></div>
+                <div class="wrap_rec_and_up">
+                    <label title="Upload file" class="upload_picture">
+                        <input id="fileInput" class="ds_none" type="file" name="fileInput">
+                    </label>
+                    <button title="Send" class="ds_none" id="send"></button>
+                    <div class="wrap_mic_icon">
+                        <button id="voice_rec"></button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

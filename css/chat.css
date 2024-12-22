@@ -91,7 +91,6 @@ details a:hover{
     background-color: #22272e;
     color: #8edd91;
 }
-
 .code_execution:before{
     content: "Code Execution:";
     margin-bottom: -11px;
@@ -102,6 +101,26 @@ details a:hover{
     border-radius: 3px;
     color: #000;
     border: 1px solid #ccc;
+}
+
+.OUTCOME_FAILED{
+    background-color: #22272e;
+    font-size: 0.85em;
+    padding: 14px 16px 4px 14px;
+    width: 98%;
+    margin: 0 1%;
+    box-sizing: border-box;
+}
+
+.OUTCOME_FAILED:before{
+    content: "ExecuteCode failed:";
+    margin-bottom: 5px;
+    display: block;
+    padding: 5px 8px;
+    width: fit-content;
+    border-radius: 3px;
+    color: #e1e1e1;
+    border: 1px solid #ffa200;
 }
 
 .beta_warning:after{
@@ -655,7 +674,7 @@ select{
 
 
 #voice_rec{
-    background-image: url('data:image/svg+xml;utf8, <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true" style="pointer-events: none; display: inherit;"><path d="M12 3c-1.66 0-3 1.37-3 3.07v5.86c0 1.7 1.34 3.07 3 3.07s3-1.37 3-3.07V6.07C15 4.37 13.66 3 12 3zm6.5 9h-1c0 3.03-2.47 5.5-5.5 5.5S6.5 15.03 6.5 12h-1c0 3.24 2.39 5.93 5.5 6.41V21h2v-2.59c3.11-.48 5.5-3.17 5.5-6.41z" fill="white"></path></svg>');
+    background-image: url('data:image/svg+xml;utf8, <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true" style="pointer-events: none; display: inherit;"><path d="M12 3c-1.66 0-3 1.37-3 3.07v5.86c0 1.7 1.34 3.07 3 3.07s3-1.37 3-3.07V6.07C15 4.37 13.66 3 12 3zm6.5 9h-1c0 3.03-2.47 5.5-5.5 5.5S6.5 15.03 6.5 12h-1c0 3.24 2.39 5.93 5.5 6.41V21h2v-2.59c3.11-.48 5.5-3.17 5.5-6.41z" fill="gray"></path></svg>');
     background-repeat: no-repeat;
     background-size: contain;
     background-position-y: center;
@@ -664,15 +683,16 @@ select{
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    scale: 0.9;
+    background-color: #fafaf9;
 }
 
 #voice_rec:hover{
-    scale: 1;
+    background-image: url('data:image/svg+xml;utf8, <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true" style="pointer-events: none; display: inherit;"><path d="M12 3c-1.66 0-3 1.37-3 3.07v5.86c0 1.7 1.34 3.07 3 3.07s3-1.37 3-3.07V6.07C15 4.37 13.66 3 12 3zm6.5 9h-1c0 3.03-2.47 5.5-5.5 5.5S6.5 15.03 6.5 12h-1c0 3.24 2.39 5.93 5.5 6.41V21h2v-2.59c3.11-.48 5.5-3.17 5.5-6.41z" fill="red"></path></svg>');
 }
 .wrap_mic_icon{
     margin-right: 5px;
     padding-top: 3px;
+    float: left;
 }
 
 
@@ -680,7 +700,7 @@ select{
 .upload_picture{
     color: #fff;
     margin-right: 2px;
-    padding: 0 15px;
+    padding: 0 25px;
     float: left;
     height: 50px;
     box-sizing: border-box;
@@ -689,20 +709,16 @@ select{
     background-size: contain;
     background-position-y: center;
     cursor: pointer;
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-    border: 1px solid #ccc;
-    border-left: none;
-
+    border: none;
 }
 .chat-input textarea {
-    padding: 10px;
+    padding: 16px 14px;
     border: 1px solid #ccc;
     display: block;
     width: 70%;
     float: left;
-    border-bottom-left-radius: 5px;
-    border-top-left-radius: 5px;
+    border-bottom-left-radius: 24px;
+    border-top-left-radius: 24px;
     height: 50px;
     box-sizing: border-box;
     border-right: none !important;
@@ -736,12 +752,21 @@ select{
 #send{
     width: 50px;
     border-radius: 50%;
-    background-image: url('data:image/svg+xml;utf8, <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"> <path d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z"/> </svg>');
+    background-image: url('data:image/svg+xml;utf8, <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"> <path d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z" fill="white"/> </svg>');
     background-repeat: no-repeat;
     background-size: contain;
     color: #fff9f9 !important;
-    background-color: #fd5656;
+    background-color: #7578e1;
     transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.wrap_rec_and_up{
+    border: 1px solid #ccc;
+    float: left;
+    border-left: none;
+    border-bottom-right-radius: 24px;
+    border-top-right-radius: 24px;
+    height: 50px;
 }
 
 .save_prompt{
@@ -841,8 +866,8 @@ textarea.system_prompt {
     }
 
     .chat-input .chat_wrap {
-        width: 100%;
-        margin-left: 0;
+        width: 95%;
+        margin-left: 5%;
     }
 }
 
