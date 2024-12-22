@@ -4,7 +4,7 @@ let input_file = '';
 let groq_api_key = '';
 async function transcribeAudio() {
     base64String = '';
-    toggleAnimation();
+    toggleAiGenAnimation();
     if (!media_file) {
         let input_file = document.querySelector('#fileInput');
         media_file = input_file.files[0];
@@ -29,7 +29,7 @@ async function transcribeAudio() {
 
 
         const result = await response.json();
-        toggleAnimation();
+        toggleAiGenAnimation()
         let text = result.text ?? '';
         if (text) {
             media_file = '';
@@ -58,7 +58,7 @@ async function transcribeAudio() {
     } catch (error) {
         addWarning(error);
         console.error(error)
-        toggleAnimation(true);
+        toggleAiGenAnimation(false)
         media_file = '';
         input_file.value = '';
     }
@@ -86,7 +86,7 @@ if (input_file) {
 
 
 async function transcribeAudioFromRecording() {
-    toggleAnimation();
+    toggleAiGenAnimation()
     const apiUrl = 'https://api.groq.com/openai/v1/audio/transcriptions';
     const formData = new FormData();
     const audioBlob = base64toBlob(base64String, 'audio/wav');
@@ -106,7 +106,7 @@ async function transcribeAudioFromRecording() {
         });
 
         const result = await response.json();
-        toggleAnimation();
+        toggleAiGenAnimation();
         let text = result.text ?? '';
         if (text) {
             //addConversation("assistant", text);
@@ -127,7 +127,7 @@ async function transcribeAudioFromRecording() {
     } catch (error) {
         addWarning(error);
         console.error(error)
-        toggleAnimation(true);
+        toggleAiGenAnimation(false)
         toggleBtnOptions();
     }finally {
         media_file = '';

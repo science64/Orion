@@ -10,7 +10,7 @@ class GoogleSearch {
         let use_rag_endpoint = localStorage.getItem('use_rag_endpoint');
         if(use_rag_endpoint == null){
             ragEndpointDialog();
-            toggleAnimation(true)
+            toggleAiGenAnimation(false)
             removeLastMessage();
             enableChat();
             return false;
@@ -57,7 +57,7 @@ class GoogleSearch {
         if (!is_cse_active) {
             moreOptions('cse')
             addWarning('Please set Google CSE API key and CX ID');
-            toggleAnimation(true)
+            toggleAiGenAnimation(false)
             enableChat();
             removeLastMessage();
             return false;
