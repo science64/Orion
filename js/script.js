@@ -436,7 +436,8 @@ function removeChat(div, id, force = false) {
  * Starts a new chat without any context from past conversation
  **/
 function newChat() {
-    toggleAnimation(true);
+    //toggleAnimation(true);
+    toggleAiGenAnimation(false);
     closeDialogs();
     document.title = SITE_TITLE;
     chat_id = new Date().getTime(); // generate a new chat_id
@@ -577,7 +578,36 @@ function getSystemPrompt() {
     return system_prompt;
 }
 
+
+function toggleAiGenAnimation(do_animate = 'toggle') {
+    let ele = document.querySelector(".message:nth-last-of-type(1)");
+    if(do_animate === 'toggle'){
+        let has_old = document.querySelector(".thinking-container");
+        do_animate = !has_old;
+    }
+    if (do_animate === true && ele) {
+        if (ele.classList.contains('user')) {
+            let ai_gen_animation = document.createElement('div');
+            ai_gen_animation.innerHTML =
+                 `<div class="ai-avatar">AI</div>
+                 <div class="ai_dots-container">
+                   <div class="dot_ai"></div>
+                   <div class="dot_ai"></div>
+                   <div class="dot_ai"></div>
+                 </div>`;
+            ai_gen_animation.classList.add('thinking-container');
+            ele.insertAdjacentElement('afterend', ai_gen_animation)
+        }
+    }else if (do_animate === false){
+        let thinking_container = document.querySelector(".thinking-container");
+        if(thinking_container){
+            thinking_container.remove();
+        }
+    }
+}
+
 function chat() {
+    toggleAiGenAnimation(true);
     if (chosen_platform === 'google') {
         // endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
         return geminiChat();
@@ -610,28 +640,30 @@ function removeLastMessage(from_user = true) {
 let chatButton = document.querySelector("#send");
 let chat_textarea = document.querySelector(".chat-input textarea");
 let voice_rec = document.getElementById('voice_rec');
-function toggleBtnOptions(){
+
+function toggleBtnOptions() {
     // when not fired by addEventListener
-    if(chat_textarea.value.trim().length){
+    if (chat_textarea.value.trim().length) {
         chatButton.classList.remove('ds_none');
         voice_rec.classList.add('ds_none');
-    }else{
+    } else {
         voice_rec.classList.remove('ds_none');
         chatButton.classList.add('ds_none');
     }
     // when fired by addEventListener
-    chat_textarea.addEventListener('input', ()=>{
-        if(chat_textarea.value.trim().length){
+    chat_textarea.addEventListener('input', () => {
+        if (chat_textarea.value.trim().length) {
             chatButton.classList.remove('ds_none');
             voice_rec.classList.add('ds_none');
-        }else{
+        } else {
             voice_rec.classList.remove('ds_none');
             chatButton.classList.add('ds_none');
         }
     })
 }
+
 toggleBtnOptions();
-voice_rec.addEventListener('click', ()=>{
+voice_rec.addEventListener('click', () => {
     chatButton.classList.remove('ds_none');
     voice_rec.classList.add('ds_none');
     recordVoice();
@@ -646,7 +678,8 @@ function startChat() {
     }
     let input_text = chat_textarea.value;
     if (input_text.trim().length > 0) {
-        toggleAnimation();
+        //toggleAnimation();
+        toggleAiGenAnimation();
         chat_textarea.value = '';
         toggleBtnOptions();
         disableChat()
@@ -772,9 +805,6 @@ function enableCopyForCode(enable_down_too = true) {
 }
 
 
-
-
-
 function enableFullTextCopy() {
     document.querySelectorAll('.chat .bot').forEach(div => {
         let div_copy = document.createElement('div');
@@ -786,12 +816,12 @@ function enableFullTextCopy() {
         })
 
         let all_ele = div_copy.querySelectorAll("*");
-        all_ele.forEach(element=>{
+        all_ele.forEach(element => {
             element.removeAttribute('id');
         })
 
         let play_audio_btn = div_copy.querySelector(".play_audio_btn");
-        if(play_audio_btn){
+        if (play_audio_btn) {
             // So that it is not copied along with the text
             play_audio_btn.remove();
         }
@@ -819,11 +849,6 @@ function enableFullTextCopy() {
     });
 
 }
-
-
-
-
-
 
 
 function enableCodeDownload() {
@@ -1088,7 +1113,8 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             addWarning('Error: ' + error, false);
             removeLastMessage();
         }).finally(() => {
-        toggleAnimation(true);
+        //toggleAnimation(true);
+        toggleAiGenAnimation(false);
         enableChat();
         if (invalid_key) {
             setApiKeyDialog();
@@ -1390,7 +1416,7 @@ function moreOptions(show = 'all') {
 }
 
 
-function addModelsOptions(){
+function addModelsOptions() {
     closeDialogs(); // close opened dialogs before show new one
     let provider_options =
         '<div><p>Add a new AI model</p>' +
@@ -1399,7 +1425,7 @@ function addModelsOptions(){
         '<option disabled="disabled" selected="selected">Select</option>';
 
     Object.keys(PLATFORM_DATA).forEach(platform => {
-        if(platform !== 'ollama'){
+        if (platform !== 'ollama') {
             // Ollama models is fetched automatically
             let platform_name = PLATFORM_DATA[platform].name;
             provider_options += `<option value="${platform}">${platform_name}</option>`;
@@ -1411,24 +1437,24 @@ function addModelsOptions(){
     let extra_models = localStorage.getItem("extra_models");
     extra_models = JSON.parse(extra_models);
     let remove_models = '';
-    if(extra_models){
+    if (extra_models) {
         remove_models = '<div><p>You can also remove these models!</p>';
     }
     for (const provider in extra_models) {
         if (extra_models.hasOwnProperty(provider)) {
             let provide_name = PLATFORM_DATA[provider].name;
             let idx = 0;
-            extra_models[provider].forEach(model=>{
+            extra_models[provider].forEach(model => {
                 remove_models += `<button class="remove_model_btn" data-id="js_btn_${idx}" onclick="removeModel('${provider}', '${model}', ${idx})" title="From ${provide_name}">Remove ${model}</button>`;
                 let has_model = PLATFORM_DATA[provider].models.includes(model);
-                if(!has_model){
+                if (!has_model) {
                     PLATFORM_DATA[provider].models.push(model);
                 }
                 idx++;
             })
         }
     }
-    if(remove_models){
+    if (remove_models) {
         remove_models += '</div>';
     }
 
@@ -1443,7 +1469,7 @@ function addModelsOptions(){
 }
 
 
-function removeModel(provider, model, id){
+function removeModel(provider, model, id) {
     let extra_models = localStorage.getItem('extra_models');
     extra_models = JSON.parse(extra_models);
     extra_models[provider] = extra_models[provider].filter(item => item !== model);
@@ -1453,31 +1479,31 @@ function removeModel(provider, model, id){
     loadExtraModels();
 }
 
-function addNewModel(){
+function addNewModel() {
     let provider = document.querySelector("select[name=provider]");
     let new_model = document.querySelector("input[name=new_model]");
     new_model = new_model.value.trim();
     provider = provider.value.trim().toLowerCase();
-    if(provider === 'select'){
+    if (provider === 'select') {
         addWarning('Please select a provider', true, 'fail_dialog');
         provider = '';
     }
-    if(provider && new_model){
+    if (provider && new_model) {
         let has_model = PLATFORM_DATA[provider]?.models?.includes(new_model) ?? false;
-        if(!has_model){
+        if (!has_model) {
             let extra_models = localStorage.getItem("extra_models");
-            if(extra_models === null){
+            if (extra_models === null) {
                 extra_models = '{}';
             }
             extra_models = JSON.parse(extra_models);
-            if(extra_models[provider]){
+            if (extra_models[provider]) {
                 extra_models[provider].push(new_model);
-            }else {
+            } else {
                 extra_models[provider] = [new_model];
             }
             localStorage.setItem('extra_models', JSON.stringify(extra_models));
-            addWarning('New model added successfully!',true, 'success_dialog');
-        }else {
+            addWarning('New model added successfully!', true, 'success_dialog');
+        } else {
             let msg = `Model ${new_model} for ${provider} already exists!`;
             addWarning(msg, true, 'fail_dialog');
         }
@@ -1495,10 +1521,10 @@ function setYouTubeCaptionApiEndpoint() {
 }
 
 function dialogSetYouTubeCaptionApiEndpoint() {
-    let path_name = location.pathname.replace(/\/$/,""); // remove "/" at the end
+    let path_name = location.pathname.replace(/\/$/, ""); // remove "/" at the end
     let caption_api_endpoint = `${location.origin}${path_name}/plugins/php/yt_caption.php`;
     let input_value = '';
-    if(!location.hostname.match("github.io")){
+    if (!location.hostname.match("github.io")) {
         input_value = `value="${caption_api_endpoint}"`;
     }
     let cnt =
@@ -1791,7 +1817,8 @@ async function youtubeCaption(data) {
         dialogSetYouTubeCaptionApiEndpoint();
         removeLastMessage();
         enableChat();
-        toggleAnimation(true);
+        //toggleAnimation(true);
+        toggleAiGenAnimation(false);
         return false;
     }
 
@@ -1844,10 +1871,12 @@ async function youtubeCaption(data) {
         }, 1000)
         if (chosen_platform === 'google') {
             await geminiChat()
-            toggleAnimation(true);
+           // toggleAnimation(true);
+            toggleAiGenAnimation(false);
         } else {
             await streamChat(false); // false to prevent infinite loop
-            toggleAnimation(true);
+           // toggleAnimation(true);
+            toggleAiGenAnimation(false)
         }
 
     }
@@ -1974,7 +2003,7 @@ async function streamChat(can_use_tools = true) {
         'x-api-key': `${api_key}`, // for Anthropic
 
     };
-    if(chosen_platform === 'anthropic'){
+    if (chosen_platform === 'anthropic') {
         HTTP_HEADERS["anthropic-version"] = "2023-06-01";
         HTTP_HEADERS['anthropic-dangerous-direct-browser-access'] = "true";
     }
@@ -2021,7 +2050,8 @@ async function streamChat(can_use_tools = true) {
 
     if (!endpoint) {
         setOptions();
-        toggleAnimation(true);
+       // toggleAnimation(true);
+        toggleAiGenAnimation(false);
         removeLastMessage();
         enableChat();
         return false;
@@ -2035,7 +2065,8 @@ async function streamChat(can_use_tools = true) {
                     addWarning(data);
                 }, 500)
                 removeLastMessage();
-                toggleAnimation(true);
+                //toggleAnimation(true);
+                toggleAiGenAnimation(false);
                 enableChat();
                 let the_code = data.code ?? data.error?.code ?? data.error?.message ?? data.message ?? '';
                 if (the_code === "wrong_api_key" || the_code === "invalid_api_key" || the_code === "invalid x-api-key" || the_code === "invalid api token") {
@@ -2068,11 +2099,12 @@ async function streamChat(can_use_tools = true) {
                             hljs.highlightAll();
                         } else {
                             // probably not stream - tool use
-                            toggleAnimation(true);
+                           // toggleAnimation(true);
+                            toggleAiGenAnimation(false);
                             toolHandle(data);
                             return false;
                         }
-                    },error =>{
+                    }, error => {
                         addWarning(error)
                     })
 
@@ -2109,7 +2141,8 @@ async function streamChat(can_use_tools = true) {
             hljs.highlightAll();
             if (first_response) {
                 first_response = false;
-                toggleAnimation(true);
+                //toggleAnimation(true);
+                toggleAiGenAnimation(false);
                 botMessageDiv.scrollIntoView();
             }
 
@@ -2121,7 +2154,8 @@ async function streamChat(can_use_tools = true) {
             error = 'Error: {}';
 
         }
-        toggleAnimation(true);
+       // toggleAnimation(true);
+        toggleAiGenAnimation(false);
         addWarning(error, false)
         // Display error message in the chat
         if (invalid_key) {
@@ -2130,7 +2164,8 @@ async function streamChat(can_use_tools = true) {
     } finally {
         enableCopyForCode();
         enableChat();
-        toggleAnimation(true);
+        //toggleAnimation(true);
+        toggleAiGenAnimation(false);
     }
 }
 
@@ -2138,7 +2173,7 @@ async function streamChat(can_use_tools = true) {
 // add file like json, md, txt to user prompt
 // the addition will occur if it is not an audio, video or image file
 function addFileToPrompt() {
-    if(base64String === ''){
+    if (base64String === '') {
         return false;
     }
 
@@ -2157,7 +2192,7 @@ function addFileToPrompt() {
         "text/rtf"
     ]
 
-    if(chosen_platform === 'google' && gemini_supported_mimeTypes.includes(mimeType)){
+    if (chosen_platform === 'google' && gemini_supported_mimeTypes.includes(mimeType)) {
         // No need to convert to text, gemini can handle that type of file
         return false;
     }
@@ -2166,7 +2201,7 @@ function addFileToPrompt() {
     let last_input_from_user = conversations.messages[conversations.messages.length - 1].content;
     let mime = mimeType.split("/")[0].toLowerCase();
     let the_type = mimeType.split("/")[1];
-    if(the_type && the_type.toLowerCase() === 'pdf'){
+    if (the_type && the_type.toLowerCase() === 'pdf') {
         return false;
     }
     let except = ['audio', 'video', 'image'];
@@ -2187,728 +2222,737 @@ function addFileToPrompt() {
     }
 }
 
-    function detectAttachment() {
-        const fileInput = document.getElementById('fileInput');
-        if (fileInput) {
-            fileInput.onchange = () => {
-                if (fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    mimeType = file.type;
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        base64String = event.target.result;
-                        fileInput.parentElement.classList.add('has_attachment')
-                        fileInput.value = '';
-                    }
-                    reader.readAsDataURL(file);
+function detectAttachment() {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.onchange = () => {
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                mimeType = file.type;
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    base64String = event.target.result;
+                    fileInput.parentElement.classList.add('has_attachment')
+                    fileInput.value = '';
                 }
+                reader.readAsDataURL(file);
             }
         }
     }
+}
 
 
-    detectAttachment();
+detectAttachment();
 
-    async function geminiUploadImage() {
-        if (!base64String) {
-            return false;
-        }
-
-        // the same content will not be uploaded again in less than 23 hours for Google Gemini
-        let md5_value = MD5(decodeURIComponent(encodeURIComponent(base64String)));
-        let upload_date = localStorage.getItem(md5_value);
-        let today_date = new Date().getTime();
-        if (upload_date) {
-            upload_date = parseInt(upload_date);
-            upload_date = new Date(upload_date);
-            const differ_ms = today_date - upload_date;
-            const d_seconds = Math.floor(differ_ms / 1000);
-            const d_minutes = Math.floor(d_seconds / 60);
-            const d_hours = Math.floor(d_minutes / 60);
-            if (d_hours < 48) {
-                let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
-                if (store_fileUri) {
-                    return store_fileUri;
-                }
-            }
-
-        } else {
-            console.log('file is new')
-        }
-
-        let baseUrl = 'https://generativelanguage.googleapis.com';
-
-        mimeType = base64String.substring(base64String.indexOf(":") + 1, base64String.indexOf(";"));
-
-        const byteCharacters = atob(base64String.split(',')[1]);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-
-        const byteArray = new Uint8Array(byteNumbers);
-        let imgBlob = new Blob([byteArray], {type: mimeType});
-        try {
-            // Define headers and initiate the resumable upload
-            const startUploadOptions = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Goog-Upload-Protocol': 'resumable',
-                    'X-Goog-Upload-Command': 'start',
-                    'X-Goog-Upload-Header-Content-Length': imgBlob.size,
-                    'X-Goog-Upload-Header-Content-Type': imgBlob.type,
-                },
-                body: JSON.stringify({'file': {'display_name': 'TEXT'}}),
-            };
-
-            const startRes = await fetch(`${baseUrl}/upload/v1beta/files?key=${api_key}`, startUploadOptions);
-            const uploadUrl = startRes.headers.get('X-Goog-Upload-URL');
-
-            // Upload the actual bytes
-            const uploadOptions = {
-                method: 'POST',
-                headers: {
-                    'Content-Length': imgBlob.size,
-                    'X-Goog-Upload-Offset': '0',
-                    'X-Goog-Upload-Command': 'upload, finalize',
-                },
-                body: imgBlob,
-            };
-
-            const uploadRes = await fetch(uploadUrl, uploadOptions);
-            const fileInfo = await uploadRes.json();
-            const fileUri = fileInfo.file.uri;
-
-
-            let file_state = ''
-            let start_time = new Date().getTime();
-            while (file_state !== 'ACTIVE') {
-                console.log('while: file_state:' + file_state)
-                await fetch(fileUri + "?key=" + api_key)
-                    .then(response => response.json())
-                    .then(data => {
-                        file_state = data.state;
-                    })
-                    .catch(error => {
-                        console.error('Request error:', error);
-                    });
-                if (file_state === 'ACTIVE') {
-                    break;
-                } else {
-                    await delay(5000); // wait 5 seconds
-                    // wait 5 secs before verify again
-                }
-                let past_time = new Date().getTime() - start_time;
-                let past_seconds = past_time / 1000;
-                if (past_seconds > 180) {
-                    addWarning('Upload is taking to much time. Try again later.', false)
-                    console.log('Upload is taking to much time')
-                    break;
-                }
-
-
-            }
-
-            localStorage.setItem('file_' + md5_value, fileUri);
-            localStorage.setItem(md5_value, new Date().getTime().toString());
-
-            return fileUri;
-
-
-        } catch (error) {
-            console.error('Error:', error);
-        }
+async function geminiUploadImage() {
+    if (!base64String) {
         return false;
     }
 
-
-    async function geminiStreamChat(fileUri, data) {
-        last_user_input = conversations.messages[conversations.messages.length - 1].content;
-        if (needToolUse(last_user_input)) {
-            let tool_name = whichTool(last_user_input);
-            let tool_compatibility = `google_compatible`;
-            let the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
-            if (the_tool) {
-                geminiChat(fileUri, false)
-            } else {
-                console.log('has not tool')
+    // the same content will not be uploaded again in less than 23 hours for Google Gemini
+    let md5_value = MD5(decodeURIComponent(encodeURIComponent(base64String)));
+    let upload_date = localStorage.getItem(md5_value);
+    let today_date = new Date().getTime();
+    if (upload_date) {
+        upload_date = parseInt(upload_date);
+        upload_date = new Date(upload_date);
+        const differ_ms = today_date - upload_date;
+        const d_seconds = Math.floor(differ_ms / 1000);
+        const d_minutes = Math.floor(d_seconds / 60);
+        const d_hours = Math.floor(d_minutes / 60);
+        if (d_hours < 48) {
+            let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
+            if (store_fileUri) {
+                return store_fileUri;
             }
         }
-        // const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:streamGenerateContent?alt=sse&key=${{api_key}}`;
 
-        let endpoint_stream = endpoint.replaceAll("{{model}}", model);
-        endpoint_stream = endpoint_stream.replaceAll("{{gen_mode}}", "streamGenerateContent");
-        endpoint_stream = endpoint_stream.replaceAll("{{api_key}}", api_key + "&alt=sse");
+    } else {
+        console.log('file is new')
+    }
 
-        let first_response = true;
-        try {
-            const the_response = await fetch(endpoint_stream, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
+    let baseUrl = 'https://generativelanguage.googleapis.com';
 
-            if (!the_response.ok) {
-                the_response.json().then(data => {
-                    setTimeout(() => {
-                        addWarning(data);
-                    }, 500)
-                    removeLastMessage();
-                    toggleAnimation(true);
-                    enableChat();
-                    let tt = data.error?.message ?? 'nada';
-                    if (tt.match(/API key not valid/)) {
-                        setApiKeyDialog();
-                    }
+    mimeType = base64String.substring(base64String.indexOf(":") + 1, base64String.indexOf(";"));
+
+    const byteCharacters = atob(base64String.split(',')[1]);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    let imgBlob = new Blob([byteArray], {type: mimeType});
+    try {
+        // Define headers and initiate the resumable upload
+        const startUploadOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Upload-Protocol': 'resumable',
+                'X-Goog-Upload-Command': 'start',
+                'X-Goog-Upload-Header-Content-Length': imgBlob.size,
+                'X-Goog-Upload-Header-Content-Type': imgBlob.type,
+            },
+            body: JSON.stringify({'file': {'display_name': 'TEXT'}}),
+        };
+
+        const startRes = await fetch(`${baseUrl}/upload/v1beta/files?key=${api_key}`, startUploadOptions);
+        const uploadUrl = startRes.headers.get('X-Goog-Upload-URL');
+
+        // Upload the actual bytes
+        const uploadOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Length': imgBlob.size,
+                'X-Goog-Upload-Offset': '0',
+                'X-Goog-Upload-Command': 'upload, finalize',
+            },
+            body: imgBlob,
+        };
+
+        const uploadRes = await fetch(uploadUrl, uploadOptions);
+        const fileInfo = await uploadRes.json();
+        const fileUri = fileInfo.file.uri;
+
+
+        let file_state = ''
+        let start_time = new Date().getTime();
+        while (file_state !== 'ACTIVE') {
+            console.log('while: file_state:' + file_state)
+            await fetch(fileUri + "?key=" + api_key)
+                .then(response => response.json())
+                .then(data => {
+                    file_state = data.state;
                 })
-                return false;
-            }
-            const reader = the_response.body.getReader();
-            let chatContainer = document.querySelector('#chat-messages'); // Get the chat container
-            const botMessageDiv = document.createElement('div');  // Create the bot message div
-            botMessageDiv.classList.add('message', 'bot');      // Add the classes
-            chatContainer.append(botMessageDiv);           // Append to the chat
-
-            story = '';
-
-            while (true) {
-                const {done, value} = await reader.read();
-                if (done) {
-                    if (story) {
-                        addConversation('assistant', story, false, false)
-                        toggleAnimation(true)
-                    }
-                    break;
-                }
-
-                const textDecoder = new TextDecoder('utf-8');
-                const chunk = textDecoder.decode(value);
-                // Parse the SSE stream
-                chunk.split('\n').forEach(part => {
-                    if (part.startsWith('data: ')) {
-                        try {
-                            let jsonData = JSON.parse(part.substring('data: '.length));
-                            if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                                story += jsonData.candidates[0].content?.parts[0].text;
-                            } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code) {
-                                let code = jsonData.candidates[0].content.parts[0].executableCode.code;
-                                let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
-                                code_lang = code_lang.toLowerCase();
-                                code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
-                                story += code;
-                            } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
-                                let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
-                                let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output;
-                                ce_output = ce_output.replaceAll("\n","<br>");
-                                story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
-                            }
-
-                            let finished_reason = jsonData.candidates[0].finishReason ?? '';
-                            if (finished_reason && finished_reason !== 'STOP') {
-                                setTimeout(() => {
-                                    addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
-                                }, 500)
-                            }
-
-                        } catch (error) {
-                            addWarning(error, false);
-                            console.error("Error:", error);
-                        }
-                    }
+                .catch(error => {
+                    console.error('Request error:', error);
                 });
-                if (first_response) {
-                    first_response = false;
-                    toggleAnimation(true);
-                    botMessageDiv.scrollIntoView();
-                }
-                if (story) {
-                    botMessageDiv.innerHTML = converter.makeHtml(story);
-                }
-                hljs.highlightAll();
-            }
-
-        } catch (error) {
-            console.error("Error:", error);
-            addWarning('Error: ' + error.message)
-            toggleAnimation(true);
-            enableChat();
-        } finally {
-            enableCopyForCode();
-            enableChat();
-            toggleAnimation(true)
-        }
-    } // geminiStreamChat
-
-
-    function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-
-    function processDataPart(part) {
-        let jsonData;
-        if (chosen_platform === 'anthropic') {
-            jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
-            if (jsonData.delta?.text) {
-                story += jsonData.delta.text;
-            }
-        } else {
-            jsonData = JSON.parse(part.toString().substring('data: '.length));
-            if (chosen_platform === 'cohere') {
-                if (jsonData.delta?.message?.content?.text) {
-                    story += jsonData.delta.message.content.text;
-                }
+            if (file_state === 'ACTIVE') {
+                break;
             } else {
-                if (jsonData.choices?.[0]?.delta?.content) {
-                    story += jsonData.choices[0].delta.content;
-                }
+                await delay(5000); // wait 5 seconds
+                // wait 5 secs before verify again
             }
+            let past_time = new Date().getTime() - start_time;
+            let past_seconds = past_time / 1000;
+            if (past_seconds > 180) {
+                addWarning('Upload is taking to much time. Try again later.', false)
+                console.log('Upload is taking to much time')
+                break;
+            }
+
+
         }
+
+        localStorage.setItem('file_' + md5_value, fileUri);
+        localStorage.setItem(md5_value, new Date().getTime().toString());
+
+        return fileUri;
+
+
+    } catch (error) {
+        console.error('Error:', error);
     }
+    return false;
+}
 
 
-    function processFullData(jsonData) {
-        if (chosen_platform === 'anthropic') {
-            if (jsonData.content?.[0].text) {
-                story += jsonData.content[0].text;
-            }
+async function geminiStreamChat(fileUri, data) {
+    last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    if (needToolUse(last_user_input)) {
+        let tool_name = whichTool(last_user_input);
+        let tool_compatibility = `google_compatible`;
+        let the_tool = tools_list[tool_compatibility]?.[tool_name] ?? '';
+        if (the_tool) {
+            geminiChat(fileUri, false)
         } else {
-            if (chosen_platform === 'cohere') {
-                if (jsonData.message?.content?.[0]?.text) {
-                    story += jsonData.message.content[0].text;
-                }
-            } else {
-                if (jsonData.choices?.[0]?.message?.content) {
-                    story += jsonData.choices[0].message.content;
-                }
-            }
+            console.log('has not tool')
         }
     }
+    // const endpoint_stream = `https://generativelanguage.googleapis.com/v1beta/models/${{model}}:streamGenerateContent?alt=sse&key=${{api_key}}`;
 
-    function processBuffer(remainingBuffer) {
-        if (remainingBuffer.trim().length > 0) {
-            try {
-                processDataPart(remainingBuffer);
-            } catch (error) {
-                console.error('Error processing final buffer', error);
-                addWarning(JSON.stringify(error));
-            }
-        }
-    }
+    let endpoint_stream = endpoint.replaceAll("{{model}}", model);
+    endpoint_stream = endpoint_stream.replaceAll("{{gen_mode}}", "streamGenerateContent");
+    endpoint_stream = endpoint_stream.replaceAll("{{api_key}}", api_key + "&alt=sse");
 
-    function enableGoogleCse() {
-        let g_api_key = document.querySelector("#cse_google_api_key")?.value.trim() ?? '';
-        let g_cx_id = document.querySelector("#cse_google_cx_id")?.value.trim() ?? '';
-        if (g_api_key && g_cx_id) {
-            localStorage.setItem('cse_google_api_key', g_api_key)
-            localStorage.setItem('cse_google_cx_id', g_cx_id)
-            closeDialogs();
-            addWarning('Google CSE successfully defined!', true, 'success_dialog');
-        } else {
-            addWarning("Error: API Key and/or CX ID not defined for Google Custom Search", true, 'fail_dialog')
-        }
-    }
-
-    function disableGoogleCse() {
-        localStorage.removeItem('cse_google_api_key')
-        localStorage.removeItem('cse_google_cx_id')
-        let disable_g_cse = document.querySelector("#disable_g_cse");
-        if (disable_g_cse) {
-            disable_g_cse.remove();
-        }
-        closeDialogs();
-    }
-
-    function isGoogleCseActive() {
-        let g_api_key = localStorage.getItem('cse_google_api_key')
-        let g_cx_id = localStorage.getItem('cse_google_cx_id')
-        return !!(g_api_key && g_cx_id);
-
-    }
-
-    async function gcseActive() {
-        return isGoogleCseActive();
-    }
-
-
-    async function googleSearch(data) {
-        let is_cse_active = await isGoogleCseActive();
-        if (!is_cse_active) {
-            let cse_opt = `<button class="more_opt_btn" onclick="moreOptions('cse')">See Options</button>`;
-            cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
-            cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
-            addWarning(cse_opt, false, 'dialog_warning');
-            toggleAnimation(true);
-            enableChat();
-            removeLastMessage();
-            return false;
-        }
-
-        let term = data.term ?? '';
-        if (!term) {
-            addWarning('googleSearch() received no search param');
-        }
-        console.log('Searching for ' + term);
-        let gs = new GoogleSearch();
-        let results = await gs.search(term);
-        let txt_result = '';
-        if (results.items) {
-            results.items.forEach(item => {
-                txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
-            })
-        } else if (results.text) {
-            txt_result = results.text;
-        } else {
-            if (is_cse_active) {
-                addWarning('Got no result from Google Search');
-            }
-            removeLastMessage();
-            toggleAnimation();
-            enableChat();
-            return false;
-        }
-        //  let last_input = conversations.messages[conversations.messages.length - 1].content;
-
-        let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
-        if (pre_function_text) {
-            last_input = pre_function_text;
-        }
-        let ele = document.querySelector(".message:nth-last-of-type(1)");
-        if (ele) {
-            let cnt = `${last_input} <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
-            ele.innerHTML = converter.makeHtml(cnt);
-        }
-        pre_function_text = '';
-
-        conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n respond based on this context: <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
-        if (chosen_platform === 'google') {
-            await geminiChat()
-            toggleAnimation(true);
-        } else {
-            await streamChat(false); // false to prevent infinite loop
-            toggleAnimation(true);
-
-        }
-
-    }
-
-    function toolHandle(data) {
-        if (chosen_platform === 'google') {
-            try {
-                let fn_name = data.name;
-                let arguments = data.args;
-                this[fn_name](arguments);
-            } catch (error) {
-                console.log(error)
-            }
-        } else if (chosen_platform === 'anthropic') {
-            if (data.content?.[0]) {
-                let fn_name = data.content[0].name;
-                let arguments = data.content[0].input;
-                this[fn_name](arguments);
-            } else {
-                addWarning('A tool was expected, got none.', false)
-            }
-        } else if (chosen_platform === 'cohere') {
-            if (data.message?.tool_calls?.[0]?.function) {
-                let fn_name = data.message.tool_calls[0]?.function.name
-                let arguments = JSON.parse(data.message.tool_calls[0]?.function.arguments)
-                this[fn_name](arguments);
-            } else {
-                addWarning('A tool was expected, got none.', false)
-            }
-        } else {
-            if (data.choices?.[0]?.message?.tool_calls?.[0]?.function) {
-                let tool = data.choices[0].message.tool_calls[0].function;
-                let fn_name = tool.name;
-                let arguments = JSON.parse(tool.arguments);
-                this[fn_name](arguments);
-            } else {
-                addWarning(data, false);
-                // addWarning('A tool was expected, got none.', false)
-            }
-        }
-    }
-
-    let start_msg = document.querySelector(".start_msg");
-    let doc_title = document.title;
-    start_msg.onmouseover = () => {
-        document.title = model + ' -> ' + chosen_platform;
-        start_msg.title = document.title;
-    }
-    start_msg.onmouseleave = () => {
-        document.title = doc_title;
-        start_msg.removeAttribute('title');
-    }
-
-    chatButton.onmouseover = () => {
-        document.title = 'Send to ' + model + ' -> ' + chosen_platform;
-    }
-
-    chatButton.onmouseleave = () => {
-        document.title = doc_title;
-    }
-
-    function removeOnlineOfflineMessages(){
-        let off_ele = document.querySelectorAll(".offline");
-        off_ele.forEach(ele=>{
-            ele.remove();
+    let first_response = true;
+    try {
+        const the_response = await fetch(endpoint_stream, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
 
-        let on_ele = document.querySelectorAll(".online");
-        on_ele.forEach(ele=>{
-            ele.remove();
-        })
-    }
-
-    window.addEventListener('online', () => {
-        removeOnlineOfflineMessages();
-        addWarning("You are online again!", false, 'online')
-    });
-
-    window.addEventListener('offline', () => {
-        removeOnlineOfflineMessages();
-        addWarning("You are offline!", false, 'offline')
-    });
-
-
-    function javascriptCodeExecution(obj) {
-        toggleAnimation(true);
-        js_code = obj.code;
-        js_code.replace(/\\n/g, "\n")
-            .replace(/\\"/g, "'")
-            .replace(/\\'/g, "'")
-            .replace(/console\.log/g, "")
-            .replace(/document\.write/, "")
-            .replace("<script>", "")
-            .replace("<script", "")
-            .replace("</script>", "");
-        original_code = obj.code;
-        let msg = `The AI want to execute the following code: <div class="center"><button class="accept_code_execution" onclick="executeJsCode(js_code, original_code)">Accept</button></div> <pre class="exclude_btn_group"><code class="javascript language-javascript hljs">${obj.code}</code></pre>`;
-        addWarning(msg, false)
-        setTimeout(() => {
-            hljs.highlightAll();
-        }, 500)
-    }
-
-    async function executeJsCode(code, realCode = '') {
-        js_code = ''; // reset
-        original_code = '' // reset
-        let response;
-        try {
-            // response = await eval(code)
-            response = await jsCodeExecutionSandbox(code);
-        } catch (error) {
-            response = error;
+        if (!the_response.ok) {
+            the_response.json().then(data => {
+                setTimeout(() => {
+                    addWarning(data);
+                }, 500)
+                removeLastMessage();
+               // toggleAnimation(true);
+                toggleAiGenAnimation(false);
+                enableChat();
+                let tt = data.error?.message ?? 'nada';
+                if (tt.match(/API key not valid/)) {
+                    setApiKeyDialog();
+                }
+            })
+            return false;
         }
-        if (realCode) {
-            // code that will be shown
-            code = realCode;
-        }
-        let timer_jc = setInterval(() => {
-            if(js_code_exec_finished){
-                clearInterval(timer_jc);
-                chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${js_code_exec_output}</span>`;
-                document.querySelector("#send").click();
+        const reader = the_response.body.getReader();
+        let chatContainer = document.querySelector('#chat-messages'); // Get the chat container
+        const botMessageDiv = document.createElement('div');  // Create the bot message div
+        botMessageDiv.classList.add('message', 'bot');      // Add the classes
+        chatContainer.append(botMessageDiv);           // Append to the chat
+
+        story = '';
+
+        while (true) {
+            const {done, value} = await reader.read();
+            if (done) {
+                if (story) {
+                    addConversation('assistant', story, false, false)
+                    //toggleAnimation(true)
+                    toggleAiGenAnimation(false);
+                }
+                break;
             }
-        })
-    }
 
+            const textDecoder = new TextDecoder('utf-8');
+            const chunk = textDecoder.decode(value);
+            // Parse the SSE stream
+            chunk.split('\n').forEach(part => {
+                if (part.startsWith('data: ')) {
+                    try {
+                        let jsonData = JSON.parse(part.substring('data: '.length));
+                        if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
+                            story += jsonData.candidates[0].content?.parts[0].text;
+                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code) {
+                            let code = jsonData.candidates[0].content.parts[0].executableCode.code;
+                            let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
+                            code_lang = code_lang.toLowerCase();
+                            code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
+                            story += code;
+                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
+                            let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
+                            let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output;
+                            ce_output = ce_output.replaceAll("\n", "<br>");
+                            story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
+                        }
 
-    async function jsCodeExecutionSandbox(code) {
-        js_code_exec_finished  = false;
-        js_code_exec_output = '';
-        let old_iframe = document.querySelector("iframe#sandbox");
-        if(old_iframe){
-            old_iframe.remove();
-        }
-        let results = '';
-        const targetOrigin = window.location.origin;
-        const iframe = document.createElement("iframe");
-        iframe.id = 'sandbox';
-        iframe.style.display = 'none';
-        iframe.src = "sandbox.html";
-        document.body.append(iframe)
-        iframe.onload = () => {
-            iframe.contentWindow.postMessage({code: code}, targetOrigin);
-        };
-        window.onmessage = (event) => {
-            if(event.data){
-                console.log(event.data)
-                let clog = event.data?.args?.[0] ?? false;
-                if (clog !== false) {
-                    clog = stringifyComplexValue(clog)
-                    results += clog + '<br>';
-                } else{
-                    results += stringifyComplexValue(event.data);
-                    if(event.data.type === undefined){
-                        js_code_exec_output = results;
-                        js_code_exec_finished = true;
+                        let finished_reason = jsonData.candidates[0].finishReason ?? '';
+                        if (finished_reason && finished_reason !== 'STOP') {
+                            setTimeout(() => {
+                                addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
+                            }, 500)
+                        }
+
+                    } catch (error) {
+                        addWarning(error, false);
+                        console.error("Error:", error);
                     }
                 }
-            }else {
-                js_code_exec_output = results;
-                js_code_exec_finished = true;
+            });
+            if (first_response) {
+                first_response = false;
+                //toggleAnimation(true);
+                toggleAiGenAnimation(false);
+                botMessageDiv.scrollIntoView();
+            }
+            if (story) {
+                botMessageDiv.innerHTML = converter.makeHtml(story);
+            }
+            hljs.highlightAll();
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+        addWarning('Error: ' + error.message)
+        //toggleAnimation(true);
+        toggleAiGenAnimation(false);
+        enableChat();
+    } finally {
+        enableCopyForCode();
+        enableChat();
+        //toggleAnimation(true)
+        toggleAiGenAnimation(false);
+    }
+} // geminiStreamChat
+
+
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+
+function processDataPart(part) {
+    let jsonData;
+    if (chosen_platform === 'anthropic') {
+        jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
+        if (jsonData.delta?.text) {
+            story += jsonData.delta.text;
+        }
+    } else {
+        jsonData = JSON.parse(part.toString().substring('data: '.length));
+        if (chosen_platform === 'cohere') {
+            if (jsonData.delta?.message?.content?.text) {
+                story += jsonData.delta.message.content.text;
+            }
+        } else {
+            if (jsonData.choices?.[0]?.delta?.content) {
+                story += jsonData.choices[0].delta.content;
             }
         }
     }
+}
 
-    loadPlugins(); // load plugins
 
-    function reloadPage() {
-        // this code can be used be plugins
-        document.location.reload()
+function processFullData(jsonData) {
+    if (chosen_platform === 'anthropic') {
+        if (jsonData.content?.[0].text) {
+            story += jsonData.content[0].text;
+        }
+    } else {
+        if (chosen_platform === 'cohere') {
+            if (jsonData.message?.content?.[0]?.text) {
+                story += jsonData.message.content[0].text;
+            }
+        } else {
+            if (jsonData.choices?.[0]?.message?.content) {
+                story += jsonData.choices[0].message.content;
+            }
+        }
     }
+}
+
+function processBuffer(remainingBuffer) {
+    if (remainingBuffer.trim().length > 0) {
+        try {
+            processDataPart(remainingBuffer);
+        } catch (error) {
+            console.error('Error processing final buffer', error);
+            addWarning(JSON.stringify(error));
+        }
+    }
+}
+
+function enableGoogleCse() {
+    let g_api_key = document.querySelector("#cse_google_api_key")?.value.trim() ?? '';
+    let g_cx_id = document.querySelector("#cse_google_cx_id")?.value.trim() ?? '';
+    if (g_api_key && g_cx_id) {
+        localStorage.setItem('cse_google_api_key', g_api_key)
+        localStorage.setItem('cse_google_cx_id', g_cx_id)
+        closeDialogs();
+        addWarning('Google CSE successfully defined!', true, 'success_dialog');
+    } else {
+        addWarning("Error: API Key and/or CX ID not defined for Google Custom Search", true, 'fail_dialog')
+    }
+}
+
+function disableGoogleCse() {
+    localStorage.removeItem('cse_google_api_key')
+    localStorage.removeItem('cse_google_cx_id')
+    let disable_g_cse = document.querySelector("#disable_g_cse");
+    if (disable_g_cse) {
+        disable_g_cse.remove();
+    }
+    closeDialogs();
+}
+
+function isGoogleCseActive() {
+    let g_api_key = localStorage.getItem('cse_google_api_key')
+    let g_cx_id = localStorage.getItem('cse_google_cx_id')
+    return !!(g_api_key && g_cx_id);
+
+}
+
+async function gcseActive() {
+    return isGoogleCseActive();
+}
+
+
+async function googleSearch(data) {
+    let is_cse_active = await isGoogleCseActive();
+    if (!is_cse_active) {
+        let cse_opt = `<button class="more_opt_btn" onclick="moreOptions('cse')">See Options</button>`;
+        cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
+        cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
+        addWarning(cse_opt, false, 'dialog_warning');
+       // toggleAnimation(true);
+        toggleAiGenAnimation(false);
+        enableChat();
+        removeLastMessage();
+        return false;
+    }
+
+    let term = data.term ?? '';
+    if (!term) {
+        addWarning('googleSearch() received no search param');
+    }
+    console.log('Searching for ' + term);
+    let gs = new GoogleSearch();
+    let results = await gs.search(term);
+    let txt_result = '';
+    if (results.items) {
+        results.items.forEach(item => {
+            txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
+        })
+    } else if (results.text) {
+        txt_result = results.text;
+    } else {
+        if (is_cse_active) {
+            addWarning('Got no result from Google Search');
+        }
+        removeLastMessage();
+       //toggleAnimation();
+        toggleAiGenAnimation()
+        enableChat();
+        return false;
+    }
+    //  let last_input = conversations.messages[conversations.messages.length - 1].content;
+
+    let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
+    if (pre_function_text) {
+        last_input = pre_function_text;
+    }
+    let ele = document.querySelector(".message:nth-last-of-type(1)");
+    if (ele) {
+        let cnt = `${last_input} <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
+        ele.innerHTML = converter.makeHtml(cnt);
+    }
+    pre_function_text = '';
+
+    conversations.messages[conversations.messages.length - 1].content = `User prompt: ${last_input} \n respond based on this context: <details><summary>Search Results [${term}]: </summary>${txt_result}</details>`;
+    if (chosen_platform === 'google') {
+        await geminiChat()
+        //toggleAnimation(true);
+        toggleAiGenAnimation(false);
+    } else {
+        await streamChat(false); // false to prevent infinite loop
+        //toggleAnimation(true);
+        toggleAiGenAnimation(false);
+
+    }
+
+}
+
+function toolHandle(data) {
+    if (chosen_platform === 'google') {
+        try {
+            let fn_name = data.name;
+            let arguments = data.args;
+            this[fn_name](arguments);
+        } catch (error) {
+            console.log(error)
+        }
+    } else if (chosen_platform === 'anthropic') {
+        if (data.content?.[0]) {
+            let fn_name = data.content[0].name;
+            let arguments = data.content[0].input;
+            this[fn_name](arguments);
+        } else {
+            addWarning('A tool was expected, got none.', false)
+        }
+    } else if (chosen_platform === 'cohere') {
+        if (data.message?.tool_calls?.[0]?.function) {
+            let fn_name = data.message.tool_calls[0]?.function.name
+            let arguments = JSON.parse(data.message.tool_calls[0]?.function.arguments)
+            this[fn_name](arguments);
+        } else {
+            addWarning('A tool was expected, got none.', false)
+        }
+    } else {
+        if (data.choices?.[0]?.message?.tool_calls?.[0]?.function) {
+            let tool = data.choices[0].message.tool_calls[0].function;
+            let fn_name = tool.name;
+            let arguments = JSON.parse(tool.arguments);
+            this[fn_name](arguments);
+        } else {
+            addWarning(data, false);
+            // addWarning('A tool was expected, got none.', false)
+        }
+    }
+}
+
+let start_msg = document.querySelector(".start_msg");
+let doc_title = document.title;
+start_msg.onmouseover = () => {
+    document.title = model + ' -> ' + chosen_platform;
+    start_msg.title = document.title;
+}
+start_msg.onmouseleave = () => {
+    document.title = doc_title;
+    start_msg.removeAttribute('title');
+}
+
+chatButton.onmouseover = () => {
+    document.title = 'Send to ' + model + ' -> ' + chosen_platform;
+}
+
+chatButton.onmouseleave = () => {
+    document.title = doc_title;
+}
+
+function removeOnlineOfflineMessages() {
+    let off_ele = document.querySelectorAll(".offline");
+    off_ele.forEach(ele => {
+        ele.remove();
+    });
+
+    let on_ele = document.querySelectorAll(".online");
+    on_ele.forEach(ele => {
+        ele.remove();
+    })
+}
+
+window.addEventListener('online', () => {
+    removeOnlineOfflineMessages();
+    addWarning("You are online again!", false, 'online')
+});
+
+window.addEventListener('offline', () => {
+    removeOnlineOfflineMessages();
+    addWarning("You are offline!", false, 'offline')
+});
+
+
+function javascriptCodeExecution(obj) {
+   //toggleAnimation(true);
+    toggleAiGenAnimation(false);
+    js_code = obj.code;
+    js_code.replace(/\\n/g, "\n")
+        .replace(/\\"/g, "'")
+        .replace(/\\'/g, "'")
+        .replace(/console\.log/g, "")
+        .replace(/document\.write/, "")
+        .replace("<script>", "")
+        .replace("<script", "")
+        .replace("</script>", "");
+    original_code = obj.code;
+    let msg = `The AI want to execute the following code: <div class="center"><button class="accept_code_execution" onclick="executeJsCode(js_code, original_code)">Accept</button></div> <pre class="exclude_btn_group"><code class="javascript language-javascript hljs">${obj.code}</code></pre>`;
+    addWarning(msg, false)
+    setTimeout(() => {
+        hljs.highlightAll();
+    }, 500)
+}
+
+async function executeJsCode(code, realCode = '') {
+    js_code = ''; // reset
+    original_code = '' // reset
+    let response;
+    try {
+        // response = await eval(code)
+        response = await jsCodeExecutionSandbox(code);
+    } catch (error) {
+        response = error;
+    }
+    if (realCode) {
+        // code that will be shown
+        code = realCode;
+    }
+    let timer_jc = setInterval(() => {
+        if (js_code_exec_finished) {
+            clearInterval(timer_jc);
+            chat_textarea.value = `Executing the following code: <pre><code class="javascript language-javascript hljs">${code}</code></pre>\nGot this output:  <span class="js_output">${js_code_exec_output}</span>`;
+            document.querySelector("#send").click();
+        }
+    })
+}
+
+
+async function jsCodeExecutionSandbox(code) {
+    js_code_exec_finished = false;
+    js_code_exec_output = '';
+    let old_iframe = document.querySelector("iframe#sandbox");
+    if (old_iframe) {
+        old_iframe.remove();
+    }
+    let results = '';
+    const targetOrigin = window.location.origin;
+    const iframe = document.createElement("iframe");
+    iframe.id = 'sandbox';
+    iframe.style.display = 'none';
+    iframe.src = "sandbox.html";
+    document.body.append(iframe)
+    iframe.onload = () => {
+        iframe.contentWindow.postMessage({code: code}, targetOrigin);
+    };
+    window.onmessage = (event) => {
+        if (event.data) {
+            console.log(event.data)
+            let clog = event.data?.args?.[0] ?? false;
+            if (clog !== false) {
+                clog = stringifyComplexValue(clog)
+                results += clog + '<br>';
+            } else {
+                results += stringifyComplexValue(event.data);
+                if (event.data.type === undefined) {
+                    js_code_exec_output = results;
+                    js_code_exec_finished = true;
+                }
+            }
+        } else {
+            js_code_exec_output = results;
+            js_code_exec_finished = true;
+        }
+    }
+}
+
+loadPlugins(); // load plugins
+
+function reloadPage() {
+    // this code can be used be plugins
+    document.location.reload()
+}
 
 
 // When in stream mode the scrolling may get blocked, this should free up the scrolling
-    function unlockScroll() {
-        let chat_msg = document.querySelector("#chat-messages");
-        if (chat_msg) {
-            let last_position = chat_msg.scrollTop;
-            //  chat_msg.addEventListener("keydown", (event) => {
-            window.addEventListener("keydown", (event) => {
-                if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
-                    return; // focus is in input or textarea
+function unlockScroll() {
+    let chat_msg = document.querySelector("#chat-messages");
+    if (chat_msg) {
+        let last_position = chat_msg.scrollTop;
+        //  chat_msg.addEventListener("keydown", (event) => {
+        window.addEventListener("keydown", (event) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') {
+                return; // focus is in input or textarea
+            }
+            if (event.key === "ArrowDown") {
+                if (chat_msg.scrollTop <= last_position) {
+                    chat_msg.scrollTop += 35;
+                    //console.log('forcing scroll down')
+                } else {
+                    //  console.log('all fine: down')
                 }
-                if (event.key === "ArrowDown") {
-                    if (chat_msg.scrollTop <= last_position) {
-                        chat_msg.scrollTop += 35;
-                        //console.log('forcing scroll down')
-                    } else {
-                        //  console.log('all fine: down')
-                    }
-                    last_position = chat_msg.scrollTop;
-                } else if (event.key === "ArrowUp") {
-                    if (chat_msg.scrollTop >= last_position) {
-                        chat_msg.scrollTop -= 35;
-                        //console.log('forcing scroll up')
-                    } else {
-                        //console.log('all fine: up')
-                    }
-                    last_position = chat_msg.scrollTop;
+                last_position = chat_msg.scrollTop;
+            } else if (event.key === "ArrowUp") {
+                if (chat_msg.scrollTop >= last_position) {
+                    chat_msg.scrollTop -= 35;
+                    //console.log('forcing scroll up')
+                } else {
+                    //console.log('all fine: up')
+                }
+                last_position = chat_msg.scrollTop;
+            }
+        })
+    }
+}
+
+unlockScroll();
+
+
+function stringifyComplexValue(value, indent = 0) {
+    const indentString = "  ".repeat(indent); // Two spaces for indentation
+    if (value === null) {
+        return "null";
+    } else if (typeof value === 'undefined') {
+        return "undefined";
+    } else if (typeof value !== 'object') { //Handle non-object and non-array values
+        return String(value); // Convert to string for non-objects, non arrays and null values
+    } else if (Array.isArray(value)) {
+        const elements = value.map(item => stringifyComplexValue(item, indent + 1));
+        return `[\n${indentString}  ${elements.join(`,\n${indentString}  `)}\n${indentString}]`;
+    } else { // Handle objects
+        const properties = Object.entries(value)
+            .map(([key, val]) => `${indentString}  "${key}": ${stringifyComplexValue(val, indent + 1)}`)
+            .join(`,\n`);
+        return `{\n${properties}\n${indentString}}`;
+    }
+}
+
+function whatTimeIsIt() {
+    const today = new Date();
+    return today.toLocaleDateString('en-US') + " " + today.toLocaleTimeString();
+    // ex: 11/19/2024 10:18:57
+}
+
+function extractVideoId(text) {
+    let video_id = text.match(/youtube.com\/watch\?v=(.*)/)?.[1] ?? null;
+    if (video_id) {
+        return video_id.substring(0, 11);
+    }
+    return null;
+}
+
+function loadVideo() {
+    let all_user_msgs = document.querySelectorAll(".user");
+    if (all_user_msgs.length) {
+        let last_user_msg_ele = all_user_msgs[all_user_msgs.length - 1];
+        let last_user_msg = last_user_msg_ele.innerHTML;
+        let videoId = extractVideoId(last_user_msg);
+        if (!videoId) {
+            return
+        }
+        let videoContainer = document.createElement("div");
+        videoContainer.className = "video-container";
+        const videoFrame = document.createElement("iframe");
+        videoFrame.id = "videoFrame";
+        videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+        videoContainer.append(videoFrame);
+        last_user_msg_ele.prepend(videoContainer)
+
+    }
+
+}
+
+
+function mediaFull() {
+    const all_images = document.querySelectorAll(".user img");
+    all_images.forEach(media => {
+        media.onclick = () => {
+            let newTab = window.open();
+            newTab.document.body.innerHTML = `<img src="${media.src}" alt="Imagem Base64">`;
+        };
+    });
+}
+
+mediaFull();
+
+
+function loadExtraModels() {
+    let extra_models = localStorage.getItem("extra_models");
+    extra_models = JSON.parse(extra_models);
+    for (const provider in extra_models) {
+        if (extra_models.hasOwnProperty(provider)) {
+            extra_models[provider].forEach(model => {
+                let has_model = PLATFORM_DATA[provider].models.includes(model);
+                if (!has_model) {
+                    PLATFORM_DATA[provider].models.push(model);
                 }
             })
         }
     }
+}
 
-    unlockScroll();
+loadExtraModels();
 
-
-    function stringifyComplexValue(value, indent = 0) {
-        const indentString = "  ".repeat(indent); // Two spaces for indentation
-        if (value === null) {
-            return "null";
-        } else if (typeof value === 'undefined') {
-            return "undefined";
-        } else if (typeof value !== 'object') { //Handle non-object and non-array values
-            return String(value); // Convert to string for non-objects, non arrays and null values
-        } else if (Array.isArray(value)) {
-            const elements = value.map(item => stringifyComplexValue(item, indent + 1));
-            return `[\n${indentString}  ${elements.join(`,\n${indentString}  `)}\n${indentString}]`;
-        } else { // Handle objects
-            const properties = Object.entries(value)
-                .map(([key, val]) => `${indentString}  "${key}": ${stringifyComplexValue(val, indent + 1)}`)
-                .join(`,\n`);
-            return `{\n${properties}\n${indentString}}`;
-        }
-    }
-
-    function whatTimeIsIt() {
-        const today = new Date();
-        return today.toLocaleDateString('en-US') + " " + today.toLocaleTimeString();
-        // ex: 11/19/2024 10:18:57
-    }
-
-    function extractVideoId(text) {
-        let video_id = text.match(/youtube.com\/watch\?v=(.*)/)?.[1] ?? null;
-        if (video_id) {
-            return video_id.substring(0, 11);
-        }
-        return null;
-    }
-
-    function loadVideo() {
-        let all_user_msgs = document.querySelectorAll(".user");
-        if (all_user_msgs.length) {
-            let last_user_msg_ele = all_user_msgs[all_user_msgs.length - 1];
-            let last_user_msg = last_user_msg_ele.innerHTML;
-            let videoId = extractVideoId(last_user_msg);
-            if (!videoId) {
-                return
-            }
-            let videoContainer = document.createElement("div");
-            videoContainer.className = "video-container";
-            const videoFrame = document.createElement("iframe");
-            videoFrame.id = "videoFrame";
-            videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
-            videoContainer.append(videoFrame);
-            last_user_msg_ele.prepend(videoContainer)
-
-        }
-
-    }
-
-
-    function mediaFull() {
-        const all_images = document.querySelectorAll(".user img");
-        all_images.forEach(media => {
-            media.onclick = () => {
-                let newTab = window.open();
-                newTab.document.body.innerHTML = `<img src="${media.src}" alt="Imagem Base64">`;
-            };
-        });
-    }
-
-    mediaFull();
-
-
-
-    function loadExtraModels(){
-        let extra_models = localStorage.getItem("extra_models");
-        extra_models = JSON.parse(extra_models);
-        for (const provider in extra_models) {
-            if (extra_models.hasOwnProperty(provider)) {
-                extra_models[provider].forEach(model=>{
-                    let has_model =  PLATFORM_DATA[provider].models.includes(model);
-                    if(!has_model){
-                        PLATFORM_DATA[provider].models.push(model);
-                    }
-                })
+document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey && e.key === 'q') {
+        //Closes the current chat and starts a new one
+        newChat();
+        e.preventDefault();
+    } else if (!e.ctrlKey && !e.altKey && e.key) {
+        let active_tagName = document.activeElement.tagName
+        if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
+            if (/^[a-zA-Z0-9]$/.test(e.key)) {
+                document.getElementById('ta_chat').focus();
             }
         }
+    } else if (e.ctrlKey && e.key === 'Delete') {
+        let div_topic = document.querySelector(`[data-id='${chat_id}']`);
+        if (div_topic) {
+            removeChat(div_topic, chat_id, true);
+        }
     }
 
-    loadExtraModels();
-
-    document.addEventListener('keydown', function (e) {
-        if (e.ctrlKey && e.key === 'q') {
-            //Closes the current chat and starts a new one
-            newChat();
-            e.preventDefault();
-        } else if (!e.ctrlKey && !e.altKey && e.key) {
-            let active_tagName = document.activeElement.tagName
-            if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
-                if (/^[a-zA-Z0-9]$/.test(e.key)) {
-                    document.getElementById('ta_chat').focus();
-                }
-            }
-        }else if (e.ctrlKey && e.key === 'Delete') {
-            let div_topic = document.querySelector(`[data-id='${chat_id}']`);
-            if(div_topic){
-                removeChat(div_topic, chat_id, true);
-            }
-        }
-
-    });
+});
 
 
-    let new_url = document.URL;
-    new_url = new_url.split('?')[0];
-    new_url = new_url.split("#")[0];
-    new_url += "#" + chat_id;
-    history.pushState({url: new_url}, '', new_url);
+let new_url = document.URL;
+new_url = new_url.split('?')[0];
+new_url = new_url.split("#")[0];
+new_url += "#" + chat_id;
+history.pushState({url: new_url}, '', new_url);
 

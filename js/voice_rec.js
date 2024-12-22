@@ -17,12 +17,25 @@ async function recordVoice() {
             mediaRecorder.ondataavailable = handleDataAvailable;
             mediaRecorder.onstop = handleStop;
             mediaRecorder.start();
+            toggleRecAnimation("flex");
         } catch (err) {
             console.error('Error:', err);
         }
     }
 }
 
+function toggleRecAnimation(display = '') {
+    let rec_animation = document.querySelector(".recording-animation");
+    if(display){
+        rec_animation.style.display = display;
+    }else {
+        if(rec_animation.style.display === "none"){
+            rec_animation.style.display = "flex";
+        }else {
+            rec_animation.style.display = "none";
+        }
+    }
+}
 
 function stopRecorder() {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
@@ -41,6 +54,7 @@ function stopRecorder() {
     audioContext = null;
     source = null;
     audioOutput.srcObject = null;
+    toggleRecAnimation("none");
 }
 
 function handleDataAvailable(event) {
