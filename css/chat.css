@@ -732,7 +732,7 @@ select{
 
 .chat-input .chat_wrap {
     width: 87%;
-    margin-left: 13%;
+    margin-left: 12%;
     box-sizing: border-box;
 
 }
@@ -767,6 +767,7 @@ select{
     border-bottom-right-radius: 24px;
     border-top-right-radius: 24px;
     height: 50px;
+    box-sizing: border-box;
 }
 
 .save_prompt{
@@ -866,8 +867,9 @@ textarea.system_prompt {
     }
 
     .chat-input .chat_wrap {
-        width: 95%;
-        margin-left: 5%;
+      /*  width: 96%;
+        margin-left: 2%;
+       */
     }
 }
 
@@ -876,16 +878,33 @@ textarea.system_prompt {
         width: 100%;
         margin: 0;
     }
-    .optionsDialog .dialog_close:after{
-        /*left: 1px;*/
-        /*top: 1px;*/
-        /*right: inherit;*/
-        /*transform: rotate(0deg);*/
+
+    .chat-input .chat_wrap {
+        width: 96%;
+        margin-left: 2%;
+
     }
 
     #settings {
         right: 22px;
         left: unset;
+    }
+}
+
+
+@media all and (max-width: 400px) {
+    .chat{
+        padding: 20px 5px;
+    }
+    .upload_picture{
+        padding: 0 20px;
+    }
+    .wrap_rec_and_up{
+        width: 30%;
+    }
+    #voice_rec{
+        width: 40px;
+        height: 40px;
     }
 }
 
