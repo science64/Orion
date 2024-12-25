@@ -74,7 +74,6 @@ let PLATFORM_DATA = {
         models: [
             "llama-3.3-70b-versatile",
             "llama-3.2-90b-vision-preview",
-            "llama3-groq-70b-8192-tool-use-preview",
             "llama-3.3-70b-specdec",
             "mixtral-8x7b-32768",
             "gemma2-9b-it",
@@ -627,6 +626,7 @@ function removeLastMessage(from_user = true) {
     }
     if (ele) {
         document.querySelector(".chat-input textarea").value = ele.innerText;
+        toggleBtnOptions();
         conversations.messages.pop();
         if (conversations.messages.length) {
             localStorage.setItem(chat_id.toString(), JSON.stringify(conversations));

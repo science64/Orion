@@ -252,6 +252,11 @@ code.hljs::-webkit-scrollbar-track {
     border-radius: 4px;
     margin: 0 2px;
 }
+
+.btn-group .copy-btn, .btn-group .down-btn {
+    background-color: #22272e;
+}
+
 .btn-ft-group{
     text-align: end;
 }

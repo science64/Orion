@@ -84,6 +84,19 @@ Python codes are executed. The code and output will be returned.
 - Another example: `py: The United States has a population of 342,524,968, of which 480,000 die annually due to tobacco use. 
 What percentage is that?`
 
+# How to Run
+To run Orion first download this repository.
+
+You can download it by running the following command in your terminal:
+
+```bash
+git clone https://github.com/EliasPereirah/OrionChat.git
+```
+Or download the zip file from the repository by clicking on the green button "Code" and then [Download ZIP](https://github.com/EliasPereirah/OrionChat/archive/refs/heads/master.zip).
+
+After downloading, just open the folder and click on index.html if you don't have a server. 
+If you do, just access the directory where the project was saved. It's that simple.
+
 # Google CSE API Key
 To search using Google, you will need Google CSE (Custom Search Engine) API Key and CX.
 - First, create a custom search here [Google CSE Panel](https://programmablesearchengine.google.com/controlpanel/all)
@@ -160,7 +173,10 @@ To enable AI responses based on YouTube video subtitles, set up an API endpoint 
 When submitting a YouTube URL in the chat, a popup will open allowing you to set up this endpoint.
 
 This repository already provides this functionality in the plugins folder, to use it you will need to have
-PHP enabled on your server.
+PHP enabled on your server. 
+
+Note: You do not need a server to run this project as long as you do not want to use certain 
+features, such as the one mentioned above.
 
 If you wish, you can implement the following code on another server of your choice and point to the correct endpoint.
 
