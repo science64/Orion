@@ -120,7 +120,7 @@ https://github.com/EliasPereirah/SearchAugmentedLLM/ (Not perfect, but better th
 If you want to use any other endpoint, make sure it returns a JSON with the text field, where text will be 
 the content passed to the LLM.
 
-By adding such an endpoint you will be able to use it by writing at the beginning of the chat `s: what's the news today` 
+By adding such an endpoint you will be able to use it by writing at the beginning of the chat `s: Why is the sky blue?` 
 and the answer will be based on the context returning from the "rag endpoint"
 
 An advanced option for those using Google Gemini may be to use "Grounding with Google Search", this feature is not
