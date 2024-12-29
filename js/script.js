@@ -2617,8 +2617,14 @@ async function googleSearch(data) {
         results.items.forEach(item => {
             txt_result += `\n- **Title**: ${item.title}\n- **Snippet**: ${item.snippet}\n\n`;
         })
-    } else if (results.text) {
+    } else if (results.text || results.snippets) {
         txt_result += results.text;
+        let snippets = '';
+        let sp_id = 1;
+        results.snippets.forEach(snpt => {
+            snippets += `<p>${sp_id}: ${snpt}</p>`;
+        })
+        txt_result += " \n <b>Snippets</b>: "+snippets;
     } else {
         if (is_cse_active) {
             addWarning('Got no result from Google Search');
@@ -2628,14 +2634,6 @@ async function googleSearch(data) {
         toggleAiGenAnimation()
         enableChat();
         return false;
-    }
-    if(results.snippets){
-        let snippets = '';
-        let sp_id = 1;
-        results.snippets.forEach(snpt => {
-            snippets += `<p>${sp_id}: ${snpt}</p>`;
-        })
-        txt_result += " \n <b>Snippets</b>: "+snippets;
     }
     //  let last_input = conversations.messages[conversations.messages.length - 1].content;
 
