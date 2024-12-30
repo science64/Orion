@@ -2230,7 +2230,7 @@ function addFileToPrompt() {
         if (appended_txt_file.trim().length > 0) {
             last_input_from_user = `${last_input_from_user} \n <pre><code>${appended_txt_file}</code></pre>`;
         }
-        if (ele.classList.contains('user')) {
+        if (ele && ele.classList.contains('user')) {
             ele.innerHTML = last_input_from_user;
         }
         conversations.messages[conversations.messages.length - 1].content = last_input_from_user;
