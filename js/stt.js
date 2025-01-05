@@ -5,6 +5,7 @@ let groq_api_key = '';
 async function transcribeAudio() {
     base64String = '';
     toggleAiGenAnimation();
+    toggleAnimation();
     if (!media_file) {
         let input_file = document.querySelector('#fileInput');
         media_file = input_file.files[0];
@@ -29,7 +30,8 @@ async function transcribeAudio() {
 
 
         const result = await response.json();
-        toggleAiGenAnimation()
+        toggleAiGenAnimation();
+        toggleAnimation();
         let text = result.text ?? '';
         if (text) {
             media_file = '';
@@ -61,6 +63,8 @@ async function transcribeAudio() {
         toggleAiGenAnimation(false)
         media_file = '';
         input_file.value = '';
+    }finally {
+        removeAttachment();
     }
 
 }

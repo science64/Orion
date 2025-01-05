@@ -241,14 +241,18 @@ let conversations = {
     'messages': []
 };
 
-function addConversation(role, content, add_to_document = true, do_scroll = true) {
-    closeDialogs();
 
+function removeAttachment() {
     let has_att = document.querySelector(".has_attachment");
     if (has_att) {
         has_att.classList.remove('has_attachment');
     }
+}
 
+function addConversation(role, content, add_to_document = true, do_scroll = true) {
+    closeDialogs();
+
+    removeAttachment();
     if (!content.trim()) {
         addWarning('Empty conversation', true);
         return false;

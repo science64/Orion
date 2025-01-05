@@ -624,6 +624,7 @@ select{
     max-width: 100%;
     display: none;
     box-shadow: 0 0 0 1px #eeecec75;
+    z-index: 99;
 }
 .conversations:hover{
     overflow-y: auto;
