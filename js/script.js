@@ -23,7 +23,6 @@ let pre_function_text = '';
 let azure_endpoint = localStorage.getItem('azure_endpoint');
 let all_chunks = [];
 let has_chunk_error = false;
-let incomplete_chunk = '';
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -2519,7 +2518,8 @@ async function geminiStreamChat(fileUri, data) {
                 processPartGemini(jsonData);
             })
             if (story) {
-                conversations.messages[conversations.messages.length -1].content = story;
+                let story_content = story.replace(/<img[^>]*>/g, ''); // remove base64 image to save tokens
+                conversations.messages[conversations.messages.length -1].content = story_content;
                 saveLocalHistory();
                botMessageDiv.innerHTML = converter.makeHtml(story);
             }
