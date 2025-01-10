@@ -21,6 +21,10 @@ let original_code = '';
 let temp_safe_mode = false;
 let pre_function_text = '';
 let azure_endpoint = localStorage.getItem('azure_endpoint');
+let all_chunks = [];
+let has_chunk_error = false;
+let incomplete_chunk = '';
+
 // Markdown to HTML
 showdown.setFlavor('github');
 showdown.setOption('ghMentions', false); // if true "@something" became github.com/something
@@ -2284,6 +2288,7 @@ async function geminiUploadImage() {
         if (d_hours < 48) {
             let store_fileUri = localStorage.getItem('file_' + md5_value); // stored fileUri
             if (store_fileUri) {
+                console.log('no need to upload again')
                 return store_fileUri;
             }
         }
@@ -2431,6 +2436,7 @@ async function geminiStreamChat(fileUri, data) {
 
         story = '';
 
+        all_chunks = [];
         while (true) {
             const {done, value} = await reader.read();
             if (done) {
@@ -2444,32 +2450,20 @@ async function geminiStreamChat(fileUri, data) {
 
             const textDecoder = new TextDecoder('utf-8');
             const chunk = textDecoder.decode(value);
+            all_chunks.push(chunk);
             // Parse the SSE stream
             chunk.split('\n').forEach(part => {
                 if (part.startsWith('data: ')) {
                     try {
-                        let jsonData = JSON.parse(part.substring('data: '.length));
-                        if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            story += jsonData.candidates[0].content?.parts[0].text;
-                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code) {
-                            let code = jsonData.candidates[0].content.parts[0].executableCode.code;
-                            let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
-                            code_lang = code_lang.toLowerCase();
-                            code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
-                            story += code;
-                        } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
-                            let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
-                            let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output;
-                            ce_output = ce_output.replaceAll("\n", "<br>");
-                            story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
+                        let jsonData = null;
+                        try {
+                            jsonData = JSON.parse(part.substring('data: '.length));
+                        }catch{
+                            has_chunk_error = true;
+                            return false;
                         }
 
-                        let finished_reason = jsonData.candidates[0].finishReason ?? '';
-                        if (finished_reason && finished_reason !== 'STOP') {
-                            setTimeout(() => {
-                                addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
-                            }, 500)
-                        }
+                        processPartGemini(jsonData);
 
                     } catch (error) {
                         addWarning(error, false);
@@ -2489,6 +2483,53 @@ async function geminiStreamChat(fileUri, data) {
             hljs.highlightAll();
         }
 
+
+        /// workaround to fix json parse error
+        story = '';
+        if(has_chunk_error){
+            let all_fixed_chunks = '';
+            let pieces = [];
+            all_chunks.forEach(the_chunk=>{
+                if(the_chunk.startsWith('data: ')){
+                    try {
+                        let jsonData = JSON.parse(the_chunk.substring('data: '.length));
+                        if(pieces.length > 0){
+                            let the_piece = pieces.join('');
+                            all_fixed_chunks += the_piece;
+                            pieces = [];
+                        }
+                        all_fixed_chunks += the_chunk;
+                    }catch{
+                        pieces.push(the_chunk);
+                    }
+                }else {
+                    pieces.push(the_chunk);
+                }
+            })
+
+            all_fixed_chunks = all_fixed_chunks.split("\ndata: ");
+            all_fixed_chunks[0] = all_fixed_chunks[0].replace(/^data: /, '');
+            all_fixed_chunks.forEach(fixed_chunk=>{
+                let jsonData = null;
+                try {
+                    jsonData = JSON.parse(fixed_chunk);
+                }catch{
+                    return false;
+                }
+                processPartGemini(jsonData);
+            })
+            if (story) {
+                conversations.messages[conversations.messages.length -1].content = story;
+                saveLocalHistory();
+               botMessageDiv.innerHTML = converter.makeHtml(story);
+            }
+            hljs.highlightAll();
+        } // end has_chunk_error
+
+        all_chunks = [];
+
+
+
     } catch (error) {
         console.error("Error:", error);
         addWarning('Error: ' + error.message)
@@ -2502,6 +2543,58 @@ async function geminiStreamChat(fileUri, data) {
         toggleAiGenAnimation(false);
     }
 } // geminiStreamChat
+
+
+function processPartGemini(jsonData){
+    let inlineData = '';
+    if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
+        story += jsonData.candidates[0].content?.parts[0].text;
+        inlineData = jsonData.candidates[0].content?.parts[0]?.inlineData ?? '';
+        if(!inlineData){
+            inlineData = jsonData.candidates[0].content?.parts[1]?.inlineData ?? '';
+        }
+        if (inlineData) {
+            inlineData = `<img class="img_output" src="data:${inlineData.mimeType};base64,${inlineData.data}" alt="">`
+        }
+        story += inlineData;
+    } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.executableCode?.code) {
+        let code = jsonData.candidates[0].content.parts[0].executableCode.code;
+        let code_lang = jsonData.candidates[0].content.parts[0].executableCode.language;
+        code_lang = code_lang.toLowerCase();
+        code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
+        story += code;
+        inlineData = jsonData.candidates[0].content?.parts[0]?.inlineData ?? '';
+        if(!inlineData){
+            inlineData = jsonData.candidates[0].content?.parts[1]?.inlineData ?? '';
+        }
+        if (inlineData) {
+            inlineData = `<img class="img_output" src="data:${inlineData.mimeType};base64,${inlineData.data}" alt="">`
+        }
+        story += inlineData;
+    } else if (jsonData.candidates?.[0]?.content?.parts?.[0]?.codeExecutionResult?.output) {
+        let ce_outcome = jsonData.candidates[0].content.parts[0].codeExecutionResult.outcome; // OUTCOME_OK == success
+        let ce_output = jsonData.candidates[0].content.parts[0].codeExecutionResult.output;
+        ce_output = ce_output.replaceAll("\n", "<br>");
+        story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
+
+        inlineData = jsonData.candidates[0].content?.parts[0]?.inlineData ?? '';
+        if(!inlineData){
+            inlineData = jsonData.candidates[0].content?.parts[1]?.inlineData ?? '';
+        }
+        if (inlineData) {
+            inlineData = `<img class="img_output" src="data:${inlineData.mimeType};base64,${inlineData.data}" alt="">`
+        }
+        story += inlineData;
+    }
+
+
+    let finished_reason = jsonData.candidates[0].finishReason ?? '';
+    if (finished_reason && finished_reason !== 'STOP') {
+        setTimeout(() => {
+            addWarning('finishReason: ' + finished_reason, false, 'fail_dialog')
+        }, 500)
+    }
+}
 
 
 function delay(ms) {
@@ -2982,4 +3075,3 @@ new_url = new_url.split('?')[0];
 new_url = new_url.split("#")[0];
 new_url += "#" + chat_id;
 history.pushState({url: new_url}, '', new_url);
-

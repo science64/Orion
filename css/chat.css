@@ -16,6 +16,14 @@ html, body {
     font-weight: 700;
 }
 
+.img_output{
+    max-width: 60%;
+    margin: 0 20%;
+    padding: 5px;
+    background-color: #e7e7ec;
+    border-radius: 3px;
+}
+
 
 .exclude_btn_group .btn-group{
     display: none;
