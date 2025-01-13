@@ -628,10 +628,10 @@ function chat() {
  **/
 function removeLastMessage(from_user = true) {
     let ele = document.querySelector(".message:nth-last-of-type(1)");
-    if (!ele.classList.contains('user') && from_user) {
-        return false;
-    }
     if (ele) {
+        if (!ele.classList.contains('user') && from_user) {
+            return false;
+        }
         document.querySelector(".chat-input textarea").value = ele.innerText;
         toggleBtnOptions();
         conversations.messages.pop();

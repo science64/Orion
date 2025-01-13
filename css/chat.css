@@ -16,6 +16,13 @@ html, body {
     font-weight: 700;
 }
 
+code:not(pre > code, strong > code) {
+    background-color: #7578e1;
+    color: #fefefe;
+    border-radius: 3px;
+    padding: 0 5px;
+}
+
 .img_output{
     max-width: 60%;
     margin: 0 20%;
