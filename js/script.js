@@ -2166,7 +2166,7 @@ async function streamChat(can_use_tools = true) {
             if (first_response) {
                 first_response = false;
                 //toggleAnimation(true);
-                toggleAiGenAnimation(false);
+                //toggleAiGenAnimation(false);
                 botMessageDiv.scrollIntoView();
             }
 
@@ -2178,8 +2178,7 @@ async function streamChat(can_use_tools = true) {
             error = 'Error: {}';
 
         }
-       // toggleAnimation(true);
-        toggleAiGenAnimation(false);
+
         addWarning(error, false)
         // Display error message in the chat
         if (invalid_key) {
@@ -2188,7 +2187,6 @@ async function streamChat(can_use_tools = true) {
     } finally {
         enableCopyForCode();
         enableChat();
-        //toggleAnimation(true);
         toggleAiGenAnimation(false);
     }
 }
