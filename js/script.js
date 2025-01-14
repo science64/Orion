@@ -2442,7 +2442,7 @@ async function geminiStreamChat(fileUri, data) {
                 if (story) {
                     addConversation('assistant', story, false, false)
                     //toggleAnimation(true)
-                    toggleAiGenAnimation(false);
+                    //toggleAiGenAnimation(false);
                 }
                 break;
             }
@@ -2473,7 +2473,7 @@ async function geminiStreamChat(fileUri, data) {
             if (first_response) {
                 first_response = false;
                 //toggleAnimation(true);
-                toggleAiGenAnimation(false);
+                //toggleAiGenAnimation(false);
                 botMessageDiv.scrollIntoView();
             }
             if (story) {
@@ -2491,7 +2491,7 @@ async function geminiStreamChat(fileUri, data) {
             all_chunks.forEach(the_chunk=>{
                 if(the_chunk.startsWith('data: ')){
                     try {
-                        let jsonData = JSON.parse(the_chunk.substring('data: '.length));
+                        JSON.parse(the_chunk.substring('data: '.length));
                         if(pieces.length > 0){
                             let the_piece = pieces.join('');
                             all_fixed_chunks += the_piece;
@@ -2534,8 +2534,8 @@ async function geminiStreamChat(fileUri, data) {
         console.error("Error:", error);
         addWarning('Error: ' + error.message)
         //toggleAnimation(true);
-        toggleAiGenAnimation(false);
-        enableChat();
+       // toggleAiGenAnimation(false);
+        //enableChat();
     } finally {
         enableCopyForCode();
         enableChat();
