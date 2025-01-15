@@ -44,9 +44,10 @@ Your API keys are stored locally using `localStorage`, and requests are sent dir
 Some companies offer free API access. Check their terms and conditions before you get started.
 - **Google Gemini:** [Get your key](https://aistudio.google.com/app/apikey)
 - **Cerebras:** [Sign up for an API key](https://cloud.cerebras.ai/platform/)
-- **Cohere** [Get your key](https://dashboard.cohere.com/api-keys)
+- **Cohere:** [Get your key](https://dashboard.cohere.com/api-keys)
 - **Groq:** [Request a key](https://console.groq.com/keys)
-- **SambaNova** [SambaNova Key](https://cloud.sambanova.ai/apis)
+- **SambaNova:** [SambaNova Key](https://cloud.sambanova.ai/apis)
+- **Together AI:** Only for meta-llama/Llama-3.3-70B-Instruct-Turbo-Free  [TogheterAI Key](https://api.together.ai/settings/api-keys)
 
 ### Paid API Keys
 

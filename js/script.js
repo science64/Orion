@@ -119,7 +119,7 @@ let PLATFORM_DATA = {
 
     together: {
         models: [
-            "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"
         ],
         name: "Together AI",
         endpoint: "https://api.together.xyz/v1/chat/completions"
