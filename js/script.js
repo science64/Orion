@@ -586,6 +586,7 @@ function getSystemPrompt() {
 
 
 function toggleAiGenAnimation(do_animate = 'toggle') {
+    //return ''; // remove
     let ele = document.querySelector(".message:nth-last-of-type(1)");
     if(do_animate === 'toggle'){
         let has_old = document.querySelector(".thinking-container");
@@ -603,6 +604,7 @@ function toggleAiGenAnimation(do_animate = 'toggle') {
                  </div>`;
             ai_gen_animation.classList.add('thinking-container');
             ele.insertAdjacentElement('afterend', ai_gen_animation)
+            ai_gen_animation.scrollIntoView();
         }
     }else if (do_animate === false){
         let thinking_container = document.querySelector(".thinking-container");

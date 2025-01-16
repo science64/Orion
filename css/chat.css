@@ -6,6 +6,7 @@ html, body {
 }
 
 .code_header:before{
+   /**
     display: block;
     background-color: #3d3e3f;
     padding: 11px 11px;
@@ -14,14 +15,18 @@ html, body {
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
     font-weight: 700;
+   **/
 }
 
+/**
 code:not(pre > code, strong > code) {
-    background-color: #7578e1;
-    color: #fefefe;
-    border-radius: 3px;
-    padding: 0 5px;
+
+   background-color: #7578e1;
+   color: #fefefe;
+   border-radius: 3px;
+   padding: 0 5px;
 }
+ **/
 
 .img_output{
     max-width: 60%;
@@ -964,6 +969,7 @@ textarea.system_prompt {
     border-radius: 16px;
     width: fit-content;
     margin-top: 2px;
+    margin-bottom: 15px;
 }
 
 .ai-avatar {
@@ -1139,6 +1145,16 @@ pre:has(> .language-bash.hljs):before {
 
 pre:before{
     display: block;
+}
+pre:has(code):before{
+    display: block;
+    background-color: #3d3e3f;
+    padding: 11px 11px;
+    content: '';
+    color: #e6e1e1;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    font-weight: 700;
 }
 
 @keyframes pulse {
