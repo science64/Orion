@@ -1150,7 +1150,7 @@ pre:has(code):before{
     display: block;
     background-color: #3d3e3f;
     padding: 11px 11px;
-    content: '';
+    content: 'Code';
     color: #e6e1e1;
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
