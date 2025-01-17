@@ -1227,11 +1227,17 @@ function setOptions() {
     }
     let prompts_options = '';
     let prompt_id = 0;
+    let by_user = '';
     if (typeof (all_prompts) !== "undefined") {
         prompts_options += '<select name="prompt"><option selected="selected" disabled="disabled">Awesome Prompts</option>';
         all_prompts.forEach(the_prompt => {
+            if(the_prompt.by_user){
+                by_user = `class="by_user" data-created_time="${the_prompt.created_time}"`;
+            }else {
+                by_user = '';
+            }
             let prompt_text = the_prompt.prompt.replace(/"/g, '&quot;');
-            prompts_options += `<option id="prompt_id${prompt_id}" value="${prompt_text}">${the_prompt.act}</option>`;
+            prompts_options += `<option ${by_user} id="prompt_id${prompt_id}" value="${prompt_text}">${the_prompt.act}</option>`;
             prompt_id++;
         });
         prompts_options += '</select>';
@@ -1270,8 +1276,9 @@ function setOptions() {
          <button onclick="saveModel()" class="save_model">Save Model</button></div><hr>
          <div><strong>System Prompt</strong>
          ${prompts_options}
+         <input id="prompt_name" type="text" name="prompt_name" placeholder="Name your prompt">
          <textarea class="system_prompt" placeholder="(Optional) How the AI should respond?">${system_prompt}</textarea>
-         <button onclick="savePrompt()" class="save_prompt">Save Prompt</button><br>
+         <button onclick="savePrompt()" class="save_prompt">Save Prompt</button> <button id="delete_prompt">Delete Prompt</button><br>
          ${platform_info}
           <span>${add_new_models}</span>
          <span>${plugin_option}</span>
@@ -1282,6 +1289,28 @@ function setOptions() {
     createDialog(cnt, 0, 'optionsDialog');
 
     setTimeout(() => {
+
+        let sys_prompt = document.querySelector("textarea.system_prompt");
+        let last_prompt = sys_prompt.value.trim();
+        let prompt_name = document.querySelector("#prompt_name");
+        if (sys_prompt) {
+            sys_prompt.onkeyup = () => {
+                let current_prompt = sys_prompt.value.trim();
+                if(current_prompt !== last_prompt){
+                    prompt_name.style.display = 'inline-block';
+                    prompt_name.setAttribute("required", "true");
+                    let del_prompt = document.querySelector("#delete_prompt");
+                    if(del_prompt){
+                        del_prompt.style.display = 'none';
+                    }
+                }else{
+                    prompt_name.style.display = 'none';
+                    prompt_name.value = '';
+                    prompt_name.setAttribute("required", "false");
+
+                }
+            }
+        }
 
         let sl_platform = document.querySelector("select[name=platform]");
         if (sl_platform) {
@@ -1296,6 +1325,21 @@ function setOptions() {
         let sl_prompt = document.querySelector("select[name=prompt]");
         if (sl_prompt) {
             sl_prompt.onchange = (item => {
+                let selectedOption = sl_prompt.options[sl_prompt.selectedIndex];
+                let delete_prompt_bnt = document.querySelector("#delete_prompt");
+                if(selectedOption.getAttribute('data-created_time')){
+                    if(delete_prompt_bnt){
+                        delete_prompt_bnt.style.display = 'inline-block';
+                        delete_prompt_bnt.onclick = ()=>{
+                            deletePrompt();
+                        }
+                    }
+                }else {
+                    delete_prompt_bnt.style.display = 'none';
+                }
+                prompt_name.style.display = 'none';
+                prompt_name.value = '';
+                prompt_name.setAttribute("required", "false");
                 let btn_sp = document.querySelector('.save_prompt');
                 if (btn_sp) {
                     btn_sp.classList.add('animate');
@@ -1303,7 +1347,9 @@ function setOptions() {
                 let txt_area = document.querySelector("textarea.system_prompt");
                 if (txt_area) {
                     txt_area.value = item.target.value;
+                    last_prompt = item.target.value;
                 }
+
             })
         }
     }, 500)
@@ -1583,19 +1629,37 @@ function orderTopics() {
 
 }
 
-function savePrompt() {
+function savePrompt(close_dialog = true) {
     let btn_sp = document.querySelector('.save_prompt');
     if (btn_sp) {
         btn_sp.classList.remove('animate');
     }
     let sys_prompt = document.querySelector("textarea.system_prompt").value.trim();
     if (sys_prompt.length) {
+        let prompt_name = document.querySelector("#prompt_name");
+        if (prompt_name && prompt_name.value.trim().length > 0) {
+            // new prompt add by the user
+            let user_prompts = localStorage.getItem('user_new_prompts');
+            if(user_prompts){
+                user_prompts = JSON.parse(user_prompts);
+            }else {
+                user_prompts = [];
+            }
+            let current_time = Date.now();
+            let u_new_prompt = {act: prompt_name.value,  prompt: sys_prompt, by_user: true, created_time: current_time};
+            user_prompts.unshift(u_new_prompt);
+            all_prompts.unshift(u_new_prompt);
+            localStorage.setItem('user_new_prompts', JSON.stringify(user_prompts));
+        }
         localStorage.setItem('system_prompt', sys_prompt);
     } else {
         localStorage.removeItem('system_prompt')
     }
+
     saveModel();
-    closeDialogs();
+   if(close_dialog){
+       closeDialogs();
+   }
 }
 
 function saveModel() {
@@ -2941,7 +3005,7 @@ function unlockScroll() {
             }
             if (event.key === "ArrowDown") {
                 if (chat_msg.scrollTop <= last_position) {
-                    chat_msg.scrollTop += 35;
+                    chat_msg.scrollTop += 30;
                     //console.log('forcing scroll down')
                 } else {
                     //  console.log('all fine: down')
@@ -2949,7 +3013,7 @@ function unlockScroll() {
                 last_position = chat_msg.scrollTop;
             } else if (event.key === "ArrowUp") {
                 if (chat_msg.scrollTop >= last_position) {
-                    chat_msg.scrollTop -= 35;
+                    chat_msg.scrollTop -= 30;
                     //console.log('forcing scroll up')
                 } else {
                     //console.log('all fine: up')
@@ -3069,6 +3133,61 @@ document.addEventListener('keydown', function (e) {
 
 });
 
+function loadUserAddedPrompts(){
+    let u_prompt = localStorage.getItem('user_new_prompts');
+    if(u_prompt){
+       try {
+           u_prompt = JSON.parse(u_prompt);
+           u_prompt.forEach(new_prompt => {
+               all_prompts.unshift(new_prompt)
+
+           })
+       }catch (e) {
+           console.error(e)
+       }
+    }
+}
+loadUserAddedPrompts()
+
+
+function deletePrompt(){
+    let sl_prompt = document.querySelector("select[name=prompt]");
+    let selectedOption = sl_prompt.options[sl_prompt.selectedIndex];
+    if(selectedOption){
+        let created_time = selectedOption.getAttribute('data-created_time');
+        if(created_time){
+            created_time = parseInt(created_time);
+            let all_user_prompt = localStorage.getItem('user_new_prompts');
+            if(all_user_prompt){
+                all_user_prompt = JSON.parse(all_user_prompt);
+                for (let i = 0; i < all_user_prompt.length; i++) {
+                    if (all_user_prompt[i].created_time === created_time) {
+                        all_user_prompt.splice(i, 1);
+                        break;
+                    }
+                }
+                localStorage.setItem('user_new_prompts', JSON.stringify(all_user_prompt));
+
+                // update all_prompts removing the prompt deleted
+                for (let i = 0; i < all_prompts.length; i++) {
+                    if (all_prompts[i].created_time === created_time) {
+                        all_prompts.splice(i, 1);
+                        break;
+                    }
+                }
+
+
+
+                selectedOption.remove();
+                console.log(selectedOption)
+                document.querySelector("textarea.system_prompt").value = '';
+                savePrompt();
+            }
+
+        }
+    }
+
+}
 
 let new_url = document.URL;
 new_url = new_url.split('?')[0];

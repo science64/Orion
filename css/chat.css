@@ -398,6 +398,7 @@ th {
     margin: 16px 0;
 }
 
+
 .dialog button {
     background-color: #7578e1;
     color: #fff;
@@ -837,7 +838,24 @@ textarea.system_prompt {
     font-weight: 600;
 
 }
+#delete_prompt{
+    background-color: #ff0c40;
+    display: none;
+}
+#prompt_name{
+    display: none;
+    margin-bottom: 0;
+    width: 87%;
+    font-weight: 600;
+}
+#prompt_name::placeholder{
+    color: #7578e1;
+    font-weight: 600;
+}
 
+option.by_user{
+    font-weight: 600;
+}
 .popup {
     padding: 8px;
     text-align: center;
