@@ -2604,6 +2604,7 @@ async function geminiStreamChat(fileUri, data) {
         enableChat();
         //toggleAnimation(true)
         toggleAiGenAnimation(false);
+        toggleAiGenAnimation(false);
     }
 } // geminiStreamChat
 
