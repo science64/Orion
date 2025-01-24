@@ -2252,6 +2252,7 @@ async function streamChat(can_use_tools = true) {
         enableCopyForCode();
         enableChat();
         toggleAiGenAnimation(false);
+        toggleAiGenAnimation(false);
     }
 }
 
