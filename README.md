@@ -127,46 +127,11 @@ and the answer will be based on the context returning from the "rag endpoint"
 An advanced option for those using Google Gemini may be to use "Grounding with Google Search", this feature is not
 implemented here and has a cost of $35 / 1K grounding requests.
 
-# Proxy
-To get around CORS errors when working with SambaNova a proxy may be necessary.
+# Cors
+To get around CORS errors when working with SambaNova the API request will pass through `cors-proxy.php`
+which will forward the request to the desired platform. This will not hide your IP address, just forward the request.
 
-If you are using Orion via localhost or a hosting with PHP support, you can use the PHP proxy code available in this 
-repository (`proxy.php` file) for this you will also need to add the following JavaScript code in plugins.
-
-To do this, click on "Options" -> Plugins and paste the JavaScript code provided below:
-
-
-```javascript
-let proxy_url =  window.location.origin + window.location.pathname + "/proxy.php";
-// ^^ This assumes the proxy URL is on the same host, otherwise enter it above. ^^
-if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
-  endpoint = proxy_url+"?platform="+chosen_platform;
-}
-function setProxyEndpoint(event){
-  if(chosen_platform === "sambanova" || chosen_platform === "nvidia"){
-    let proxy_endpoint = proxy_url+"/proxy.php?platform="+chosen_platform;
-    if(proxy_endpoint !== endpoint){
-      endpoint = proxy_endpoint;
-      removeLastMessage();
-    }
-  }
-}
-
-
-let button_send = document.querySelector("#send");
-chat_textarea.addEventListener('keyup', (event) => {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    setProxyEndpoint();
-  }
-});
-
-button_send.addEventListener("click", ()=>{
-  setProxyEndpoint()
-})
-```
-
-Be careful when using any other proxy as sensitive data will be passed through it like your API key and messages. 
-Use only trusted services.
+This is necessary because direct requests via JavaScript in the browser to these platform are not possible.
 
 # YouTube Caption
 To enable AI responses based on YouTube video subtitles, set up an API endpoint to get them.

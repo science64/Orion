@@ -20,9 +20,9 @@ let js_code_exec_output = '';
 let original_code = '';
 let temp_safe_mode = false;
 let pre_function_text = '';
-let azure_endpoint = localStorage.getItem('azure_endpoint');
 let all_chunks = [];
 let has_chunk_error = false;
+let proxy_url =  window.location.origin + window.location.pathname + "/cors-proxy.php";
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -45,13 +45,20 @@ let PLATFORM_DATA = {
         models: [
             "gemini-2.0-flash-exp",
             "gemini-exp-1206",
-            "learnlm-1.5-pro-experimental",
             "gemini-1.5-pro",
             "gemini-1.5-flash",
             "gemini-1.5-flash-8b"
         ],
         name: "Google",
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{{model}}:{{gen_mode}}?key={{api_key}}'
+    },
+    deepseek: {
+        models: [
+            "deepseek-reasoner",
+            "deepseek-chat"
+        ],
+        name: "DeepSeek",
+        endpoint: "https://api.deepseek.com/chat/completions"
     },
     anthropic: {
         models: [
@@ -90,6 +97,7 @@ let PLATFORM_DATA = {
             "Meta-Llama-3.1-405B-Instruct",
             "Llama-3.2-90B-Vision-Instruct"
         ],
+        needProxy: true,
         name: "SambaNova",
         endpoint: "https://api.sambanova.ai/v1/chat/completions"
 
@@ -148,15 +156,6 @@ let PLATFORM_DATA = {
 }
 
 
-if (azure_endpoint) {
-    PLATFORM_DATA.azure = {
-        models: [
-            "gpt-4o-mini"
-        ],
-        name: "Azure",
-        endpoint: azure_endpoint
-    };
-}
 
 const language_extension = {
     "python": "py",
@@ -617,7 +616,6 @@ function toggleAiGenAnimation(do_animate = 'toggle') {
 function chat() {
     toggleAiGenAnimation(true);
     if (chosen_platform === 'google') {
-        // endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
         return geminiChat();
     }
     return streamChat();
@@ -1988,7 +1986,6 @@ async function streamChat(can_use_tools = true) {
         if (chosen_platform !== 'anthropic') {
             if (!cmd) {
                 if (!base64String) {
-                    // Groq vision accept no system prompt??
                     all_parts.push(system_prompt);
                 }
             }
@@ -1996,7 +1993,6 @@ async function streamChat(can_use_tools = true) {
     }
 
     conversations.messages.forEach(part => {
-            //let role = part.role === 'assistant' ? 'model' : part.role;
             let cnt = part.content;
             last_role = part.role;
             last_cnt = part.content;
@@ -2146,6 +2142,8 @@ async function streamChat(can_use_tools = true) {
         enableChat();
         return false;
     }
+
+    endpoint = getEndpoint();
 
     try {
         const response = await fetch(endpoint, requestOptions);
@@ -3150,6 +3148,18 @@ function loadUserAddedPrompts(){
 loadUserAddedPrompts()
 
 
+//Checks if it is necessary to pass the request via cors-proxy.php to get rid of cors and
+// if so returns a new endpoint address
+function getEndpoint(){
+    let needProxy = PLATFORM_DATA[chosen_platform]?.needProxy ?? false;
+    let endpoint = PLATFORM_DATA[chosen_platform]?.endpoint;
+    if(needProxy){
+        return `${proxy_url}?endpoint=${endpoint}`;
+    }
+    return endpoint;
+}
+
+
 function deletePrompt(){
     let sl_prompt = document.querySelector("select[name=prompt]");
     let selectedOption = sl_prompt.options[sl_prompt.selectedIndex];
@@ -3175,8 +3185,6 @@ function deletePrompt(){
                         break;
                     }
                 }
-
-
 
                 selectedOption.remove();
                 console.log(selectedOption)
