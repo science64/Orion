@@ -2,15 +2,19 @@
 Orion is a web-based chat interface that simplifies interactions with multiple AI model providers.
 It provides a unified platform for chatting and exploring multiple large language models (LLMs), including:
 
-- 🛠️ Ollama – An open-source tool for running LLMs locally 🏡 
-- 🤖 OpenAI (GPT model)
+- 🛠️ [Ollama](https://ollama.com/library) – An open-source tool for running LLMs locally 🏡
+- 🐳 DeepSeek (DeepSeek-R1 rivaling OpenAI's o1 model)
+- 🤖 OpenAI (GPTs and o's models)
 - 🎯 Cohere (Command-r models)
 - 🌌 Google (Gemini models)
 - 🟡 Anthropic (Claude models)
 - 🚀 Groq Inc. – Optimized for fast inference (open source models) ⚡️
 - ⚡️ Cerebras – Also optimized for fast inference 🚀
 - 🟣 SambaNova - Fast inference and support for Meta-Llama-3.1-405B-Instruct 🦙🦙🦙.🦙
-
+- ♾️ OpenRouter - A unified interface for LLMs
+- ☁️ Together AI - The AI Acceleration Cloud
+- 📡 Deep Infra
+- 
 ![Orion Screenshot](imgs/screenshot.png "Orion Screenshot")
 
 
@@ -40,19 +44,17 @@ Your API keys are stored locally using `localStorage`, and requests are sent dir
 (OpenAI, Anthropic, Google, Groq, Cerebras) without routing through any external proxy.
 
 
-### Free API Keys
+### API Keys
 Some companies offer free API access. Check their terms and conditions before you get started.
-- **Google Gemini:** [Get your key](https://aistudio.google.com/app/apikey)
-- **Cerebras:** [Sign up for an API key](https://cloud.cerebras.ai/platform/)
-- **Cohere:** [Get your key](https://dashboard.cohere.com/api-keys)
-- **Groq:** [Request a key](https://console.groq.com/keys)
-- **SambaNova:** [SambaNova Key](https://cloud.sambanova.ai/apis)
-- **Together AI:** Only for meta-llama/Llama-3.3-70B-Instruct-Turbo-Free  [TogheterAI Key](https://api.together.ai/settings/api-keys)
-
-### Paid API Keys
-
-- **OpenAI:** [Get your key](https://platform.openai.com/api-keys)
-- **Anthropic:** [Sign up for an API key](https://console.anthropic.com/settings/keys)
+- **Google Gemini:** [Get your Gemini API key](https://aistudio.google.com/app/apikey) - 🟢 free
+- **Cerebras:** [Get your Cerebras API key](https://cloud.cerebras.ai/platform/) - 🟢 free
+- **Cohere:** [Get your Cohere API key](https://dashboard.cohere.com/api-keys) - 🟢 free 
+- **Groq:** [Get your Groq API key](https://console.groq.com/keys) - 🟢 free 
+- **SambaNova:** [Get your SambaNova API key](https://cloud.sambanova.ai/apis) - 🟢 free
+- **Together AI:** 🟢 Free for meta-llama/Llama-3.3-70B-Instruct-Turbo-Free  [Get your Together AI API key](https://api.together.ai/settings/api-keys)
+- **OpenAI:** [OpenAI key](https://platform.openai.com/api-keys)
+- **Anthropic:** [Anthropic API key](https://console.anthropic.com/settings/keys)
+- **DeepSeek:** [DeepSeek API Key](https://platform.deepseek.com/api_keys)
 
 # Special Commands
 Use special commands to perform an action quickly and easily.
