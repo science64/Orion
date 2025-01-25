@@ -7,6 +7,7 @@ let api_key = localStorage.getItem(`${chosen_platform}.api_key`)
 let base64String = '';
 let mimeType = '';
 let story = '';
+let story_reasoning = '';
 let endpoint = localStorage.getItem('endpoint');
 let last_role = '';
 let last_cnt = '';
@@ -251,7 +252,7 @@ function removeAttachment() {
     }
 }
 
-function addConversation(role, content, add_to_document = true, do_scroll = true) {
+function addConversation(role, content, add_to_document = true, do_scroll = true, reasoning_content ='') {
     closeDialogs();
 
     removeAttachment();
@@ -260,14 +261,20 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
         return false;
     }
     let new_talk = {'role': role, 'content': content};
+    if(reasoning_content){
+        new_talk.reasoning_content = reasoning_content;
+        reasoning_content = `<details><summary>See Reasoning</summary> ${reasoning_content}</details>`;
+        //story_reasoning = ''; // reset
+    }
     conversations.messages.push(new_talk);
     //chat_textarea.focus();
+    let full_content = `${reasoning_content} ${content}`.trim();
     let cnt;
     let div = document.createElement('div');
     div.classList.add('message');
     if (role === 'user') {
         div.classList.add('user');
-        cnt = converter.makeHtml(content);
+        cnt = converter.makeHtml(full_content);
         if (temp_safe_mode) {
             div.innerText = cnt;
         } else {
@@ -301,7 +308,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
         if (add_to_document) {
             div.classList.add('bot');
 
-            cnt = converter.makeHtml(content);
+            cnt = converter.makeHtml(full_content);
             if (temp_safe_mode) {
                 div.innerText = cnt;
             } else {
@@ -507,7 +514,11 @@ function loadOldConversation(old_talk_id) {
                 div_talk.innerHTML = converter.makeHtml(msg.content);
             } else {
                 div_talk.classList.add('bot');
-                div_talk.innerHTML = converter.makeHtml(msg.content);
+                let full_content = msg.content;
+                if(msg.reasoning_content){
+                    full_content = `<details><summary>See Reasoning</summary>${msg.reasoning_content}</details>${msg.content}`;
+                }
+                div_talk.innerHTML = converter.makeHtml(full_content);
             }
 
             chatMessages.append(div_talk);
@@ -2166,6 +2177,7 @@ async function streamChat(can_use_tools = true) {
 
 
         story = '';
+        story_reasoning = '';
         let cloned_response = response.clone();
         const reader = response.body.getReader();
         let chatContainer = document.querySelector('#chat-messages');
@@ -2182,7 +2194,7 @@ async function streamChat(can_use_tools = true) {
                     cloned_response.json().then(data => {
                         processFullData(data);
                         if (story) {
-                            addConversation('assistant', story, true, true);
+                            addConversation('assistant', story, true, true, story_reasoning);
                             enableCopyForCode(true);
                             hljs.highlightAll();
                         } else {
@@ -2198,9 +2210,8 @@ async function streamChat(can_use_tools = true) {
 
                 } else {
                     processBuffer(buffer);
-                    addConversation('assistant', story, false, false);
+                    addConversation('assistant', story, false, false, story_reasoning);
                 }
-
                 break;
             }
 
@@ -2225,7 +2236,11 @@ async function streamChat(can_use_tools = true) {
                 }
             }
 
-            botMessageDiv.innerHTML = converter.makeHtml(story);
+            let full_story = `${story_reasoning}${story}`.trim();
+            if(story.trim() && story_reasoning.trim()){
+                full_story = `<details><summary>See Reasoning</summary>${story_reasoning}</details>${story}`;
+            }
+            botMessageDiv.innerHTML = converter.makeHtml(full_story);
             hljs.highlightAll();
             if (first_response) {
                 first_response = false;
@@ -2682,6 +2697,9 @@ function processDataPart(part) {
         } else {
             if (jsonData.choices?.[0]?.delta?.content) {
                 story += jsonData.choices[0].delta.content;
+            }
+            if (jsonData.choices?.[0]?.delta?.reasoning_content) {
+                story_reasoning += jsonData.choices[0].delta.reasoning_content;
             }
         }
     }
