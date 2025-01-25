@@ -105,8 +105,7 @@ let PLATFORM_DATA = {
     },
     cerebras: {
         models: [
-            "llama3.1-8b",
-            "llama3.1-70b"
+            "llama-3.3-70b"
         ],
         name: "Cerebras",
         endpoint: "https://api.cerebras.ai/v1/chat/completions"
