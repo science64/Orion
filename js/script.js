@@ -83,11 +83,10 @@ let PLATFORM_DATA = {
     },
     groq: {
         models: [
+            "deepseek-r1-distill-llama-70b",
             "llama-3.3-70b-versatile",
             "llama-3.2-90b-vision-preview",
             "llama-3.3-70b-specdec",
-            "mixtral-8x7b-32768",
-            "gemma2-9b-it",
         ],
         name: "Groq",
         endpoint: "https://api.groq.com/openai/v1/chat/completions"
@@ -1518,14 +1517,14 @@ function addModelsOptions() {
     extra_models = JSON.parse(extra_models);
     let remove_models = '';
     if (extra_models) {
-        remove_models = '<div><p>You can also remove these models!</p>';
+        remove_models = '<div><p>To remove a model, simply click on it below!</p>';
     }
     for (const provider in extra_models) {
         if (extra_models.hasOwnProperty(provider)) {
             let provide_name = PLATFORM_DATA[provider].name;
             let idx = 0;
             extra_models[provider].forEach(model => {
-                remove_models += `<button class="remove_model_btn" data-id="js_btn_${idx}" onclick="removeModel('${provider}', '${model}', ${idx})" title="From ${provide_name}">Remove ${model}</button>`;
+                remove_models += `<button class="remove_model_btn" data-id="js_btn_${idx}" onclick="removeModel('${provider}', '${model}', ${idx})" title="From ${provide_name}">${model}</button>`;
                 let has_model = PLATFORM_DATA[provider].models.includes(model);
                 if (!has_model) {
                     PLATFORM_DATA[provider].models.push(model);

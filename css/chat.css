@@ -221,8 +221,10 @@ button.play_audio_btn {
 }
 
 .remove_model_btn{
-    background-color: #ff5353 !important;
-    color: #000 !important;
+    background-color: #f0f0f0 !important;
+    color: #646464 !important;
+    font-size: 0.8em;
+    border: 1px solid #ccc !important;
 }
 
 .cl_justify {
