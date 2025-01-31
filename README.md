@@ -51,7 +51,7 @@ Some companies offer free API access. Check their terms and conditions before yo
 - **Cohere:** [Get your Cohere API key](https://dashboard.cohere.com/api-keys) - 🟢 free 
 - **Groq:** [Get your Groq API key](https://console.groq.com/keys) - 🟢 free 
 - **SambaNova:** [Get your SambaNova API key](https://cloud.sambanova.ai/apis) - 🟢 free
-- **Together AI:** 🟢 Free for meta-llama/Llama-3.3-70B-Instruct-Turbo-Free  [Get your Together AI API key](https://api.together.ai/settings/api-keys)
+- **Together AI:** 🟢 Free for deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free  [Get your Together AI API key](https://api.together.ai/settings/api-keys)
 - **OpenAI:** [OpenAI key](https://platform.openai.com/api-keys)
 - **Anthropic:** [Anthropic API key](https://console.anthropic.com/settings/keys)
 - **DeepSeek:** [DeepSeek API Key](https://platform.deepseek.com/api_keys)
