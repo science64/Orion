@@ -418,7 +418,11 @@ th {
 
 .disable_btn{
     color: #7d7979 !important;
-    background-color: #f6f6f6 !important;
+    background-color: #f6f6f6 !important;think {
+    text-align: center;
+    color: rgb(0 0 0 / 33%);
+    font-style: italic;
+}
     border: 1px solid #c7c7c7 !important;
     font-weight: 600 !important;
 }
@@ -1242,4 +1246,11 @@ pre:has(code):before{
         width: 40px;
         height: 40px;
     }
+}
+
+
+think {
+    text-align: center;
+    color: rgb(0 0 0 / 33%);
+    font-style: italic;
 }
