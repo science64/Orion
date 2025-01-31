@@ -1243,3 +1243,9 @@ pre:has(code):before{
         height: 40px;
     }
 }
+
+
+think {
+    color: rgb(0 0 0 / 33%);
+    font-style: italic;
+}
