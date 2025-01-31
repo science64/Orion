@@ -126,6 +126,7 @@ let PLATFORM_DATA = {
 
     together: {
         models: [
+            "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
             "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free"
         ],
         name: "Together AI",
