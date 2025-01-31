@@ -71,6 +71,7 @@ details{
     color: #423434;
     padding: 12px;
     margin-top: 5px;
+    margin-bottom: 7px;
     border-radius: 5px;
     border: 1px solid #7d7d7d;
 }
@@ -82,6 +83,11 @@ details a:visited{
 }
 details a:hover{
     color: #7578e1;
+}
+details[open] summary{
+    margin-bottom: 7px;
+    color: rgba(69, 68, 68, 0.39);
+    font-style: italic;
 }
 #plugin_code, #plugin_url{
     width: 80%;

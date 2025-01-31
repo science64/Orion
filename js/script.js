@@ -2136,6 +2136,9 @@ async function streamChat(can_use_tools = true) {
         }
     }
 
+    if(chosen_platform === 'groq' && model.match(/deepseek-r1/)){
+        data.reasoning_format = 'parsed';
+    }
 
     const requestOptions = {
         method: 'POST',
@@ -2700,6 +2703,10 @@ function processDataPart(part) {
             if (jsonData.choices?.[0]?.delta?.reasoning_content) {
                 story_reasoning += jsonData.choices[0].delta.reasoning_content;
             }
+            if (jsonData.choices?.[0]?.delta?.reasoning) {
+                story_reasoning += jsonData.choices[0].delta.reasoning;
+            }
+
         }
     }
 }
