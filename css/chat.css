@@ -772,11 +772,7 @@ select{
 
 }
 
-.chat-input textarea:focus{think {
-    text-align: center;
-    color: rgb(0 0 0 / 33%);
-    font-style: italic;
-}
+.chat-input textarea:focus{
     outline: none;
 }
 
