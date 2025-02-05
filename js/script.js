@@ -44,6 +44,7 @@ let PLATFORM_DATA = {
     },
     google: {
         models: [
+            "gemini-2.0-pro-exp-02-05",
             "gemini-2.0-flash-exp",
             "gemini-exp-1206",
             "gemini-1.5-pro",
@@ -448,6 +449,7 @@ function removeChat(div, id, force = false) {
  **/
 function newChat() {
     //toggleAnimation(true);
+    is_chat_enabled = true;
     toggleAiGenAnimation(false);
     closeDialogs();
     document.title = SITE_TITLE;

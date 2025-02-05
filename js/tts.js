@@ -26,7 +26,12 @@ function genAudio(text, div){
     if(audio_feature_enabled !== '1'){
         return false;
     }
+    if(!div){
+        console.log('empty div')
+        return false;
+    }
     div.append(audio_button_ele);
+
     if(!elabs_api_key){
         console.error('No API key defined for ElevenLabs')
         return false;
