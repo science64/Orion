@@ -131,7 +131,7 @@ details[open] summary{
 }
 .code_execution:before{
     content: "Code Execution:";
-    margin-bottom: -11px;
+    margin-bottom: 6px;
     display: block;
     background-color: #8edd91;
     padding: 3px;
