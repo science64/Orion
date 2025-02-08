@@ -1,5 +1,5 @@
 let can_delete_history = false;
-let max_chats_history = 50;
+let max_chats_history = 898;
 let chosen_platform = localStorage.getItem('chosen_platform');
 let model = localStorage.getItem('selected_model');
 let is_mobile = window.matchMedia("(max-width: 768px)").matches;
@@ -45,11 +45,9 @@ let PLATFORM_DATA = {
     google: {
         models: [
             "gemini-2.0-pro-exp-02-05",
-            "gemini-2.0-flash-exp",
-            "gemini-exp-1206",
-            "gemini-1.5-pro",
-            "gemini-1.5-flash",
-            "gemini-1.5-flash-8b"
+            "gemini-2.0-flash",
+            "gemini-2.0-flash-thinking-exp-01-21",
+            "gemini-2.0-flash-lite-preview-02-05",
         ],
         name: "Google",
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{{model}}:{{gen_mode}}?key={{api_key}}'
