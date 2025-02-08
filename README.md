@@ -2,7 +2,7 @@
 Orion is a web-based chat interface that simplifies interactions with multiple AI model providers.
 It provides a unified platform for chatting and exploring multiple large language models (LLMs), including:
 
-- 🛠️ [Ollama](https://ollama.com/library) – An open-source tool for running LLMs locally 🏡
+- 🛠️ Ollama – An open-source tool for running LLMs locally 🏡
 - 🐳 DeepSeek (DeepSeek-R1 rivaling OpenAI's o1 model)
 - 🤖 OpenAI (GPTs and o's models)
 - 🎯 Cohere (Command-r models)
