@@ -648,6 +648,8 @@ async function changeUserInputIfNeeded(){
             if(last_user_message){
                 last_user_message.innerHTML = new_input;
             }
+        }else {
+            addWarning("Unable to get content from shared url")
         }
     }
 
