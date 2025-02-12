@@ -639,17 +639,21 @@ async function changeUserInputIfNeeded(){
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let url = hasURL(last_user_input);
     if(url){
-        let data = await retrieveContentFromUrl(url);
-        if(data?.text){
-            let new_input = `<details><summary><b>URL</b>: ${url}</summary><br><b>Content</b>: ${data.text}</details> ${last_user_input}`;
-            conversations.messages[conversations.messages.length - 1].content = new_input;
-            const ui_user_messages = document.querySelectorAll('.message.user');
-            const last_user_message = ui_user_messages[ui_user_messages.length - 1];
-            if(last_user_message){
-                last_user_message.innerHTML = new_input;
+        try {
+            let data = await retrieveContentFromUrl(url);
+            if(data?.text){
+                let new_input = `<details><summary><b>URL</b>: ${url}</summary><br><b>Content</b>: ${data.text}</details> ${last_user_input}`;
+                conversations.messages[conversations.messages.length - 1].content = new_input;
+                const ui_user_messages = document.querySelectorAll('.message.user');
+                const last_user_message = ui_user_messages[ui_user_messages.length - 1];
+                if(last_user_message){
+                    last_user_message.innerHTML = new_input;
+                }
+            }else {
+                addWarning("Unable to get content from shared URL: "+url)
             }
-        }else {
-            addWarning("Unable to get content from shared url")
+        }catch{
+            addWarning("error while trying to get content from shared URL: "+url);
         }
     }
 
