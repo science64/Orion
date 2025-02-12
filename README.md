@@ -14,7 +14,7 @@ It provides a unified platform for chatting and exploring multiple large languag
 - ♾️ OpenRouter - A unified interface for LLMs
 - ☁️ Together AI - The AI Acceleration Cloud
 - 📡 Deep Infra
-- 
+
 ![Orion Screenshot](imgs/screenshot.png "Orion Screenshot")
 
 
