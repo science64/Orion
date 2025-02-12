@@ -623,12 +623,46 @@ function toggleAiGenAnimation(do_animate = 'toggle') {
     }
 }
 
+/**
+ * checks if there is a url in a given text, if so it returns the url, otherwise it returns false
+ **/
+function hasURL(text){
+    let match_url = text.match(/https?:\/\/\S+/g);
+    if(match_url){
+        return match_url[0];
+    }
+    return false;
+
+}
+
+async function changeUserInputIfNeeded(){
+    last_user_input = conversations.messages[conversations.messages.length - 1].content;
+    let url = hasURL(last_user_input);
+    if(url){
+        let data = await retrieveContentFromUrl(url);
+        if(data?.text){
+            let new_input = `<details><summary><b>URL</b>: ${url}</summary><br><b>Content</b>: ${data.text}</details> ${last_user_input}`;
+            conversations.messages[conversations.messages.length - 1].content = new_input;
+            const ui_user_messages = document.querySelectorAll('.message.user');
+            const last_user_message = ui_user_messages[ui_user_messages.length - 1];
+            if(last_user_message){
+                last_user_message.innerHTML = new_input;
+            }
+        }
+    }
+
+
+}
+
 function chat() {
     toggleAiGenAnimation(true);
-    if (chosen_platform === 'google') {
-        return geminiChat();
-    }
-    return streamChat();
+    changeUserInputIfNeeded().then(()=>{
+        if (chosen_platform === 'google') {
+            return geminiChat();
+        }
+        return streamChat();
+    })
+
 }
 
 
@@ -1904,7 +1938,6 @@ function commandManager(input_text) {
 
     prompt = prompt.replaceAll("{{ARG1}}", args);
     return prompt; // return the new prompt formated
-
 }
 
 
@@ -1981,6 +2014,38 @@ async function youtubeCaption(data) {
 
 
 } // youtubeCaption
+
+
+
+
+
+async function retrieveContentFromUrl(url) {
+    if (!url) {
+        addWarning('retrieveContentFromUrl() received no URL param');
+        return false;
+    }
+    let rag_endpoint = localStorage.getItem("rag_endpoint");
+    if (!rag_endpoint) {
+        addWarning("No [rag_endpoint] found!");
+        return false;
+    }
+
+
+    console.log('retrieveContentFromUrl: ' + url);
+    const urlencoded = new URLSearchParams();
+    urlencoded.append('url', url);
+    let data_init = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: urlencoded
+    }
+    return await fetch(rag_endpoint, data_init).then(function (res) {
+        return res.json();
+    })
+
+} // retrieveContentFromUrl
 
 
 async function streamChat(can_use_tools = true) {
