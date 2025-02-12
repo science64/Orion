@@ -90,6 +90,14 @@ let PLATFORM_DATA = {
         name: "Groq",
         endpoint: "https://api.groq.com/openai/v1/chat/completions"
     },
+    openrouter: {
+        models: [
+            "deepseek/deepseek-r1:free",
+            "google/gemini-2.0-flash-exp:free"
+        ],
+        name: "OpenRouter",
+        endpoint: "https://openrouter.ai/api/v1/chat/completions"
+    },
     sambanova: {
         models: [
             "Qwen2.5-Coder-32B-Instruct",
@@ -114,13 +122,6 @@ let PLATFORM_DATA = {
         ],
         name: "xAI",
         endpoint: "https://api.x.ai/v1/chat/completions"
-    },
-    openrouter: {
-        models: [
-            "google/gemini-2.0-flash-exp:free"
-        ],
-        name: "OpenRouter",
-        endpoint: "https://openrouter.ai/api/v1/chat/completions"
     },
 
     together: {
