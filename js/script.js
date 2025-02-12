@@ -642,8 +642,9 @@ function isYouTubeURL(url) {
 
 async function changeUserInputIfNeeded(){
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
+
     let url = hasURL(last_user_input);
-    if(url && !isYouTubeURL(url)){
+    if(url && !isYouTubeURL(url) && last_user_input.length < 500){
         try {
             let data = await retrieveContentFromUrl(url);
             if(data?.text){
