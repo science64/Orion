@@ -635,10 +635,15 @@ function hasURL(text){
 
 }
 
+function isYouTubeURL(url) {
+    return url.includes("youtube.com") || url.includes("youtu.be");
+}
+
+
 async function changeUserInputIfNeeded(){
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
     let url = hasURL(last_user_input);
-    if(url){
+    if(url && !isYouTubeURL(url)){
         try {
             let data = await retrieveContentFromUrl(url);
             if(data?.text){
