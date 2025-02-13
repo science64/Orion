@@ -910,11 +910,18 @@ function enableFullTextCopy() {
         let has_copy_btn = div.classList.contains('has_full_text_copy_btn')
         if (!has_copy_btn) {   // to not be added more the one time
             const button = document.createElement('button');
+            const btn_info = document.createElement('button');
             const ele = document.createElement('div');
             ele.className = 'btn-ft-group';
             button.className = 'copy-btn';
+            btn_info.className = 'see_info';
             button.innerText = 'Copy text';
+            btn_info.innerText = 'Info';
+            btn_info.onclick = ()=>{
+                showInfo();
+            }
             ele.append(button);
+            ele.append(btn_info)
             div.append(ele);
             button.addEventListener('click', () => {
                 const full_text = div_copy.innerHTML;
@@ -931,6 +938,15 @@ function enableFullTextCopy() {
 
 }
 
+function ucFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function showInfo(){
+    closeDialogs();
+    let active_platform = ucFirst(chosen_platform);
+    addWarning(`Active model: ${model} from ${active_platform}`,true);
+}
 
 function enableCodeDownload() {
     let downloadCodeBtn = document.querySelectorAll(".down-btn");

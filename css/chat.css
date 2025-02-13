@@ -271,7 +271,7 @@ code.hljs::-webkit-scrollbar-track {
     margin-top: -33px;
 }
 
-.copy-btn, .down-btn {
+.copy-btn, .down-btn, .see_info {
     padding: 3px 5px;
     background-color: transparent;
     color: #b8b8b8;
@@ -281,6 +281,7 @@ code.hljs::-webkit-scrollbar-track {
     margin: 0 2px;
 }
 
+
 .btn-group .copy-btn, .btn-group .down-btn {
     background-color: #22272e;
 }
@@ -288,7 +289,7 @@ code.hljs::-webkit-scrollbar-track {
 .btn-ft-group{
     text-align: end;
 }
-.btn-ft-group .copy-btn{
+.btn-ft-group .copy-btn, .see_info{
     color: #484646;
     border: 1px solid #cccccc70;
     margin-top: 5px;
@@ -326,31 +327,19 @@ th {
 }
 
 .dialog_close:after {
-    /*content: "X";*/
-    /*padding: 2px 4px;*/
-    /*color: #5c5656;*/
-    /*position: absolute;*/
-    /*top: -5px;*/
-    /*right: -5px;*/
-    /*background-color: #c9ffa0;*/
-    /*box-sizing: border-box;*/
-    /*border-radius: 3px;*/
-    /*cursor: pointer;*/
-    /*transform: rotate(33deg);*/
-    /*border: 1px solid #fff;*/
-
     content: "X";
-    padding: 5px 7px;
-    color: #2d2828;
+    padding: 2px 4px;
+    color: #7578e1;
     position: absolute;
-    top: 2px;
-    right: 2px;
-    background-color: #f7f7f7;
+    top: -7px;
+    right: -5px;
+    background-color: #ffffff;
     box-sizing: border-box;
     border-radius: 3px;
     font-weight: 600;
     cursor: pointer;
-    border: 1px solid #b0b0b0;
+    transform: rotate(25deg);
+    border: 1px solid #e6e6e6;
 }
 
 
@@ -369,7 +358,7 @@ th {
     position: fixed;
     top: 11px;
     box-shadow: 0 0 3px 0 #66616d;
-    background-color: #ffffad;
+    background-color: #fff;
     color: #282828;
     border-radius: 5px;
     text-align: center;
