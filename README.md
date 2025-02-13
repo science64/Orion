@@ -126,9 +126,6 @@ the content passed to the LLM.
 By adding such an endpoint you will be able to use it by writing at the beginning of the chat `s: Why is the sky blue?` 
 and the answer will be based on the context returning from the "rag endpoint"
 
-An advanced option for those using Google Gemini may be to use "Grounding with Google Search", this feature is not
-implemented here and has a cost of $35 / 1K grounding requests.
-
 # Cors
 To get around CORS errors when working with SambaNova the API request will pass through `cors-proxy.php`
 which will forward the request to the desired platform. This will not hide your IP address, just forward the request.
