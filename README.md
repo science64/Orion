@@ -101,30 +101,28 @@ After downloading, just open the folder and click on index.html if you don't hav
 If you do, just access the directory where the project was saved. It's that simple.
 
 # Google CSE API Key
-To search using Google, you will need Google CSE (Custom Search Engine) API Key and CX.
+Sometimes you might want AI to search the web and respond based on that information.
+
+To allow AI to search using Google, you will need Google CSE (Custom Search Engine) API Key and CX.
 - First, create a custom search here [Google CSE Panel](https://programmablesearchengine.google.com/controlpanel/all)
 - Copy your CX ID
 - Go to [Google Developers](https://developers.google.com/custom-search/v1/introduction) and click on *Get a Key* to get your API Key
-- Now just enter CX and API key in Orion. for that go to Options -> More Options and that's it, it's time to chat.
-- *Note: Google Search will return only snippets of search results, which can often provide enough context for AI, 
-  but not in-depth information. 
-In some cases, AI may fail to provide an answer or provide an incorrect answer due to a lack of broader context. 
-Keep this in mind when using this tool.
+- Now just enter CX and API key in Orion. for that go to Options -> More Options and make the configuration.
+- To use the functionality in chat, you need to put an "s:" at the beginning of your prompt, e.g. "s: what's today's news"
+- *Note: Google Search will only return snippets of search results, which may not have enough context for AI to respond. 
+It is recommended to implement the solution below for best results.
 
 # Rag Endpoint
-### BETA
-For better search results, you can configure a search endpoint. 
+For better search results, you can configure a "RAG endpoint". 
 
-A POST request with `query` will be sent to this endpoint, where query is the search term.
+Just follow the instructions at https://github.com/EliasPereirah/SearchAugmentedLLM/
 
-These configurations were created to be compatible with
-https://github.com/EliasPereirah/SearchAugmentedLLM/ (Not perfect, but better than just Google snippet)
+After that you can enter the search endpoint you just created in the Orion Chat interface. 
+Click on "⚙️" -> "Options" -> "Advanced" and enter the "RAG endpoint".
 
-If you want to use any other endpoint, make sure it returns a JSON with the text field, where text will be 
-the content passed to the LLM.
+Now whenever you want the AI to do a search to answer your question, write at the beginning of your prompt 
+"s:" + your question, e.g. "s: what's the news today?", The AI will search the web and respond based on the information found.
 
-By adding such an endpoint you will be able to use it by writing at the beginning of the chat `s: Why is the sky blue?` 
-and the answer will be based on the context returning from the "rag endpoint"
 
 # Cors
 To get around CORS errors when working with SambaNova the API request will pass through `cors-proxy.php`
@@ -140,7 +138,7 @@ When submitting a YouTube URL in the chat, a popup will open allowing you to set
 This repository already provides this functionality in the plugins folder, to use it you will need to have
 PHP enabled on your server. 
 
-Note: You do not need a server to run this project as long as you do not want to use certain 
+Note: You do not need a PHP server to run this project as long as you do not want to use certain 
 features, such as the one mentioned above.
 
 If you wish, you can implement the following code on another server of your choice and point to the correct endpoint.
