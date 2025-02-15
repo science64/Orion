@@ -3317,6 +3317,59 @@ function deletePrompt(){
 
 }
 
+
+function welcome() {
+    const welcomeMessages = [
+        { language: "English", message: "Welcome to Orion!" },
+        { language: "Portuguese", message: "Bem-vindo à Orion!" },
+        { language: "Spanish", message: "¡Bienvenido a Orion!" },
+        { language: "French", message: "Bienvenue à Orion!" },
+        { language: "German", message: "Willkommen bei Orion!" },
+        { language: "Italian", message: "Benvenuto a Orion!" },
+        { language: "Dutch", message: "Welkom bij Orion!" },
+        { language: "Russian", message: "Добро пожаловать в Орион!" },
+        { language: "Chinese", message: "欢迎来到猎户座！" },
+        { language: "Japanese", message: "オリオンへようこそ！" },
+        { language: "Korean", message: "오리온에 오신 것을 환영합니다!" },
+        { language: "Arabic", message: "مرحبا بكم في أوريون!" },
+        { language: "Hebrew", message: "ברוכים הבאים לאוריון!" },
+        { language: "Greek", message: "Καλώς ήρθατε στον Ωρίωνα!" },
+        { language: "Hindi", message: "ओरीयोन में आपका स्वागत है!" }
+    ];
+
+    let index = 0;
+
+    function typeMessage(message, element, speed = 100, callback) {
+        let i = 0;
+        element.innerHTML = "";
+        function type() {
+            if (i < message.length) {
+                element.innerHTML += message.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else if (callback) {
+                setTimeout(callback, 2000);
+            }
+        }
+        type();
+    }
+
+    function updateMessage() {
+        const welcomeDiv = document.getElementById("welcome");
+        if (welcomeDiv) {
+            const message = welcomeMessages[index].message;
+            const fullMessage = `${message}`;
+            typeMessage(fullMessage, welcomeDiv, 50, () => {
+                index = (index + 1) % welcomeMessages.length;
+                setTimeout(updateMessage, 3000);
+            });
+        }
+    }
+    updateMessage();
+}
+welcome();
+
+
 let new_url = document.URL;
 new_url = new_url.split('?')[0];
 new_url = new_url.split("#")[0];
