@@ -67,6 +67,8 @@
     --upload-icon: url("../imgs/svg/upload_icon_dark.svg");
     --bot-user-bg-animation: #272525;
     --rec-animation-bg: transparent;
+    --speak-icon: url(../imgs/svg/speaker_icon_dark.svg);
+    --pause-icon: url(../imgs/svg/pause_icon_dark.svg);
 
 
 }
@@ -275,16 +277,17 @@ div.message.bot:nth-last-of-type(2),div.message.bot:nth-last-of-type(1){
     margin-bottom: 2px;
 }
 
-button.play_audio_btn, .button.pause_audio_btn {
+button.play_audio_btn, button.pause_audio_btn {
     border: navajowhite;
     display: flow;
     cursor: pointer;
     background-image: var(--speak-icon);
     width: 18px;
     height: 18px;
+    background-color: transparent;
 }
 
- .button.pause_audio_btn {
+button.pause_audio_btn {
     background-image: var(--pause-icon);
 }
 

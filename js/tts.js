@@ -35,7 +35,9 @@ function genAudio(text, div){
                 audio_elem.play();
                 audio_button_ele.classList.add('pause_audio_btn')
                 audio_button_ele.classList.remove('play_audio_btn');
+                console.log('play 1')
             }else {
+                console.log('pause 1')
                 audio_elem.pause();
                 audio_button_ele.classList.add('play_audio_btn');
                 audio_button_ele.classList.remove('pause_audio_btn')
@@ -80,20 +82,27 @@ function genAudio(text, div){
                 });
                 audio_button_ele.classList.add('pause_audio_btn')
                 audio_button_ele.classList.remove('play_audio_btn');
+                console.log('pause 2')
+
 
                 audio_elem.addEventListener('ended', () => {
-                    audio_button_ele.classList.remove('pause_audio_btn')
                     audio_button_ele.classList.add('play_audio_btn');
+                    audio_button_ele.classList.remove('pause_audio_btn')
+                    console.log('end 1')
                 });
 
                 audio_elem.addEventListener('pause', () => {
-                    audio_button_ele.classList.add('pause_audio_btn')
-                    audio_button_ele.classList.remove('play_audio_btn');
+                    audio_button_ele.classList.add('play_audio_btn');
+                    audio_button_ele.classList.remove('pause_audio_btn');
+                    console.log('pause 3')
+
                 });
 
                 audio_elem.addEventListener('play', () => {
-                    audio_button_ele.classList.remove('pause_audio_btn')
-                    audio_button_ele.classList.add('play_audio_btn');
+                    audio_button_ele.classList.remove('play_audio_btn');
+                    audio_button_ele.classList.add('pause_audio_btn')
+                    console.log('play 3')
+
                 });
 
             })
