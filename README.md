@@ -16,10 +16,12 @@ It provides a unified platform for chatting and exploring multiple large languag
 - 📡 Deep Infra
 
 ## Screenshot
-Light theme:
+- **Light theme:**
+
 ![Orion Screenshot](imgs/screenshot.png "Orion Screenshot")
 
-Dark Theme:
+**Dark Theme:** 
+
 ![Orion Screenshot](imgs/screenshot_dark_theme.png "Orion Screenshot - Dark Theme")
 
 
@@ -143,19 +145,15 @@ which will forward the request to the desired platform. This will not hide your 
 This is necessary because direct requests via JavaScript in the browser to these platform are not possible.
 
 # YouTube Caption
-To enable AI responses based on YouTube video subtitles, set up an API endpoint to get them.
+You can simply share the URL of a YouTube video in the chat to be able to ask something about the video content, 
+or ask the AI to make a summary.
 
-When submitting a YouTube URL in the chat, a popup will open allowing you to set up this endpoint.
+To do this, you will need to use this other project: https://github.com/EliasPereirah/YoutubeSubtitlesDownloader/
 
-This repository already provides this functionality in the plugins folder, to use it you will need to have
-PHP enabled on your server.
+You can run it on localhost or on a remote server.
 
-Note: You do not need a PHP server to run this project as long as you do not want to use certain
-features, such as the one mentioned above.
+After activating the mentioned project, go to "Options" -> "YouTube Captions" and point to the URL where you deployed the project, for example: http://localhost/YoutubeSubtitlesDownloader/
 
-If you wish, you can implement the following code on another server of your choice and point to the correct endpoint.
-
-Code: https://github.com/EliasPereirah/YoutubeSubtitlesDownloader
 
  <a href="https://www.buymeacoffee.com/eliaspereirah">
        <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />

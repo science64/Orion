@@ -1670,7 +1670,8 @@ function dialogSetYouTubeCaptionApiEndpoint() {
     let caption_api_endpoint = `${location.origin}${path_name}/plugins/php/yt_caption.php`;
     let input_value = '';
     if (!location.hostname.match("github.io")) {
-        input_value = `value="${caption_api_endpoint}"`;
+        // This feature will no longer be used in this way
+       // input_value = `value="${caption_api_endpoint}"`;
     }
     let cnt =
         `<div><p>Configure a YouTube caption extraction API endpoint.</p>
