@@ -54,7 +54,9 @@ class GoogleSearch {
 
     async advancedSearch(term, max_results = 5) {
         let is_cse_active = await gcseActive();
-        if (!is_cse_active) {
+        let rag_endpoint = localStorage.getItem("rag_endpoint");
+
+        if (!is_cse_active && !rag_endpoint) {
             moreOptions('cse')
             addWarning('Please set Google CSE API key and CX ID');
             toggleAiGenAnimation(false)
@@ -70,7 +72,6 @@ class GoogleSearch {
             max_results = 10;
         }
 
-        let rag_endpoint = localStorage.getItem("rag_endpoint");
         if (!rag_endpoint) {
             addWarning("No [rag_endpoint] found!");
             return false;

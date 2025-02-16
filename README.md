@@ -15,7 +15,12 @@ It provides a unified platform for chatting and exploring multiple large languag
 - ☁️ Together AI - The AI Acceleration Cloud
 - 📡 Deep Infra
 
+## Screenshot
+Light theme:
 ![Orion Screenshot](imgs/screenshot.png "Orion Screenshot")
+
+Dark Theme:
+![Orion Screenshot](imgs/screenshot_dark_theme.png "Orion Screenshot - Dark Theme")
 
 
 With Orion, you can easily navigate and assess the strengths and limitations of different AI models through an intuitive,

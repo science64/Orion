@@ -2874,7 +2874,8 @@ async function gcseActive() {
 
 async function googleSearch(data) {
     let is_cse_active = await isGoogleCseActive();
-    if (!is_cse_active) {
+    let rag_endpoint = localStorage.getItem("rag_endpoint");
+    if (!is_cse_active && !rag_endpoint) {
         let cse_opt = `<button class="more_opt_btn" onclick="moreOptions('cse')">See Options</button>`;
         cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
         cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";

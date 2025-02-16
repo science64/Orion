@@ -4,6 +4,8 @@
     --theme-color: #000;
     --img-output-bg:  #e7e7ec;
     --details-bg: #ffffff;
+    --details-color: #615f5f;
+    --details-open-summary-cl: #7578e1;
     --accept-code-exec-bg: #7d776e;
     --js-output: #60fc67a6;
     --user-msg-bg: rgb(247 246 243);
@@ -92,7 +94,9 @@
     --theme-bg: #1c1c1c;
     --theme-color: #b6b6b6;
     --img-output-bg:  #e7e7ec;
-    --details-bg: #ffffff;
+    --details-bg: #1c1c1c;
+    --details-color: #60fc67;
+    --details-open-summary-cl: #7578e1;
     --accept-code-exec-bg: #7d776e;
     --js-output: #60fc67a6;
     --user-msg-bg: rgb(92 92 92 / 21%);
@@ -143,7 +147,6 @@
     --more-option-btn-bg: #1c1c1c;
     --more-option-btn-cl: #a4a1a1;
     --more-option-btn-border-bottom-cl: #ccc;
-
     --js-close-before-bg: #292929;
     --js-close-before-cl: #b7adad;
     --dialog-button-bg: #292929;
@@ -263,7 +266,7 @@ optgroup{
 }
 details{
     background-color: var(--details-bg);
-    color: #423434;
+    color: var(--details-color);
     padding: 12px;
     margin-top: 5px;
     margin-bottom: 7px;
@@ -281,7 +284,7 @@ details a:hover{
 }
 details[open] summary{
     margin-bottom: 7px;
-    color: rgba(69, 68, 68, 0.39);
+    color: var(--details-open-summary-cl); /** old rgba(69, 68, 68, 0.39); **/
     font-style: italic;
 }
 #plugin_code, #plugin_url{
