@@ -3255,7 +3255,7 @@ document.addEventListener('keydown', function (e) {
         }
     }
 
-    if (e.shiftKey && e.key === 'T') {
+    if (e.shiftKey && e.key.toLowerCase() === 'T') {
         // Shift + T to toggle between dark/light theme mode
         themeToggle();
     }
