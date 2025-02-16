@@ -12,8 +12,12 @@
     --btn-special-cl: #7578e1;
     --system-before-border:  #ccc;
     --copy-btn-bg: #fff;
-    --copy-btn-border: #989898;
-    --copy-btn-color: #2d2d2d;
+    --ft-group-bg: #fff;
+    --copy-btn-border: #e8d7d7;
+    --copy-btn-color: #fff1f1;
+    --copy-btn-ft-color: #7a7171;
+    --copy-btn-ft-bg: #fff;
+    --copy-btn-ft-border: #9f9b9b;
     --textarea-bg: transparent;
     --textarea-border: #ccc;
     --textarea-color: #000;
@@ -79,6 +83,8 @@
     --pre-code-border-cl: var(--code-header-before-bg);
     --no-history-bg: #fd7b7b;
     --no-history-cl:  #fff;
+    --chat-deleted-msg-bg: #7578e1;
+    --chat-deleted-msg-border-cl: #1319ff;
 }
 
 /* Dark Theme */
@@ -95,8 +101,12 @@
     --btn-special-cl: #7578e1;
     --system-before-border: #5c5c5c;
     --copy-btn-bg: #282727;
+    --ft-group-bg: #1c1c1c;
     --copy-btn-border: #4c4c4c;
     --copy-btn-color: #b4b4b4;
+    --copy-btn-ft-color: #c3b7b7;
+    --copy-btn-ft-bg: #292929;
+    --copy-btn-ft-border: #9f9b9b;
     --textarea-bg: #303030;
     --textarea-border: #3d3d41;
     --textarea-color: #fff;
@@ -138,7 +148,7 @@
     --js-close-before-cl: #b7adad;
     --dialog-button-bg: #292929;
     --dialog-button-color: #ebebeb;
-    --optgroup-color: #7578e1;
+    --optgroup-color: #fff;
     --remove-model-btn: #292929;
     --success-dialog-bg: #3a3a3a;
     --success-dialog-cl: #07d95e;
@@ -162,6 +172,9 @@
     --pre-code-border-cl: var(--code-header-before-bg);
     --no-history-bg: var(--theme-bg);
     --no-history-cl:  var(--theme-color);
+    --chat-deleted-msg-bg: #323232;
+    --chat-deleted-msg-border-cl: #fff;
+
 
 }
 
@@ -462,7 +475,7 @@ code.hljs::-webkit-scrollbar-track {
 }
 
 .btn-group {
-    margin-top: -37px;
+    margin-top: -31px;
     text-align: end;
 }
 .btn-group-top{
@@ -479,25 +492,22 @@ code.hljs::-webkit-scrollbar-track {
     margin: 0 2px;
 }
 
-.see_info{
-   /**
-    background-color: var(--see-info-btn-bg);
-    color: var(--see-info-btn-color);
-   **/
-}
 
 .btn-group .copy-btn, .btn-group .down-btn {
-    background-color: var(--copy-btn-bg);
+    background-color: transparent;
+}
+
+
+.btn-ft-group .copy-btn, .see_info{
+    color: var(--copy-btn-ft-color);
+    border: 1px solid var(--copy-btn-ft-border);
+    margin-top: 5px;
+    background: var(--copy-btn-ft-bg);
 }
 
 .btn-ft-group{
     text-align: end;
-}
-.btn-ft-group .copy-btn, .see_info{
-    color: var(--copy-btn-color);
-    border: 1px solid var(--copy-btn-border);
-    margin-top: 5px;
-    background: var(--copy-btn-bg);
+    background: var(--ft-group-bg);
 }
 
 .container {
@@ -820,13 +830,20 @@ select{
 }
 
 
-#new_chat, #open_options {
+#new_chat, #open_options, #theme_toggle {
     padding: 8px;
     text-align: center;
     border: 1px solid var(--new-chat-border-cl);
     border-radius: 4px;
     cursor: pointer;
     margin-bottom: 2px;
+}
+
+#theme_toggle{
+    background-color: #4c4c4c;
+    margin: 5px 0;
+    color: #07d95e;
+    border: none;
 }
 
 .history {
@@ -883,6 +900,8 @@ select{
 
 #delete_history {
     text-align: center;
+    font-size: 1em;
+
 }
 
 .deletable:before {
@@ -1044,7 +1063,7 @@ textarea#ta_chat::placeholder{
     margin-bottom: 8px !important;
 }
 .chat_deleted_msg {
-    background-color: #7578e1;
+    background-color: var(--chat-deleted-msg-bg);
     color: #fff;
     padding: 8px;
     border-radius: 4px;
@@ -1053,6 +1072,7 @@ textarea#ta_chat::placeholder{
     left: calc(50% - 75px);
     position: absolute;
     top: 25px;
+    border: 1px solid var(--chat-deleted-msg-border-cl);
 }
 
 textarea.system_prompt {

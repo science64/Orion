@@ -3350,7 +3350,7 @@ function welcome() {
                 i++;
                 setTimeout(type, speed);
             } else if (callback) {
-                setTimeout(callback, 2000);
+                setTimeout(callback, 5000);
             }
         }
         type();
@@ -3363,7 +3363,7 @@ function welcome() {
             const fullMessage = `${message}`;
             typeMessage(fullMessage, welcomeDiv, 90, () => {
                 index = (index + 1) % welcomeMessages.length;
-                setTimeout(updateMessage, 2000);
+                setTimeout(updateMessage, 5000);
             });
         }
     }
@@ -3371,6 +3371,41 @@ function welcome() {
 }
 welcome();
 
+function  themeToggle() {
+    let theme_toggle_button = document.querySelector("#theme_toggle");
+    let theme = document.querySelector("[data-theme]");
+    if(theme){
+        let current_theme = theme.getAttribute("data-theme");
+        if(current_theme === 'light'){
+            localStorage.setItem('theme', 'light');
+            theme_toggle_button.innerText = "Light Mode 🔆";
+            theme.setAttribute('data-theme', 'dark');
+        }else {
+            localStorage.setItem('theme', 'dark');
+            theme_toggle_button.innerText = "Dark Mode 🌙";
+            theme.setAttribute('data-theme', 'light');
+
+        }
+    }
+}
+
+let theme_toggle_button = document.querySelector("#theme_toggle");
+theme_toggle_button.onclick = ()=>{
+    themeToggle();
+}
+
+let current_theme = localStorage.getItem('theme');
+let theme = document.querySelector("[data-theme]");
+if(theme && current_theme){
+    if(current_theme === 'light'){
+        theme_toggle_button.innerText = "Light Mode 🔆";
+        theme.setAttribute('data-theme', 'dark');
+    }else {
+        theme_toggle_button.innerText = "Dark Mode 🌙";
+        theme.setAttribute('data-theme', 'light');
+
+    }
+}
 
 let new_url = document.URL;
 new_url = new_url.split('?')[0];
