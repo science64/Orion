@@ -3233,6 +3233,7 @@ function loadExtraModels() {
 loadExtraModels();
 
 document.addEventListener('keydown', function (e) {
+
     if (e.ctrlKey && e.key === 'q') {
         //Closes the current chat and starts a new one
         newChat();
@@ -3250,6 +3251,12 @@ document.addEventListener('keydown', function (e) {
             removeChat(div_topic, chat_id, true);
         }
     }
+
+    if (e.shiftKey && e.key === 'T') {
+        // Shift + T to toggle between dark/light theme mode
+        themeToggle();
+    }
+
 
 });
 

@@ -71,8 +71,8 @@ See an example of use below.
 It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
 
 ### Keyboard shortcut. 
-Press `Ctrl + Q` to close the current chat and start a new one.
-
+- Press `Ctrl + Q` to close the current chat and start a new one.
+- Press `Shift + T` on your keyboard to switch between the dark and light theme modes.
 ### Retrieval-Augmented Generation (RAG)
 Search: Perform quick searches and retrieve relevant information with ease from Google.
 - Example: `search: What is the latest news?` or `s: What is the latest news?`
