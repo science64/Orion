@@ -37,6 +37,9 @@ user-friendly interface.
 - 🧠 Awesome Prompts 150+ awesome prompts most of them from [Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
 
 
+ <a href="https://www.buymeacoffee.com/eliaspereirah">
+       <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />
+   </a>
 
 ## API Key Management
 
@@ -48,8 +51,8 @@ Your API keys are stored locally using `localStorage`, and requests are sent dir
 Some companies offer free API access. Check their terms and conditions before you get started.
 - **Google Gemini:** [Get your Gemini API key](https://aistudio.google.com/app/apikey) - 🟢 free
 - **Cerebras:** [Get your Cerebras API key](https://cloud.cerebras.ai/platform/) - 🟢 free
-- **Cohere:** [Get your Cohere API key](https://dashboard.cohere.com/api-keys) - 🟢 free 
-- **Groq:** [Get your Groq API key](https://console.groq.com/keys) - 🟢 free 
+- **Cohere:** [Get your Cohere API key](https://dashboard.cohere.com/api-keys) - 🟢 free
+- **Groq:** [Get your Groq API key](https://console.groq.com/keys) - 🟢 free
 - **SambaNova:** [Get your SambaNova API key](https://cloud.sambanova.ai/apis) - 🟢 free
 - **Together AI:** 🟢 Free for deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free  [Get your Together AI API key](https://api.together.ai/settings/api-keys)
 - **OpenAI:** [OpenAI key](https://platform.openai.com/api-keys)
@@ -68,9 +71,9 @@ Ask AI to summarize a YouTube video or answer any question based on the video ca
 See an example of use below.
 - `Summarize this video https://www.youtube.com/watch?v=r7pEdhnS3tI`
 - `What is this video about? https://www.youtube.com/watch?v=qQviI1d_hFA`
-It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
+  It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
 
-### Keyboard shortcut. 
+### Keyboard shortcut.
 - Press `Ctrl + Q` to close the current chat and start a new one.
 - Press `Shift + T` on your keyboard to switch between the dark and light theme modes.
 ### Retrieval-Augmented Generation (RAG)
@@ -81,8 +84,8 @@ Please perform this functionality with caution and always check code before acce
 - Example: `javascript: How Many R's in 'Strawberry'?` or `js: How Many R's in 'Strawberry'?`
 - This will allow the AI to generate Javascript code that will run in your browser.
 ### Executing Python code in a remote environment
-- When using Google Gemini you can ask it to execute codes directly in Google's own remote environment. For now only 
-Python codes are executed. The code and output will be returned.
+- When using Google Gemini you can ask it to execute codes directly in Google's own remote environment. For now only
+  Python codes are executed. The code and output will be returned.
 - Command example: `py: Run a python code to write "tseb eht sI noirO" in the inverse order`
 - Another example: `py: The United States has a population of 342,524,968, of which 480,000 die annually due to tobacco use. 
 What percentage is that?`
@@ -97,8 +100,12 @@ git clone https://github.com/EliasPereirah/OrionChat.git
 ```
 Or download the zip file from the repository by clicking on the green button "Code" and then [Download ZIP](https://github.com/EliasPereirah/OrionChat/archive/refs/heads/master.zip).
 
-After downloading, just open the folder and click on index.html if you don't have a server. 
+After downloading, just open the folder and click on index.html if you don't have a server.
 If you do, just access the directory where the project was saved. It's that simple.
+
+ <a href="https://www.buymeacoffee.com/eliaspereirah">
+       <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />
+   </a>
 
 # Google CSE API Key
 Sometimes you might want AI to search the web and respond based on that information.
@@ -109,18 +116,18 @@ To allow AI to search using Google, you will need Google CSE (Custom Search Engi
 - Go to [Google Developers](https://developers.google.com/custom-search/v1/introduction) and click on *Get a Key* to get your API Key
 - Now just enter CX and API key in Orion. for that go to Options -> More Options and make the configuration.
 - To use the functionality in chat, you need to put an "s:" at the beginning of your prompt, e.g. "s: what's today's news"
-- *Note: Google Search will only return snippets of search results, which may not have enough context for AI to respond. 
-It is recommended to implement the solution below for best results.
+- *Note: Google Search will only return snippets of search results, which may not have enough context for AI to respond.
+  It is recommended to implement the solution below for best results.
 
 # Rag Endpoint
-For better search results, you can configure a "RAG endpoint". 
+For better search results, you can configure a "RAG endpoint".
 
 Just follow the instructions at https://github.com/EliasPereirah/SearchAugmentedLLM/
 
-After that you can enter the search endpoint you just created in the Orion Chat interface. 
+After that you can enter the search endpoint you just created in the Orion Chat interface.
 Click on "⚙️" -> "Options" -> "Advanced" and enter the "RAG endpoint".
 
-Now whenever you want the AI to do a search to answer your question, write at the beginning of your prompt 
+Now whenever you want the AI to do a search to answer your question, write at the beginning of your prompt
 "s:" + your question, e.g. "s: what's the news today?", The AI will search the web and respond based on the information found.
 
 
@@ -136,11 +143,15 @@ To enable AI responses based on YouTube video subtitles, set up an API endpoint 
 When submitting a YouTube URL in the chat, a popup will open allowing you to set up this endpoint.
 
 This repository already provides this functionality in the plugins folder, to use it you will need to have
-PHP enabled on your server. 
+PHP enabled on your server.
 
-Note: You do not need a PHP server to run this project as long as you do not want to use certain 
+Note: You do not need a PHP server to run this project as long as you do not want to use certain
 features, such as the one mentioned above.
 
 If you wish, you can implement the following code on another server of your choice and point to the correct endpoint.
 
 Code: https://github.com/EliasPereirah/YoutubeSubtitlesDownloader
+
+ <a href="https://www.buymeacoffee.com/eliaspereirah">
+       <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />
+   </a>
