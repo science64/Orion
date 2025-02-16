@@ -13,7 +13,7 @@
     --system-before-border:  #ccc;
     --copy-btn-bg: #fff;
     --copy-btn-border: #989898;
-    --copy-btn-color: #363333;
+    --copy-btn-color: #2d2d2d;
     --textarea-bg: transparent;
     --textarea-border: #ccc;
     --textarea-color: #000;
@@ -32,7 +32,53 @@
     --rec-animation-bg: #fff;
     --speak-icon: url(../imgs/svg/speaker_icon.svg);
     --pause-icon: url(../imgs/svg/pause_icon.svg);
+    --conversations-bg: #fff;
+    --conversations-bs-color: #eeecec75;
+    --new-chat-border-cl: #ccc;
+    --topic-color: #605b67;
+    --topic-border-cl: #d6d5d5dd;
+    --active-topic-bg: #7578e1e0;
+    --active-topic-border-cl: transparent;
+    --active-topic-color: #fff;
+    --dialog-color: #282828;
+    --dialog-close-after-color: #7578e1;
+    --dialog-close-after-bg: #fff;
+    --dialog-btn-animate-bg: #07d95e;
+    --dialog-btn-animate-cl: #fff;
 
+    --form-items-bg: var(--theme-bg);
+    --form-items-color: var(--theme-color);
+    --more-option-btn-bg: #fff;
+    --more-option-btn-cl: #000;
+    --more-option-btn-border-bottom-cl: #7578e1;
+    --js-close-before-bg: #f7f7f7;
+    --js-close-before-cl: #2d2828;
+    --dialog-button-bg: #7578e1;
+    --dialog-button-color: #fff;
+    --optgroup-color: #000;
+    --remove-model-btn: #f0f0f0;
+    --success-dialog-bg: #5bff9f;
+    --success-dialog-cl: #5d5555;
+    --see-info-btn-bg: transparent;
+    --see-info-btn-color: #a3a0a0;
+    --think-color: rgb(0 0 0 / 33%);
+    --link-color: blue;
+    --slider-bg: #ccc;
+    --slider-before-bg: white;
+    --slider-checked-bg: #7578e1;
+    --slider-checked-before-bg: #fff;
+    --deletable-before-bg: #7578e1;
+    --deletable-before-cl: #fff;
+    --deletable-before-border-cl: #fbfbfb;
+    --beta-warning-before-bg: orange;
+    --beta-warning-before-cl: #fff;
+    --beta-warning-border-before-cl: var(--theme-color);
+    --disable-btn-bg: #f6f6f6;
+    --disable-btn-cl: #7d7979;
+    --disable-btn-border-cl: #a49090;
+    --pre-code-border-cl: var(--code-header-before-bg);
+    --no-history-bg: #fd7b7b;
+    --no-history-cl:  #fff;
 }
 
 /* Dark Theme */
@@ -50,7 +96,7 @@
     --system-before-border: #5c5c5c;
     --copy-btn-bg: #282727;
     --copy-btn-border: #4c4c4c;
-    --copy-btn-color: #bebebe;
+    --copy-btn-color: #b4b4b4;
     --textarea-bg: #303030;
     --textarea-border: #3d3d41;
     --textarea-color: #fff;
@@ -62,28 +108,61 @@
     --scrollbar-thumb-color: #818181;
     --scrollbar-track-color: #1c1c1c;
     --voice-rec-bg: #393737;
-    --code-header-before-bg: #e3e3e3;
-    --code-header-before-cl: #6c6c6c;
+    --code-header-before-bg: #373737;
+    --code-header-before-cl: #dbdbdb;
     --upload-icon: url("../imgs/svg/upload_icon_dark.svg");
     --bot-user-bg-animation: #272525;
     --rec-animation-bg: transparent;
     --speak-icon: url(../imgs/svg/speaker_icon_dark.svg);
     --pause-icon: url(../imgs/svg/pause_icon_dark.svg);
+    --conversations-bg: #292929;
+    --conversations-bs-color: #cad1ca5c;
+    --new-chat-border-cl: #919191;
+    --topic-color: #e0dae3;
+    --topic-border-cl: #828282dd;
+    --active-topic-bg: transparent;
+    --active-topic-border-cl: #7578e1;
+    --active-topic-color: #7578e1;
+    --dialog-color: #f2f2f2;
+    --dialog-close-after-color: #e4e4eb;
+    --dialog-close-after-bg: #000000FF;
+    --dialog-btn-animate-bg: #292929;
+    --dialog-btn-animate-cl: #07d95e;;
+    --form-items-bg: var(--theme-bg);
+    --form-items-color: var(--theme-color);
+    --more-option-btn-bg: #1c1c1c;
+    --more-option-btn-cl: #a4a1a1;
+    --more-option-btn-border-bottom-cl: #ccc;
 
+    --js-close-before-bg: #292929;
+    --js-close-before-cl: #b7adad;
+    --dialog-button-bg: #292929;
+    --dialog-button-color: #ebebeb;
+    --optgroup-color: #7578e1;
+    --remove-model-btn: #292929;
+    --success-dialog-bg: #3a3a3a;
+    --success-dialog-cl: #07d95e;
 
-}
+    --see-info-btn-bg: #4c4c4c;
+    --see-info-btn-color: #b4b4b4;
+    --think-color: #90ff95;
+    --link-color: #7679ff;
+    --slider-before-bg: #434343;
+    --slider-checked-bg: #cecece;
+    --slider-checked-before-bg: #f52c2c;
+    --deletable-before-bg: #414040;
+    --deletable-before-cl: #b0b0b0;
+    --deletable-before-border-cl: #ccc;
+    --beta-warning-before-bg: #1c1c1c;
+    --beta-warning-before-cl: #07d95e;
+    --beta-warning-border-before-cl: #ccc;
+    --disable-btn-bg: rgb(53, 52, 55);
+    --disable-btn-cl: #7578e1;
+    --disable-btn-border-cl: #bbbbbb;
+    --pre-code-border-cl: var(--code-header-before-bg);
+    --no-history-bg: var(--theme-bg);
+    --no-history-cl:  var(--theme-color);
 
-.chat {
-    scrollbar-width: thin; /* or 'auto' or 'none' */
-    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
-}
-
-::-webkit-scrollbar-track {
-    background: var(--scrollbar-track-color);
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb-color);
 }
 
 
@@ -95,6 +174,41 @@ html, body {
     color: var(--theme-color);
 }
 
+input, select,textarea, option{
+    background-color: var(--form-items-bg);
+    color: var(--theme-color);
+}
+
+optgroup{
+    color: var(--optgroup-color);
+}
+
+
+[data-theme^='dark'] input,
+[data-theme^='dark'] select,
+[data-theme^='dark'] textarea {
+    border: 1px solid #585860;
+    border-radius: 4px;
+}
+[data-theme^='dark'] textarea {
+    border: 1px solid #585860;
+    border-radius: 0;
+}
+
+
+
+.chat, .conversations, select,option,optgroup,pre,* {
+    scrollbar-width: thin; /* or 'auto' or 'none' */
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-track-color);
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb-color);
+}
 
 .img_output{
     max-width: 60%;
@@ -231,11 +345,12 @@ details[open] summary{
 
 .beta_warning:after{
     content: 'Beta';
-    background-color: orange;
+    background-color: var(--beta-warning-before-bg);
     padding: 2px 3px;
-    color: #fff;
+    color: var(--beta-warning-before-cl);
     border-radius: 4px;
     margin: 0 3px;
+    border: 1px solid var(--beta-warning-border-before-cl);
 }
 
 .del_caution{
@@ -302,8 +417,10 @@ button.pause_audio_btn {
     border: 1px solid #ccc !important;
 }
 
+
+
 .remove_model_btn{
-    background-color: #f0f0f0 !important;
+    background-color: var(--remove-model-btn) !important;
     color: #646464 !important;
     font-size: 0.8em;
     border: 1px solid #ccc !important;
@@ -319,8 +436,13 @@ pre code.hljs {
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
     min-height: 22px;
-    border-top: 4px solid #22272e;
+    border-top: 4px solid var(--pre-code-border-cl);
 
+}
+
+
+[data-theme=dark] pre code.hljs {
+    background-color: #292929 !important;
 }
 
 code.hljs::-webkit-scrollbar {
@@ -340,7 +462,7 @@ code.hljs::-webkit-scrollbar-track {
 }
 
 .btn-group {
-    margin-top: -31px;
+    margin-top: -37px;
     text-align: end;
 }
 .btn-group-top{
@@ -357,6 +479,12 @@ code.hljs::-webkit-scrollbar-track {
     margin: 0 2px;
 }
 
+.see_info{
+   /**
+    background-color: var(--see-info-btn-bg);
+    color: var(--see-info-btn-color);
+   **/
+}
 
 .btn-group .copy-btn, .btn-group .down-btn {
     background-color: var(--copy-btn-bg);
@@ -405,11 +533,11 @@ th {
 .dialog_close:after {
     content: "X";
     padding: 2px 4px;
-    color: #7578e1;
+    color: var(--dialog-close-after-color);
     position: absolute;
     top: -7px;
     right: -5px;
-    background-color: #ffffff;
+    background-color: var(--dialog-close-after-bg);
     box-sizing: border-box;
     border-radius: 3px;
     font-weight: 600;
@@ -434,15 +562,15 @@ th {
     position: fixed;
     top: 11px;
     box-shadow: 0 0 3px 0 #66616d;
-    background-color: #fff;
-    color: #282828;
+    background-color: var(--theme-bg);
+    color: var(--dialog-color);
     border-radius: 5px;
     text-align: center;
 }
 
 .success_dialog, .online{
-    background-color: #5bff9f;
-    color: #5d5555;
+    background-color: var(--success-dialog-bg);
+    color: var(--success-dialog-cl);
     box-shadow: none;
 }
 .fail_dialog, .offline{
@@ -473,55 +601,62 @@ th {
 
 
 .dialog button {
-    background-color: #7578e1;
-    color: #fff;
+    background-color: var(--dialog-button-bg);
+    color: var(--dialog-button-color);
     cursor: pointer;
     font-weight: normal;
     transition: background-color 0ms, color 0ms, border 500ms, font-weight 500ms;
 }
 
+[data-theme=dark] .save_prompt,
+[data-theme=dark] .save_model,
+[data-theme=dark] .save_new_model,
+[data-theme=dark] .remove_model_btn{
+    border: 1px solid #7578e1 !important;
+}
+
 .dialog button.animate{
-    background-color: #07d95e;
-    color: #fff;
+    background-color: var(--dialog-btn-animate-bg);
+    color: var(--dialog-btn-animate-cl);
     font-weight: 600;
     border: 1px solid #fcfcfc;
 }
 
+
 .disable_btn{
-    color: #7d7979 !important;
-    background-color: #f6f6f6 !important;
-    border: 1px solid #c7c7c7 !important;
+    color: var(--disable-btn-cl) !important;
+    background-color: var(--disable-btn-bg) !important;
     font-weight: 600 !important;
+    border: 1px solid var(--disable-btn-border-cl) !important;
 }
 
 .optionsDialog {
-    background-color: #fff !important;
+    background-color: var(--theme-bg) !important;
     z-index: 999;
     min-height: 300px;
 }
 
 .optionsDialog button {
     padding: 7px;
-    /*border: 1px solid #232323;*/
     border: none;
     border-radius: 4px;
 }
 .more_opt_btn, .plugin_opt_btn{
-    background-color: #fff !important;
-    color: #000 !important;
+    background-color: var(--more-option-btn-bg) !important;
+    color: var(--more-option-btn-cl) !important;
     border: 1px solid #ccc !important;
-    border-bottom: 4px solid #7578e1 !important;
+    border-bottom: 4px solid var(--more-option-btn-border-bottom-cl) !important;
     border-radius: 4px !important;
 }
 
 a {
     text-decoration: none;
+    color: var(--link-color);
 }
 
-
 .no_history {
-    background-color: #fd7b7b !important;
-    color: #fff !important;
+    background-color: var(--no-history-bg) !important;
+    color: var(--no-history-cl) !important;
     text-align: center !important;
     border: none;
 }
@@ -604,8 +739,8 @@ html[data-theme="dark"] #settings {
 .jsClose:before {
     cursor: pointer;
     content: 'X';
-    background-color: #f7f7f7;
-    color: #2d2828;
+    background-color: var(--js-close-before-bg);
+    color: var(--js-close-before-cl);
     padding: 6px 8px;
     box-sizing: border-box;
     display: inline-block;
@@ -637,7 +772,7 @@ html[data-theme="dark"] #settings {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
+    background-color: var(--slider-bg);
     -webkit-transition: .4s;
     transition: .4s;
 }
@@ -649,13 +784,13 @@ html[data-theme="dark"] #settings {
     width: 15px;
     left: 4px;
     bottom: 4px;
-    background-color: white;
+    background-color: var(--slider-before-bg);
     -webkit-transition: .4s;
     transition: .4s;
 }
 
 input:checked + .slider {
-    background-color: #7578e1;
+    background-color: var(--slider-checked-bg);
 }
 
 input:focus + .slider {
@@ -666,6 +801,7 @@ input:checked + .slider:before {
     -webkit-transform: translateX(15px);
     -ms-transform: translateX(15px);
     transform: translateX(15px);
+    background-color: var(--slider-checked-before-bg);
 }
 
 select{
@@ -687,7 +823,7 @@ select{
 #new_chat, #open_options {
     padding: 8px;
     text-align: center;
-    border: 1px solid #ccc;
+    border: 1px solid var(--new-chat-border-cl);
     border-radius: 4px;
     cursor: pointer;
     margin-bottom: 2px;
@@ -712,7 +848,7 @@ select{
     overflow-y: hidden;
     position: absolute;
     top: 0;
-    background-color: #fff;
+    background-color: var(--conversations-bg);
     left: 0;
     box-sizing: border-box;
     border-radius: 5px;
@@ -734,36 +870,42 @@ select{
 
 
 
-.conversations .topic, #delete_history, .no_history {
+.conversations .topic, #delete_history, .no_history, #delete_history {
     padding: 8px 3px;
-    border: 1px solid #d6d5d5dd;
+    border: 1px solid var(--topic-border-cl);
     margin: 5px 0;
     border-radius: 4px;
     box-sizing: border-box;
-    color: #605b67;
+    color: var(--topic-color);
     cursor: pointer;
+    font-size: 0.8em;
 }
 
-.active_topic{
-    background-color: #7578e1e0;
-    color: #ffffff !important;
+#delete_history {
+    text-align: center;
 }
 
 .deletable:before {
     padding: 4px 5px;
     margin-right: 2px;
     content: 'X';
-    background-color: #7578e1;
-    color: #fff;
+    background-color: var(--deletable-before-bg);
+    color: var(--deletable-before-cl);
     border-radius: 3px;
+    border: 1px solid var(--deletable-before-border-cl);
 }
 
-#delete_history {
-    background-color: #fff;
-    text-align: center;
-    color: #5d5050;
-    border: 1px solid #ccc;
+
+
+.active_topic{
+    background-color: var(--active-topic-bg);
+    color: var(--active-topic-color) !important;
 }
+
+[data-theme='dark'] .active_topic{
+    border: 1px solid var(--active-topic-border-cl) !important;
+}
+
 
 .user, .bot {
     padding: 4px;
@@ -895,6 +1037,7 @@ textarea#ta_chat::placeholder{
     border-top-right-radius: 24px;
     height: 50px;
     box-sizing: border-box;
+    background-color: var(--textarea-bg);
 }
 
 .save_prompt{
@@ -1322,6 +1465,6 @@ pre:has(code):before{
 
 
 think {
-    color: rgb(0 0 0 / 33%);
+    color: var(--think-color);
     font-style: italic;
 }

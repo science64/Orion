@@ -770,6 +770,7 @@ function addWarning(msg, self_remove = true, add_class = '') {
     if (self_remove) {
         duration = 7;
     }
+    console.warn(msg)
     createDialog(msg, duration, add_class)
 }
 
@@ -1619,6 +1620,7 @@ function removeModel(provider, model, id) {
     localStorage.setItem('extra_models', JSON.stringify(extra_models));
     let btn = document.querySelector(`[data-id=js_btn_${id}]`);
     btn.remove();
+    addWarning(`Model ${model} removed with success!`,true, 'success_dialog')
     loadExtraModels();
 }
 
@@ -3339,7 +3341,7 @@ function welcome() {
 
     let index = 0;
 
-    function typeMessage(message, element, speed = 100, callback) {
+    function typeMessage(message, element, speed = 90, callback) {
         let i = 0;
         element.innerHTML = "";
         function type() {
@@ -3359,9 +3361,9 @@ function welcome() {
         if (welcomeDiv) {
             const message = welcomeMessages[index].message;
             const fullMessage = `${message}`;
-            typeMessage(fullMessage, welcomeDiv, 50, () => {
+            typeMessage(fullMessage, welcomeDiv, 90, () => {
                 index = (index + 1) % welcomeMessages.length;
-                setTimeout(updateMessage, 3000);
+                setTimeout(updateMessage, 2000);
             });
         }
     }
