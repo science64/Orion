@@ -2,9 +2,7 @@
   "name": "Orion",
   "short_name": "Orion",
   "start_url": "/",
-  "display": "browser",
-  "background_color": "#FFFFFF",
-  "theme_color": "#F2F2F2",
+  "display": "standalone",
   "icons": [
     {
       "src": "imgs/icons/orion_192x192.png",

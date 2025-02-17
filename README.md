@@ -132,7 +132,7 @@ For better search results, you can configure a "RAG endpoint".
 Just follow the instructions at https://github.com/EliasPereirah/SearchAugmentedLLM/
 
 After that you can enter the search endpoint you just created in the Orion Chat interface.
-Click on "⚙️" -> "Options" -> "Advanced" and enter the "RAG endpoint".
+Click on "Options" -> "Advanced" enter the "RAG endpoint" and click "Activate".
 
 Now whenever you want the AI to do a search to answer your question, write at the beginning of your prompt
 "s:" + your question, e.g. "s: what's the news today?", The AI will search the web and respond based on the information found.

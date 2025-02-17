@@ -23,7 +23,7 @@ let temp_safe_mode = false;
 let pre_function_text = '';
 let all_chunks = [];
 let has_chunk_error = false;
-let proxy_url =  window.location.origin + window.location.pathname + "/cors-proxy.php";
+let proxy_url = window.location.origin + window.location.pathname + "/cors-proxy.php";
 
 // Markdown to HTML
 showdown.setFlavor('github');
@@ -157,7 +157,6 @@ let PLATFORM_DATA = {
 }
 
 
-
 const language_extension = {
     "python": "py",
     "markdown": "md",
@@ -252,7 +251,7 @@ function removeAttachment() {
     }
 }
 
-function addConversation(role, content, add_to_document = true, do_scroll = true, reasoning_content ='') {
+function addConversation(role, content, add_to_document = true, do_scroll = true, reasoning_content = '') {
     closeDialogs();
 
     removeAttachment();
@@ -261,7 +260,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
         return false;
     }
     let new_talk = {'role': role, 'content': content};
-    if(reasoning_content){
+    if (reasoning_content) {
         new_talk.reasoning_content = reasoning_content;
         reasoning_content = `<details><summary>See Reasoning</summary> ${reasoning_content}</details>`;
         //story_reasoning = ''; // reset
@@ -333,13 +332,13 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
 
 
 function saveLocalHistory() {
-    localStorage.setItem(chat_id, JSON.stringify(conversations));
+    localStorage.setItem(chat_id.toString(), JSON.stringify(conversations));
     loadOldChatTopics();
 }
 
 function getPreviousChatTopic() {
     let all_topics = [];
-    // pega todos ids
+    // get all ids
     let ids = [];
     let total_chats = 0;
     for (let i = 0; i < localStorage.length; i++) {
@@ -516,7 +515,7 @@ function loadOldConversation(old_talk_id) {
             } else {
                 div_talk.classList.add('bot');
                 let full_content = msg.content;
-                if(msg.reasoning_content){
+                if (msg.reasoning_content) {
                     full_content = `<details><summary>See Reasoning</summary>${msg.reasoning_content}</details>${msg.content}`;
                 }
                 div_talk.innerHTML = converter.makeHtml(full_content);
@@ -599,7 +598,7 @@ function getSystemPrompt() {
 function toggleAiGenAnimation(do_animate = 'toggle') {
     //return ''; // remove
     let ele = document.querySelector(".message:nth-last-of-type(1)");
-    if(do_animate === 'toggle'){
+    if (do_animate === 'toggle') {
         let has_old = document.querySelector(".thinking-container");
         do_animate = !has_old;
     }
@@ -607,7 +606,7 @@ function toggleAiGenAnimation(do_animate = 'toggle') {
         if (ele.classList.contains('user')) {
             let ai_gen_animation = document.createElement('div');
             ai_gen_animation.innerHTML =
-                 `<div class="ai-avatar">AI</div>
+                `<div class="ai-avatar">AI</div>
                  <div class="ai_dots-container">
                    <div class="dot_ai"></div>
                    <div class="dot_ai"></div>
@@ -617,20 +616,20 @@ function toggleAiGenAnimation(do_animate = 'toggle') {
             ele.insertAdjacentElement('afterend', ai_gen_animation)
             ai_gen_animation.scrollIntoView();
         }
-    }else if (do_animate === false){
+    } else if (do_animate === false) {
         let thinking_container = document.querySelector(".thinking-container");
-        if(thinking_container){
+        if (thinking_container) {
             thinking_container.remove();
         }
     }
 }
 
 /**
- * checks if there is a url in a given text, if so it returns the url, otherwise it returns false
+ * checks if there is an url in a given text, if so it returns the url, otherwise it returns false
  **/
-function hasURL(text){
+function hasURL(text) {
     let match_url = text.match(/https?:\/\/\S+/g);
-    if(match_url){
+    if (match_url) {
         return match_url[0];
     }
     return false;
@@ -642,26 +641,26 @@ function isYouTubeURL(url) {
 }
 
 
-async function changeUserInputIfNeeded(){
+async function changeUserInputIfNeeded() {
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
 
     let url = hasURL(last_user_input);
-    if(url && !isYouTubeURL(url) && last_user_input.length < 500){
+    if (url && !isYouTubeURL(url) && last_user_input.length < 500) {
         try {
             let data = await retrieveContentFromUrl(url);
-            if(data?.text){
+            if (data?.text) {
                 let new_input = `<details><summary><b>URL</b>: ${url}</summary><br><b>Content</b>: ${data.text}</details> ${last_user_input}`;
                 conversations.messages[conversations.messages.length - 1].content = new_input;
                 const ui_user_messages = document.querySelectorAll('.message.user');
                 const last_user_message = ui_user_messages[ui_user_messages.length - 1];
-                if(last_user_message){
+                if (last_user_message) {
                     last_user_message.innerHTML = new_input;
                 }
-            }else {
-                addWarning("Unable to get content from shared URL: "+url)
+            } else {
+                addWarning("Unable to get content from shared URL: " + url)
             }
-        }catch{
-            addWarning("error while trying to get content from shared URL: "+url);
+        } catch {
+            addWarning("error while trying to get content from shared URL: " + url);
         }
     }
 
@@ -670,7 +669,7 @@ async function changeUserInputIfNeeded(){
 
 function chat() {
     toggleAiGenAnimation(true);
-    changeUserInputIfNeeded().then(()=>{
+    changeUserInputIfNeeded().then(() => {
         if (chosen_platform === 'google') {
             return geminiChat();
         }
@@ -831,7 +830,7 @@ function closeDialogs() {
 
 function enableCopyForCode(enable_down_too = true) {
     document.querySelectorAll('code.hljs').forEach(block => {
-        let block_group = block.nextElementSibling;
+        let block_group = block.previousElementSibling;
         let has_copy_btn = false;
         if (block_group) {
             has_copy_btn = block_group.querySelector(".copy-btn");
@@ -853,19 +852,25 @@ function enableCopyForCode(enable_down_too = true) {
             }
             let pre = block.parentElement;
             pre.classList.add('code_header');
-            pre.append(div_ele);
-
             let code_lines_length = block.innerText.split("\n").length
-            if(code_lines_length > 30){
-                // if code have more then x lines, button will be on the top too
-                const div_ele_bottom = div_ele.cloneNode(true);
-                div_ele_bottom.classList.add('btn-group-top');
-                pre.prepend(div_ele_bottom);
-                let btn_top = div_ele_bottom.querySelector(".copy-btn");
-                addEventClickToDownAndCopyBtn(btn_top, block);
+
+
+            // if code have more then x lines, button will be on the top too
+            const div_ele_bottom = div_ele.cloneNode(true);
+            div_ele_bottom.classList.add('btn-group');
+            div_ele_bottom.classList.add('btn-group-top');
+            pre.prepend(div_ele_bottom);
+            let btn_bottom = div_ele_bottom.querySelector(".copy-btn");
+            addEventClickToDownAndCopyBtn(btn_bottom, block);
+
+            if (code_lines_length > 22) {
+                pre.append(div_ele);
+                addEventClickToDownAndCopyBtn(button, block);
+
             }
 
-            addEventClickToDownAndCopyBtn(button, block);
+
+
         }
     });
 
@@ -919,14 +924,15 @@ function enableFullTextCopy() {
             btn_info.className = 'see_info';
             button.innerText = 'Copy text';
             btn_info.innerText = 'Info';
-            btn_info.onclick = ()=>{
+            btn_info.onclick = () => {
                 showInfo();
             }
             ele.append(button);
             ele.append(btn_info)
             div.append(ele);
             button.addEventListener('click', () => {
-                const full_text = div_copy.innerHTML;
+                //const full_text = div_copy.innerHTML;
+                const full_text = div_copy.innerText;
                 navigator.clipboard.writeText(full_text)
                     .then(() => {
                         button.innerText = 'Copied!';
@@ -944,10 +950,10 @@ function ucFirst(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function showInfo(){
+function showInfo() {
     closeDialogs();
     let active_platform = ucFirst(chosen_platform);
-    addWarning(`Active model: ${model} from ${active_platform}`,true);
+    addWarning(`Active model: ${model} from ${active_platform}`, true);
 }
 
 function enableCodeDownload() {
@@ -1304,9 +1310,9 @@ function setOptions() {
     if (typeof (all_prompts) !== "undefined") {
         prompts_options += '<select name="prompt"><option selected="selected" disabled="disabled">Awesome Prompts</option>';
         all_prompts.forEach(the_prompt => {
-            if(the_prompt.by_user){
+            if (the_prompt.by_user) {
                 by_user = `class="by_user" data-created_time="${the_prompt.created_time}"`;
-            }else {
+            } else {
                 by_user = '';
             }
             let prompt_text = the_prompt.prompt.replace(/"/g, '&quot;');
@@ -1369,14 +1375,14 @@ function setOptions() {
         if (sys_prompt) {
             sys_prompt.onkeyup = () => {
                 let current_prompt = sys_prompt.value.trim();
-                if(current_prompt !== last_prompt){
+                if (current_prompt !== last_prompt) {
                     prompt_name.style.display = 'inline-block';
                     prompt_name.setAttribute("required", "true");
                     let del_prompt = document.querySelector("#delete_prompt");
-                    if(del_prompt){
+                    if (del_prompt) {
                         del_prompt.style.display = 'none';
                     }
-                }else{
+                } else {
                     prompt_name.style.display = 'none';
                     prompt_name.value = '';
                     prompt_name.setAttribute("required", "false");
@@ -1400,14 +1406,14 @@ function setOptions() {
             sl_prompt.onchange = (item => {
                 let selectedOption = sl_prompt.options[sl_prompt.selectedIndex];
                 let delete_prompt_bnt = document.querySelector("#delete_prompt");
-                if(selectedOption.getAttribute('data-created_time')){
-                    if(delete_prompt_bnt){
+                if (selectedOption.getAttribute('data-created_time')) {
+                    if (delete_prompt_bnt) {
                         delete_prompt_bnt.style.display = 'inline-block';
-                        delete_prompt_bnt.onclick = ()=>{
+                        delete_prompt_bnt.onclick = () => {
                             deletePrompt();
                         }
                     }
-                }else {
+                } else {
                     delete_prompt_bnt.style.display = 'none';
                 }
                 prompt_name.style.display = 'none';
@@ -1621,7 +1627,7 @@ function removeModel(provider, model, id) {
     localStorage.setItem('extra_models', JSON.stringify(extra_models));
     let btn = document.querySelector(`[data-id=js_btn_${id}]`);
     btn.remove();
-    addWarning(`Model ${model} removed with success!`,true, 'success_dialog')
+    addWarning(`Model ${model} removed with success!`, true, 'success_dialog')
     loadExtraModels();
 }
 
@@ -1667,13 +1673,7 @@ function setYouTubeCaptionApiEndpoint() {
 }
 
 function dialogSetYouTubeCaptionApiEndpoint() {
-    let path_name = location.pathname.replace(/\/$/, ""); // remove "/" at the end
-    let caption_api_endpoint = `${location.origin}${path_name}/plugins/php/yt_caption.php`;
     let input_value = '';
-    if (!location.hostname.match("github.io")) {
-        // This feature will no longer be used in this way
-       // input_value = `value="${caption_api_endpoint}"`;
-    }
     let cnt =
         `<div><p>Configure a YouTube caption extraction API endpoint.</p>
         <input ${input_value} id="yt_down_caption_endpoint" name="yt_down_caption_endpoint" placeholder="API Endpoint">
@@ -1715,13 +1715,13 @@ function savePrompt(close_dialog = true) {
         if (prompt_name && prompt_name.value.trim().length > 0) {
             // new prompt add by the user
             let user_prompts = localStorage.getItem('user_new_prompts');
-            if(user_prompts){
+            if (user_prompts) {
                 user_prompts = JSON.parse(user_prompts);
-            }else {
+            } else {
                 user_prompts = [];
             }
             let current_time = Date.now();
-            let u_new_prompt = {act: prompt_name.value,  prompt: sys_prompt, by_user: true, created_time: current_time};
+            let u_new_prompt = {act: prompt_name.value, prompt: sys_prompt, by_user: true, created_time: current_time};
             user_prompts.unshift(u_new_prompt);
             all_prompts.unshift(u_new_prompt);
             localStorage.setItem('user_new_prompts', JSON.stringify(user_prompts));
@@ -1732,9 +1732,9 @@ function savePrompt(close_dialog = true) {
     }
 
     saveModel();
-   if(close_dialog){
-       closeDialogs();
-   }
+    if (close_dialog) {
+        closeDialogs();
+    }
 }
 
 function saveModel() {
@@ -2035,11 +2035,11 @@ async function youtubeCaption(data) {
         }, 1000)
         if (chosen_platform === 'google') {
             await geminiChat()
-           // toggleAnimation(true);
+            // toggleAnimation(true);
             toggleAiGenAnimation(false);
         } else {
             await streamChat(false); // false to prevent infinite loop
-           // toggleAnimation(true);
+            // toggleAnimation(true);
             toggleAiGenAnimation(false)
         }
 
@@ -2047,9 +2047,6 @@ async function youtubeCaption(data) {
 
 
 } // youtubeCaption
-
-
-
 
 
 async function retrieveContentFromUrl(url) {
@@ -2234,7 +2231,7 @@ async function streamChat(can_use_tools = true) {
         }
     }
 
-    if(chosen_platform === 'groq' && model.match(/deepseek-r1/)){
+    if (chosen_platform === 'groq' && model.match(/deepseek-r1/)) {
         data.reasoning_format = 'parsed';
     }
 
@@ -2247,7 +2244,7 @@ async function streamChat(can_use_tools = true) {
 
     if (!endpoint) {
         setOptions();
-       // toggleAnimation(true);
+        // toggleAnimation(true);
         toggleAiGenAnimation(false);
         removeLastMessage();
         enableChat();
@@ -2299,7 +2296,7 @@ async function streamChat(can_use_tools = true) {
                             hljs.highlightAll();
                         } else {
                             // probably not stream - tool use
-                           // toggleAnimation(true);
+                            // toggleAnimation(true);
                             toggleAiGenAnimation(false);
                             toolHandle(data);
                             return false;
@@ -2337,7 +2334,7 @@ async function streamChat(can_use_tools = true) {
             }
 
             let full_story = `${story_reasoning}${story}`.trim();
-            if(story.trim() && story_reasoning.trim()){
+            if (story.trim() && story_reasoning.trim()) {
                 full_story = `<details><summary>See Reasoning</summary>${story_reasoning}</details>${story}`;
             }
             botMessageDiv.innerHTML = converter.makeHtml(full_story);
@@ -2595,7 +2592,7 @@ async function geminiStreamChat(fileUri, data) {
                     addWarning(data);
                 }, 500)
                 removeLastMessage();
-               // toggleAnimation(true);
+                // toggleAnimation(true);
                 toggleAiGenAnimation(false);
                 enableChat();
                 let tt = data.error?.message ?? 'nada';
@@ -2635,7 +2632,7 @@ async function geminiStreamChat(fileUri, data) {
                         let jsonData = null;
                         try {
                             jsonData = JSON.parse(part.substring('data: '.length));
-                        }catch{
+                        } catch {
                             has_chunk_error = true;
                             return false;
                         }
@@ -2663,43 +2660,43 @@ async function geminiStreamChat(fileUri, data) {
 
         /// workaround to fix json parse error
         story = '';
-        if(has_chunk_error){
+        if (has_chunk_error) {
             let all_fixed_chunks = '';
             let pieces = [];
-            all_chunks.forEach(the_chunk=>{
-                if(the_chunk.startsWith('data: ')){
+            all_chunks.forEach(the_chunk => {
+                if (the_chunk.startsWith('data: ')) {
                     try {
                         JSON.parse(the_chunk.substring('data: '.length));
-                        if(pieces.length > 0){
+                        if (pieces.length > 0) {
                             let the_piece = pieces.join('');
                             all_fixed_chunks += the_piece;
                             pieces = [];
                         }
                         all_fixed_chunks += the_chunk;
-                    }catch{
+                    } catch {
                         pieces.push(the_chunk);
                     }
-                }else {
+                } else {
                     pieces.push(the_chunk);
                 }
             })
 
             all_fixed_chunks = all_fixed_chunks.split("\ndata: ");
             all_fixed_chunks[0] = all_fixed_chunks[0].replace(/^data: /, '');
-            all_fixed_chunks.forEach(fixed_chunk=>{
+            all_fixed_chunks.forEach(fixed_chunk => {
                 let jsonData = null;
                 try {
                     jsonData = JSON.parse(fixed_chunk);
-                }catch{
+                } catch {
                     return false;
                 }
                 processPartGemini(jsonData);
             })
             if (story) {
-                let story_content = story.replace(/<img[^>]*>/g, ''); // remove base64 image to save tokens
-                conversations.messages[conversations.messages.length -1].content = story_content;
+                // remove base64 image to save tokens
+                conversations.messages[conversations.messages.length - 1].content = story.replace(/<img[^>]*>/g, '');
                 saveLocalHistory();
-               botMessageDiv.innerHTML = converter.makeHtml(story);
+                botMessageDiv.innerHTML = converter.makeHtml(story);
             }
             hljs.highlightAll();
         } // end has_chunk_error
@@ -2707,12 +2704,11 @@ async function geminiStreamChat(fileUri, data) {
         all_chunks = [];
 
 
-
     } catch (error) {
         console.error("Error:", error);
         addWarning('Error: ' + error.message)
         //toggleAnimation(true);
-       // toggleAiGenAnimation(false);
+        // toggleAiGenAnimation(false);
         //enableChat();
     } finally {
         enableCopyForCode();
@@ -2724,12 +2720,12 @@ async function geminiStreamChat(fileUri, data) {
 } // geminiStreamChat
 
 
-function processPartGemini(jsonData){
+function processPartGemini(jsonData) {
     let inlineData = '';
     if (jsonData.candidates?.[0]?.content?.parts?.[0]?.text) {
         story += jsonData.candidates[0].content?.parts[0].text;
         inlineData = jsonData.candidates[0].content?.parts[0]?.inlineData ?? '';
-        if(!inlineData){
+        if (!inlineData) {
             inlineData = jsonData.candidates[0].content?.parts[1]?.inlineData ?? '';
         }
         if (inlineData) {
@@ -2743,7 +2739,7 @@ function processPartGemini(jsonData){
         code = `<pre><code class="${code_lang} language-${code_lang} hljs code_execution">${code}</code></pre>`;
         story += code;
         inlineData = jsonData.candidates[0].content?.parts[0]?.inlineData ?? '';
-        if(!inlineData){
+        if (!inlineData) {
             inlineData = jsonData.candidates[0].content?.parts[1]?.inlineData ?? '';
         }
         if (inlineData) {
@@ -2757,7 +2753,7 @@ function processPartGemini(jsonData){
         story += `<div class="code_outcome ${ce_outcome}">${ce_output}</div>`;
 
         inlineData = jsonData.candidates[0].content?.parts[0]?.inlineData ?? '';
-        if(!inlineData){
+        if (!inlineData) {
             inlineData = jsonData.candidates[0].content?.parts[1]?.inlineData ?? '';
         }
         if (inlineData) {
@@ -2882,7 +2878,7 @@ async function googleSearch(data) {
         cse_opt = `<p>You need activate Google CSE to use this feature!</p> <p>${cse_opt}</p>`;
         cse_opt += "<p>Once enabled, simply type: <code><span class='hljs-meta'>s: question</span></code> or <code><span class='hljs-meta'>search: question</span></code> where <span class='hljs-meta'>question</span> is the question the AI will answer based on the results from the web.</p>";
         addWarning(cse_opt, false, 'dialog_warning');
-       // toggleAnimation(true);
+        // toggleAnimation(true);
         toggleAiGenAnimation(false);
         enableChat();
         removeLastMessage();
@@ -2908,13 +2904,13 @@ async function googleSearch(data) {
         results.snippets.forEach(snpt => {
             snippets += `<p>${sp_id}: ${snpt}</p>`;
         })
-        txt_result += " \n <b>Snippets</b>: "+snippets;
+        txt_result += " \n <b>Snippets</b>: " + snippets;
     } else {
         if (is_cse_active) {
             addWarning('Got no result from Google Search');
         }
         removeLastMessage();
-       //toggleAnimation();
+        //toggleAnimation();
         toggleAiGenAnimation()
         enableChat();
         return false;
@@ -3027,7 +3023,7 @@ window.addEventListener('offline', () => {
 
 
 function javascriptCodeExecution(obj) {
-   //toggleAnimation(true);
+    //toggleAnimation(true);
     toggleAiGenAnimation(false);
     js_code = obj.code;
     js_code.replace(/\\n/g, "\n")
@@ -3051,7 +3047,6 @@ async function executeJsCode(code, realCode = '') {
     original_code = '' // reset
     let response;
     try {
-        // response = await eval(code)
         response = await jsCodeExecutionSandbox(code);
     } catch (error) {
         response = error;
@@ -3237,12 +3232,21 @@ loadExtraModels();
 
 document.addEventListener('keydown', function (e) {
 
+    let active_tagName = document.activeElement.tagName;
+
+    if (e.shiftKey && e.key.toLowerCase() === 't') {
+        // Shift + T to toggle between dark/light theme mode
+        if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
+            themeToggle();
+        }
+    }
+
+
     if (e.ctrlKey && e.key === 'q') {
         //Closes the current chat and starts a new one
         newChat();
         e.preventDefault();
     } else if (!e.ctrlKey && !e.altKey && e.key) {
-        let active_tagName = document.activeElement.tagName
         if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
             if (/^[a-zA-Z0-9]$/.test(e.key)) {
                 document.getElementById('ta_chat').focus();
@@ -3255,52 +3259,48 @@ document.addEventListener('keydown', function (e) {
         }
     }
 
-    if (e.shiftKey && e.key.toLowerCase() === 't') {
-        // Shift + T to toggle between dark/light theme mode
-        themeToggle();
-    }
-
 
 });
 
-function loadUserAddedPrompts(){
+function loadUserAddedPrompts() {
     let u_prompt = localStorage.getItem('user_new_prompts');
-    if(u_prompt){
-       try {
-           u_prompt = JSON.parse(u_prompt);
-           u_prompt.forEach(new_prompt => {
-               all_prompts.unshift(new_prompt)
+    if (u_prompt) {
+        try {
+            u_prompt = JSON.parse(u_prompt);
+            u_prompt.forEach(new_prompt => {
+                all_prompts.unshift(new_prompt)
 
-           })
-       }catch (e) {
-           console.error(e)
-       }
+            })
+        } catch (e) {
+            console.error(e)
+        }
     }
 }
+
 loadUserAddedPrompts()
 
 
 //Checks if it is necessary to pass the request via cors-proxy.php to get rid of cors and
 // if so returns a new endpoint address
-function getEndpoint(){
+function getEndpoint() {
     let needProxy = PLATFORM_DATA[chosen_platform]?.needProxy ?? false;
     let endpoint = PLATFORM_DATA[chosen_platform]?.endpoint;
-    if(needProxy){
+    if (needProxy) {
         return `${proxy_url}?endpoint=${endpoint}`;
     }
     return endpoint;
 }
 
 
-function deletePrompt(){
+function deletePrompt() {
     let sl_prompt = document.querySelector("select[name=prompt]");
     let selectedOption = sl_prompt.options[sl_prompt.selectedIndex];
-    if(selectedOption){
+    if (selectedOption) {
         let created_time = selectedOption.getAttribute('data-created_time');
-        if(created_time){
+        if (created_time) {
             created_time = parseInt(created_time);
             let all_user_prompt = localStorage.getItem('user_new_prompts');
-            if(all_user_prompt){
+            if (all_user_prompt) {
                 all_user_prompt = JSON.parse(all_user_prompt);
                 for (let i = 0; i < all_user_prompt.length; i++) {
                     if (all_user_prompt[i].created_time === created_time) {
@@ -3332,21 +3332,21 @@ function deletePrompt(){
 
 function welcome() {
     const welcomeMessages = [
-        { language: "English", message: "Welcome to Orion!" },
-        { language: "Portuguese", message: "Bem-vindo à Orion!" },
-        { language: "Spanish", message: "¡Bienvenido a Orion!" },
-        { language: "French", message: "Bienvenue à Orion!" },
-        { language: "German", message: "Willkommen bei Orion!" },
-        { language: "Italian", message: "Benvenuto a Orion!" },
-        { language: "Dutch", message: "Welkom bij Orion!" },
-        { language: "Russian", message: "Добро пожаловать в Орион!" },
-        { language: "Chinese", message: "欢迎来到猎户座！" },
-        { language: "Japanese", message: "オリオンへようこそ！" },
-        { language: "Korean", message: "오리온에 오신 것을 환영합니다!" },
-        { language: "Arabic", message: "مرحبا بكم في أوريون!" },
-        { language: "Hebrew", message: "ברוכים הבאים לאוריון!" },
-        { language: "Greek", message: "Καλώς ήρθατε στον Ωρίωνα!" },
-        { language: "Hindi", message: "ओरीयोन में आपका स्वागत है!" }
+        {language: "English", message: "Welcome to Orion!"},
+        {language: "Portuguese", message: "Bem-vindo à Orion!"},
+        {language: "Spanish", message: "¡Bienvenido a Orion!"},
+        {language: "French", message: "Bienvenue à Orion!"},
+        {language: "German", message: "Willkommen bei Orion!"},
+        {language: "Italian", message: "Benvenuto a Orion!"},
+        {language: "Dutch", message: "Welkom bij Orion!"},
+        {language: "Russian", message: "Добро пожаловать в Орион!"},
+        {language: "Chinese", message: "欢迎来到猎户座！"},
+        {language: "Japanese", message: "オリオンへようこそ！"},
+        {language: "Korean", message: "오리온에 오신 것을 환영합니다!"},
+        {language: "Arabic", message: "مرحبا بكم في أوريون!"},
+        {language: "Hebrew", message: "ברוכים הבאים לאוריון!"},
+        {language: "Greek", message: "Καλώς ήρθατε στον Ωρίωνα!"},
+        {language: "Hindi", message: "ओरीयोन में आपका स्वागत है!"}
     ];
 
     let index = 0;
@@ -3354,6 +3354,7 @@ function welcome() {
     function typeMessage(message, element, speed = 90, callback) {
         let i = 0;
         element.innerHTML = "";
+
         function type() {
             if (i < message.length) {
                 element.innerHTML += message.charAt(i);
@@ -3363,6 +3364,7 @@ function welcome() {
                 setTimeout(callback, 5000);
             }
         }
+
         type();
     }
 
@@ -3377,20 +3379,22 @@ function welcome() {
             });
         }
     }
+
     updateMessage();
 }
+
 welcome();
 
-function  themeToggle() {
+function themeToggle() {
     let theme_toggle_button = document.querySelector("#theme_toggle");
     let theme = document.querySelector("[data-theme]");
-    if(theme){
+    if (theme) {
         let current_theme = theme.getAttribute("data-theme");
-        if(current_theme === 'light'){
+        if (current_theme === 'light') {
             localStorage.setItem('theme', 'light');
             theme_toggle_button.innerText = "Light Mode 🔆";
             theme.setAttribute('data-theme', 'dark');
-        }else {
+        } else {
             localStorage.setItem('theme', 'dark');
             theme_toggle_button.innerText = "Dark Mode 🌙";
             theme.setAttribute('data-theme', 'light');
@@ -3400,17 +3404,17 @@ function  themeToggle() {
 }
 
 let theme_toggle_button = document.querySelector("#theme_toggle");
-theme_toggle_button.onclick = ()=>{
+theme_toggle_button.onclick = () => {
     themeToggle();
 }
 
 let current_theme = localStorage.getItem('theme');
 let theme = document.querySelector("[data-theme]");
-if(theme && current_theme){
-    if(current_theme === 'light'){
+if (theme && current_theme) {
+    if (current_theme === 'light') {
         theme_toggle_button.innerText = "Light Mode 🔆";
         theme.setAttribute('data-theme', 'dark');
-    }else {
+    } else {
         theme_toggle_button.innerText = "Dark Mode 🌙";
         theme.setAttribute('data-theme', 'light');
 

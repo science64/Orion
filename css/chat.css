@@ -13,7 +13,7 @@
     --btn-special-bg: #fff;
     --btn-special-cl: #7578e1;
     --system-before-border:  #ccc;
-    --copy-btn-bg: #fff;
+    --copy-btn-bg: #35373b;
     --ft-group-bg: #fff;
     --copy-btn-border: #e8d7d7;
     --copy-btn-color: #fff1f1;
@@ -43,9 +43,9 @@
     --new-chat-border-cl: #ccc;
     --topic-color: #605b67;
     --topic-border-cl: #d6d5d5dd;
-    --active-topic-bg: #7578e1e0;
-    --active-topic-border-cl: transparent;
-    --active-topic-color: #fff;
+    --active-topic-bg: #f7f6f3;
+    --active-topic-color: #17171d;
+    --active-topic-border-cl: #000000;
     --dialog-color: #282828;
     --dialog-close-after-color: #7578e1;
     --dialog-close-after-bg: #fff;
@@ -87,12 +87,14 @@
     --no-history-cl:  #fff;
     --chat-deleted-msg-bg: #7578e1;
     --chat-deleted-msg-border-cl: #1319ff;
+    --theme-toggle-bg: #fff;
+    --theme-toggle-cl: #605b67;
 }
 
 /* Dark Theme */
 :root[data-theme="dark"] {
-    --theme-bg: #1c1c1c;
-    --theme-color: #b6b6b6;
+    --theme-bg: #0f0f0f;
+    --theme-color: #a3a3a3;
     --img-output-bg:  #e7e7ec;
     --details-bg: #1c1c1c;
     --details-color: #60fc67;
@@ -135,8 +137,8 @@
     --topic-color: #e0dae3;
     --topic-border-cl: #828282dd;
     --active-topic-bg: transparent;
-    --active-topic-border-cl: #7578e1;
-    --active-topic-color: #7578e1;
+    --active-topic-border-cl: #336235;
+    --active-topic-color: #07d95e;
     --dialog-color: #f2f2f2;
     --dialog-close-after-color: #e4e4eb;
     --dialog-close-after-bg: #000000FF;
@@ -178,6 +180,8 @@
     --chat-deleted-msg-bg: #323232;
     --chat-deleted-msg-border-cl: #fff;
 
+    --theme-toggle-bg: #4c4c4c;
+    --theme-toggle-cl: #07d95e;
 
 }
 
@@ -478,7 +482,7 @@ code.hljs::-webkit-scrollbar-track {
 }
 
 .btn-group {
-    margin-top: -31px;
+    margin-top: -38px;
     text-align: end;
 }
 .btn-group-top{
@@ -497,7 +501,7 @@ code.hljs::-webkit-scrollbar-track {
 
 
 .btn-group .copy-btn, .btn-group .down-btn {
-    background-color: transparent;
+    background-color: var(--copy-btn-bg);
 }
 
 
@@ -510,7 +514,7 @@ code.hljs::-webkit-scrollbar-track {
 
 .btn-ft-group{
     text-align: end;
-    background: var(--ft-group-bg);
+    background: transparent;
 }
 
 .container {
@@ -842,11 +846,11 @@ select{
     margin-bottom: 2px;
 }
 
+
 #theme_toggle{
-    background-color: #4c4c4c;
+    background-color: var(--theme-toggle-bg);
     margin: 5px 0;
-    color: #07d95e;
-    border: none;
+    color: var(--theme-toggle-cl);
 }
 
 .history {
@@ -922,9 +926,6 @@ select{
 .active_topic{
     background-color: var(--active-topic-bg);
     color: var(--active-topic-color) !important;
-}
-
-[data-theme='dark'] .active_topic{
     border: 1px solid var(--active-topic-border-cl) !important;
 }
 
