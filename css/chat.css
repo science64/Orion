@@ -93,8 +93,8 @@
 
 /* Dark Theme */
 :root[data-theme="dark"] {
-    --theme-bg: #0f0f0f;
-    --theme-color: #a3a3a3;
+    --theme-bg: #101218; /* #0f0f0f; */
+    --theme-color: #cdcdcd; /* #a3a3a3; */
     --img-output-bg:  #e7e7ec;
     --details-bg: #1c1c1c;
     --details-color: #60fc67;
@@ -124,7 +124,7 @@
     --scrollbar-thumb-color: #818181;
     --scrollbar-track-color: #1c1c1c;
     --voice-rec-bg: #393737;
-    --code-header-before-bg: #373737;
+    --code-header-before-bg: #22272e;
     --code-header-before-cl: #dbdbdb;
     --upload-icon: url("../imgs/svg/upload_icon_dark.svg");
     --bot-user-bg-animation: #272525;
@@ -456,13 +456,14 @@ pre code.hljs {
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
     min-height: 22px;
-    border-top: 4px solid var(--pre-code-border-cl);
+    border-top: 6px solid var(--pre-code-border-cl) !important;
 
 }
 
 
 [data-theme=dark] pre code.hljs {
-    background-color: #292929 !important;
+    background-color: #0c0e12  !important;
+    border: 1px solid #373a41;
 }
 
 code.hljs::-webkit-scrollbar {
@@ -936,7 +937,9 @@ select{
     width: 99.5%;
     box-sizing: border-box;
     animation: change-color 2s forwards;
-
+}
+.bot p, .bot li{
+    line-height: 1.618;
 }
 
 @keyframes change-color {
