@@ -829,7 +829,8 @@ function closeDialogs() {
 
 
 function enableCopyForCode(enable_down_too = true) {
-    document.querySelectorAll('code.hljs').forEach(block => {
+
+    document.querySelectorAll('pre code').forEach(block => {
         let block_group = block.previousElementSibling;
         let has_copy_btn = false;
         if (block_group) {

@@ -89,6 +89,12 @@
     --chat-deleted-msg-border-cl: #1319ff;
     --theme-toggle-bg: #fff;
     --theme-toggle-cl: #605b67;
+    --think-container-bg: transparent;
+    --dot-ai-anime-bg: #6B7280;
+    --think-container-border-cl: #717171;
+    --raw-code-bg: #f7f6f3;
+    --raw-code-cl: #000;
+
 }
 
 /* Dark Theme */
@@ -139,7 +145,7 @@
     --active-topic-bg: transparent;
     --active-topic-border-cl: #336235;
     --active-topic-color: #07d95e;
-    --dialog-color: #f2f2f2;
+    --dialog-color: #02f968;
     --dialog-close-after-color: #e4e4eb;
     --dialog-close-after-bg: #000000FF;
     --dialog-btn-animate-bg: #292929;
@@ -179,9 +185,14 @@
     --no-history-cl:  var(--theme-color);
     --chat-deleted-msg-bg: #323232;
     --chat-deleted-msg-border-cl: #fff;
-
     --theme-toggle-bg: #4c4c4c;
     --theme-toggle-cl: #07d95e;
+    --think-container-bg: #202126;
+    --dot-ai-anime-bg: #1b6adf;
+    --think-container-border-cl: #717171;
+    --raw-code-bg: #5d6269;
+    --raw-code-cl: #ffffff;
+
 
 }
 
@@ -456,14 +467,24 @@ pre code.hljs {
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
     min-height: 22px;
-    border-top: 6px solid var(--pre-code-border-cl) !important;
-
+    /**  border-top: 6px solid var(--pre-code-border-cl) !important; **/
 }
 
+pre code{
+    border-top: 6px solid var(--pre-code-border-cl) !important;
+}
 
 [data-theme=dark] pre code.hljs {
     background-color: #0c0e12  !important;
     border: 1px solid #373a41;
+}
+
+
+pre code:not(.hljs) {
+    background-color: var(--raw-code-bg);
+    color: var(--raw-code-cl);
+    display: block;
+    padding: 4px;
 }
 
 code.hljs::-webkit-scrollbar {
@@ -1236,11 +1257,12 @@ option.by_user{
     align-items: center;
     gap: 8px;
     padding: 3px 11px 3px 4px;
-    background-color: #f0f0f0;
+    background-color: var(--think-container-bg);
     border-radius: 16px;
     width: fit-content;
     margin-top: 2px;
     margin-bottom: 15px;
+    border: 1px solid var(--think-container-border-cl);
 }
 
 .ai-avatar {
@@ -1264,7 +1286,7 @@ option.by_user{
 .dot_ai {
     width: 5px;
     height: 5px;
-    background-color: #6B7280;
+    background-color: var(--dot-ai-anime-bg);
     border-radius: 50%;
     opacity: 0.4;
 }
@@ -1421,7 +1443,7 @@ pre:has(code):before{
     display: block;
     background-color: var(--code-header-before-bg);
     padding: 11px 11px;
-    content: 'Code';
+    content: '🧩';
     color: var(--code-header-before-cl);
     border-top-right-radius: 8px;
     border-top-left-radius: 8px;
