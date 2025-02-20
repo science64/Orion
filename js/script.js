@@ -645,7 +645,13 @@ async function changeUserInputIfNeeded() {
     last_user_input = conversations.messages[conversations.messages.length - 1].content;
 
     let url = hasURL(last_user_input);
+    let use_rag = localStorage.getItem('use_rag_endpoint');
+
     if (url && !isYouTubeURL(url) && last_user_input.length < 500) {
+        if(use_rag !== 'yes'){
+            console.log('rag is not enabled')
+            return false;
+        }
         try {
             let data = await retrieveContentFromUrl(url);
             if (data?.text) {
@@ -1943,7 +1949,7 @@ function whichTool(last_user_input) {
         return 'javascriptCodeExecution';
     } else if (cmd === 'youtube:' || cmd === 'yt:') {
         return 'youtubeCaption';
-    } else if (last_user_input.match(/youtube\.com|youtu\.be/)) {
+    } else if (last_user_input.match(/youtube\.com\/watch|youtu\.be/)) {
         return 'youtubeCaption';
     }
     return '';
@@ -2004,20 +2010,38 @@ async function youtubeCaption(data) {
         },
         body: urlencoded
     }
-    await fetch(yt_down_caption_endpoint, data_init).then(function (res) {
-        return res.json();
-    }).then(function (json) {
-        if (json.caption) {
-            caption = json.caption;
-        }
-        if (json.title) {
-            video_title = json.title;
-        }
+  try {
+      await fetch(yt_down_caption_endpoint, data_init).then(function (res) {
+          return res.json();
+      }).then(function (json) {
+          if (json.caption) {
+              caption = json.caption;
+          }
+          if (json.title) {
+              video_title = json.title;
+          }
 
-    });
+      });
+  }catch{
+        console.log('Error fetching '+yt_down_caption_endpoint)
+  }
     if (caption === '') {
         addWarning('Could not get subtitles for this video', false)
-        removeLastMessage();
+
+        if (chosen_platform === 'google') {
+            await geminiChat()
+            // toggleAnimation(true);
+            toggleAiGenAnimation(false);
+        } else {
+            await streamChat(false); // false to prevent infinite loops
+            // toggleAnimation(true);
+            toggleAiGenAnimation(false)
+        }
+        setTimeout(() => {
+            loadVideo()
+        }, 1000)
+
+        //removeLastMessage();
     } else {
         let last_input = last_user_input.replace(/^[a-z]+:(.*?)\s/i, " "); // remove cmd
         let ele = document.querySelector(".message:nth-last-of-type(1)");
@@ -2039,7 +2063,7 @@ async function youtubeCaption(data) {
             // toggleAnimation(true);
             toggleAiGenAnimation(false);
         } else {
-            await streamChat(false); // false to prevent infinite loop
+            await streamChat(false); // false to prevent infinite loops
             // toggleAnimation(true);
             toggleAiGenAnimation(false)
         }
@@ -2060,6 +2084,7 @@ async function retrieveContentFromUrl(url) {
         addWarning("No [rag_endpoint] found!");
         return false;
     }
+
 
 
     console.log('retrieveContentFromUrl: ' + url);

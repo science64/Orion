@@ -25,7 +25,7 @@ tools_list.openai_compatible = {
         "type": "function",
         "function": {
             "name": "youtubeCaption",
-            "description": "Extracting subtitles from a YouTube video. This function should be called when the user enters some YouTube URL",
+            "description": "Extracting subtitles from a YouTube video. This function should be called when the user enters some YouTube video URL.",
             "parameters": {
                 "type": "object",
                 "properties": {

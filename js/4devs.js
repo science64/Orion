@@ -52,8 +52,8 @@ function restoreChatHistory() {
                 }
                 addWarning("Chat history restored successfully!", true, 'success_dialog');
                 setTimeout(()=>{
-                    document.location = document.location;
-                },5000)
+                    reloadPage();
+                },3500)
             } catch (error) {
                 console.error("Error parsing JSON file:", error);
                 addWarning("Error restoring chat history.  Please make sure you selected a valid JSON file.", false, 'fail_dialog');
