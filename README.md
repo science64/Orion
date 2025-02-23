@@ -48,6 +48,7 @@ user-friendly interface.
        <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />
    </a>
 
+
 ## API Key Management
 
 Your API keys are stored locally using `localStorage`, and requests are sent directly to the official provider's API
@@ -110,9 +111,6 @@ Or download the zip file from the repository by clicking on the green button "Co
 After downloading, just open the folder and click on index.html if you don't have a server.
 If you do, just access the directory where the project was saved. It's that simple.
 
- <a href="https://www.buymeacoffee.com/eliaspereirah">
-       <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />
-   </a>
 
 # Google CSE API Key
 Sometimes you might want AI to search the web and respond based on that information.

@@ -23,7 +23,7 @@ let temp_safe_mode = false;
 let pre_function_text = '';
 let all_chunks = [];
 let has_chunk_error = false;
-let proxy_url = window.location.origin + window.location.pathname + "/cors-proxy.php";
+let proxy_url = window.location.origin + window.location.pathname + "cors-proxy.php";
 
 // Markdown to HTML
 showdown.setFlavor('github');

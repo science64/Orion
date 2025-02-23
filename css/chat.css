@@ -89,11 +89,16 @@
     --chat-deleted-msg-border-cl: #1319ff;
     --theme-toggle-bg: #fff;
     --theme-toggle-cl: #605b67;
+    --ai-avatar-bg: #7578e1;
     --think-container-bg: transparent;
     --dot-ai-anime-bg: #6B7280;
     --think-container-border-cl: #717171;
     --raw-code-bg: #f7f6f3;
     --raw-code-cl: #000;
+    --th-bg: #ffffad;
+    --th-color: #050505;
+    --th-border-cl: #ccc;;
+
 
 }
 
@@ -104,7 +109,7 @@
     --img-output-bg:  #e7e7ec;
     --details-bg: #1c1c1c;
     --details-color: #60fc67;
-    --details-open-summary-cl: #7578e1;
+    --details-open-summary-cl: #9d9d9d;
     --accept-code-exec-bg: #7d776e;
     --js-output: #60fc67a6;
     --user-msg-bg: rgb(92 92 92 / 21%);
@@ -187,11 +192,15 @@
     --chat-deleted-msg-border-cl: #fff;
     --theme-toggle-bg: #4c4c4c;
     --theme-toggle-cl: #07d95e;
+    --ai-avatar-bg: #000000ad;
     --think-container-bg: #202126;
     --dot-ai-anime-bg: #1b6adf;
     --think-container-border-cl: #717171;
     --raw-code-bg: #5d6269;
     --raw-code-cl: #ffffff;
+    --th-bg: #101218;
+    --th-color: #60fc67;
+    --th-border-cl: #58595d;
 
 
 }
@@ -550,14 +559,14 @@ code.hljs::-webkit-scrollbar-track {
 
 td, th {
     border-radius: 4px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--th-border-cl);
     padding: 4px;
     font-weight: 500;
 }
 
 th {
-    background-color: #ffffad;
-    color: #050505;
+    background-color: var(--th-bg);
+    color: var(--th-color);
     text-align: center;
     border-radius: 5px;
 }
@@ -1268,7 +1277,7 @@ option.by_user{
 .ai-avatar {
     width: 24px;
     height: 24px;
-    background-color: #000000ad;
+    background-color: var(--ai-avatar-bg);
     border-radius: 50%;
     display: flex;
     justify-content: center;
