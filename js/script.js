@@ -1755,6 +1755,7 @@ function savePrompt(close_dialog = true) {
     }
 }
 
+
 function saveModel() {
     let btn_sm = document.querySelector('.save_model');
     if (btn_sm) {
@@ -1788,7 +1789,8 @@ function saveModel() {
     if (platform_info) {
         platform_info.innerHTML = `Active: <b>${model}</b> from <b>${platform_name}</b>`;
     }
-    createDialog('Saved with success!', 3)
+    createDialog('Saved with success!', 3);
+    updateChatPlaceholder();
 
 }
 
@@ -3440,6 +3442,16 @@ function welcome() {
 
 welcome();
 
+function updateChatPlaceholder (){
+    let textarea_chat = document.querySelector("#ta_chat");
+    if(model){
+        textarea_chat.placeholder = `Ask ${model}`;
+    }else {
+       textarea_chat.placeholder = 'Ask me something';
+    }
+
+}
+updateChatPlaceholder();
 function themeToggle() {
     let theme_toggle_button = document.querySelector("#theme_toggle");
     let theme = document.querySelector("[data-theme]");
