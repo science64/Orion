@@ -44,14 +44,23 @@ let PLATFORM_DATA = {
     },
     google: {
         models: [
-            "gemini-1.5-pro",
             "gemini-2.0-pro-exp-02-05",
+            "gemini-1.5-pro",
             "gemini-2.0-flash",
-            "gemini-2.0-flash-thinking-exp-01-21",
-            "gemini-2.0-flash-lite-preview-02-05",
+            "gemini-2.0-flash-thinking-exp-01-21"
         ],
         name: "Google",
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{{model}}:{{gen_mode}}?key={{api_key}}'
+    },
+    anthropic: {
+        models: [
+            "claude-3-7-sonnet-20250219",
+            "claude-3-5-sonnet-20241022",
+            "claude-3-5-haiku-20241022",
+            "claude-3-haiku-20240307"
+        ],
+        name: "Anthropic",
+        endpoint: "https://api.anthropic.com/v1/messages"
     },
     deepseek: {
         models: [
@@ -60,15 +69,6 @@ let PLATFORM_DATA = {
         ],
         name: "DeepSeek",
         endpoint: "https://api.deepseek.com/chat/completions"
-    },
-    anthropic: {
-        models: [
-            "claude-3-5-sonnet-20241022",
-            "claude-3-5-haiku-20241022",
-            "claude-3-haiku-20240307"
-        ],
-        name: "Anthropic",
-        endpoint: "https://api.anthropic.com/v1/messages"
     },
     cohere: {
         models: [
@@ -251,15 +251,26 @@ function removeAttachment() {
     }
 }
 
-function addConversation(role, content, add_to_document = true, do_scroll = true, reasoning_content = '') {
-    closeDialogs();
+/**
+ * Remove command prefix that may be at the beginning of a string/prompt
+ **/
+function stripCommand(text){
+    // for example: if the text is "translate:pt-br love" it will remove the "translate:pt-br" command
+    let rx = "^"+Object.keys(special_prompts).join(":(.*?)\\s|^")+":"
+    return text.replace(new RegExp(rx), '').trim();
+}
 
+
+function addConversation(role, content, add_to_document = true, do_scroll = true, reasoning_content = '') {
+
+    let clen_content = content;
+    closeDialogs();
     removeAttachment();
-    if (!content.trim()) {
+    if (!clen_content.trim()) {
         addWarning('Empty conversation', true);
         return false;
     }
-    let new_talk = {'role': role, 'content': content};
+    let new_talk = {'role': role, 'content': clen_content};
     if (reasoning_content) {
         new_talk.reasoning_content = reasoning_content;
         reasoning_content = `<details><summary>See Reasoning</summary> ${reasoning_content}</details>`;
@@ -267,7 +278,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
     }
     conversations.messages.push(new_talk);
     //chat_textarea.focus();
-    let full_content = `${reasoning_content} ${content}`.trim();
+    let full_content = `${reasoning_content} ${clen_content}`.trim();
     let cnt;
     let div = document.createElement('div');
     div.classList.add('message');
@@ -314,10 +325,10 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
                 div.innerHTML = cnt;
             }
             temp_safe_mode = false;
-            genAudio(content, div);
+            genAudio(clen_content, div);
         } else {
             let lastBot = document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length - 1];
-            genAudio(content, lastBot);
+            genAudio(clen_content, lastBot);
         }
 
     }
@@ -1925,7 +1936,8 @@ function needToolUse(last_user_input) {
     let cmd_list = [
         'search:', 's:',
         'javascript:', 'js:',
-        'youtube:', 'yt:'
+        'youtube:', 'yt:',
+        'dt:'
     ]
     if (cmd_list.includes(cmd)) {
         return true;
@@ -1951,6 +1963,9 @@ function whichTool(last_user_input) {
         return 'youtubeCaption';
     } else if (last_user_input.match(/youtube\.com\/watch|youtu\.be/)) {
         return 'youtubeCaption';
+    }else if(cmd === 'dt:'){
+        // Activate extend thinking for Claude
+        return 'dt';
     }
     return '';
 }
@@ -1968,7 +1983,7 @@ function commandManager(input_text) {
         }
     }
 
-    let prompt = especial_prompts[cmd] ?? '';
+    let prompt = special_prompts[cmd] ?? '';
     if (!prompt) {
         return false; // no command passed
     }
@@ -2125,6 +2140,9 @@ async function streamChat(can_use_tools = true) {
 
     conversations.messages.forEach(part => {
             let cnt = part.content;
+            if(part.role === 'user'){
+                cnt = stripCommand(cnt);
+            }
             last_role = part.role;
             last_cnt = part.content;
             if (chosen_platform === 'anthropic') {
@@ -2186,6 +2204,7 @@ async function streamChat(can_use_tools = true) {
     }
 
     if (cmd) {
+
         all_parts.pop() // remove last
         // have cmd - so will just past the last user message in the command
         if (chosen_platform === 'anthropic') {
@@ -2207,7 +2226,14 @@ async function streamChat(can_use_tools = true) {
             messages: all_parts,
         }
     if (chosen_platform === 'anthropic') {
-        data.max_tokens = 4096;
+       data.max_tokens = 8192;
+        let pog = whichTool(last_user_input);
+        if(pog === 'dt' && model.match(/claude-3-7/)){
+            data.thinking = {
+                type: "enabled",
+                budget_tokens: 2048
+            }
+        }
         if (system_prompt_text) {
             data.system = system_prompt_text;
         }
@@ -2809,6 +2835,9 @@ function processDataPart(part) {
         jsonData = JSON.parse(part.substring('event: content_block_delta'.length + 6));
         if (jsonData.delta?.text) {
             story += jsonData.delta.text;
+        }
+        if (jsonData.delta?.thinking) {
+            story_reasoning += jsonData.delta.thinking;
         }
     } else {
         jsonData = JSON.parse(part.toString().substring('data: '.length));

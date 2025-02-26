@@ -43,11 +43,8 @@ user-friendly interface.
 - 📁 Upload a variety of documents (text, PDF, images, video) to Google Gemini for analysis and processing
 - 🧠 Awesome Prompts 150+ awesome prompts most of them from [Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
 
-
- <a href="https://www.buymeacoffee.com/eliaspereirah">
-       <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />
-   </a>
-
+###### Show your support for this project
+<a href="https://www.buymeacoffee.com/eliaspereirah"><img src="https://img.buymeacoffee.com/button-api/?text=1 Dolar is All you Need&emoji=💵&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Comic&outline_colour=000000&coffee_colour=ffffff" /></a>
 
 ## API Key Management
 
@@ -69,17 +66,29 @@ Some companies offer free API access. Check their terms and conditions before yo
 
 # Special Commands
 Use special commands to perform an action quickly and easily.
+
+### Deep Thinking
+Claude 3.7 Sonnet is a hybrid model capable of "standard thinking" and "extended thinking".
+
+When you want to use this model's **d**eep **t**hinking, simply type ``dt: `` before your prompt.
+
+Example: ``dt: Explain quantum entanglement``.
+
+This will give you easy control in switching between the two modes.
+
+
 ### Translation
 **Translate:** Translate text with ease using special command.
 - To translate "Hello everyone!" into Spanish, use: `translate:spanish Hello everyone!` or its short form `t:spanish Hello everyone!`.
 - AI will automatically detect the source language, requiring only the target language specification.
 
-**YouTube Summary**
+## YouTube Summary
 Ask AI to summarize a YouTube video or answer any question based on the video caption.
 See an example of use below.
 - `Summarize this video https://www.youtube.com/watch?v=r7pEdhnS3tI`
 - `What is this video about? https://www.youtube.com/watch?v=qQviI1d_hFA`
   It is recommended to use a larger context window model when using this functionality, such as Google Gemini.
+
 
 ### Keyboard shortcut.
 - Press `Ctrl + Q` to close the current chat and start a new one.
@@ -153,6 +162,5 @@ You can run it on localhost or on a remote server.
 After activating the mentioned project, go to "Options" -> "YouTube Captions" and point to the URL where you deployed the project, for example: http://localhost/YoutubeSubtitlesDownloader/
 
 
- <a href="https://www.buymeacoffee.com/eliaspereirah">
-       <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" />
-   </a>
+
+<a href="https://www.buymeacoffee.com/eliaspereirah"><img src="https://img.buymeacoffee.com/button-api/?text=tools.buyCoffee()&emoji=🍓&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff" /></a>

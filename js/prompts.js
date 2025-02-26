@@ -698,38 +698,48 @@ let all_prompts = [
 
 
 
-
-// Special Prompts // Commands
-let especial_prompts = {};
+// -----------------------------
+// Special Prompts/Commands -
+// -----------------------------
+let special_prompts = {};
 
 // Instruct the AI to translate a text
-especial_prompts.translate = "You are a professional translator tasked with translating a text from one language to another. Your goal is to provide an accurate and natural-sounding translation that preserves the meaning, tone, and style of the original text. Here is the text to be translated: <source_text> {{USER_INPUT}} </source_text> The target language is {{ARG1}}. Translate the text into the target language, ensuring that you maintain the original meaning as closely as possible. pay attention to idiomatic expressions, cultural references, and nuances in the source language, and find appropriate equivalents in the target language, preserve the tone and style of the original text (e.g., formal, casual, technical, literary) in your translation and ensure that the grammar, syntax, and punctuation in the target language are correct and natural-sounding. Remember to focus solely on the translation task and do not add any personal comments or opinions unrelated to the translation process. Just return the translation without any comment.";
-especial_prompts.t = especial_prompts.translate;
+special_prompts.translate = "You are a professional translator tasked with translating a text from one language to another. Your goal is to provide an accurate and natural-sounding translation that preserves the meaning, tone, and style of the original text. Here is the text to be translated: <source_text> {{USER_INPUT}} </source_text> The target language is {{ARG1}}. Translate the text into the target language, ensuring that you maintain the original meaning as closely as possible. pay attention to idiomatic expressions, cultural references, and nuances in the source language, and find appropriate equivalents in the target language, preserve the tone and style of the original text (e.g., formal, casual, technical, literary) in your translation and ensure that the grammar, syntax, and punctuation in the target language are correct and natural-sounding. Remember to focus solely on the translation task and do not add any personal comments or opinions unrelated to the translation process. Just return the translation without any comment.";
+special_prompts.t = special_prompts.translate;
 
 
 // Instruct the AI to make a web search
-especial_prompts.search = "{{ARG1}} {{USER_INPUT}}";
-especial_prompts.s = especial_prompts.search;
+special_prompts.search = "{{ARG1}} {{USER_INPUT}}";
+special_prompts.s = special_prompts.search;
 
 
 // Instruct the AI to respond a prompt as responding to a tweet
-especial_prompts.reply = "You are tasked with acting as a human replying to a tweet. Your goal is to create a natural, engaging, and contextually appropriate response. Follow these instructions carefully: 1. Analyze the tweet: - Identify the main topic or sentiment of the tweet - Note any hashtags, mentions, or links - Consider the tone (e.g., serious, humorous, sarcastic) 2. Craft your response following these guidelines: - Keep your response concise (280 characters or fewer) - Make it sound natural and conversational, not overly formal - Use language that fits your user profile - If appropriate, include relevant emojis, but don't overuse them - Consider adding a hashtag if relevant, but limit to one or two - If responding to a question, don't be too direct; add some personality - If the tweet is controversial, consider a neutral or diplomatic response - Avoid being overly agreeable or disagreeable; maintain a balanced tone - Don't repeat the exact words from the original tweet 3. Output your response: Write your tweet response inside <response> tags. Do not include any explanation or reasoning outside of these tags. Remember, the goal is to sound like a real person, not an AI. Be authentic, imperfect, and true to the user profile provided. Here's the tweet you should reply to: <tweet>{{USER_INPUT}}</tweet>"
-especial_prompts.rp = especial_prompts.reply;
+special_prompts.reply = "You are tasked with acting as a human replying to a tweet. Your goal is to create a natural, engaging, and contextually appropriate response. Follow these instructions carefully: 1. Analyze the tweet: - Identify the main topic or sentiment of the tweet - Note any hashtags, mentions, or links - Consider the tone (e.g., serious, humorous, sarcastic) 2. Craft your response following these guidelines: - Keep your response concise (280 characters or fewer) - Make it sound natural and conversational, not overly formal - Use language that fits your user profile - If appropriate, include relevant emojis, but don't overuse them - Consider adding a hashtag if relevant, but limit to one or two - If responding to a question, don't be too direct; add some personality - If the tweet is controversial, consider a neutral or diplomatic response - Avoid being overly agreeable or disagreeable; maintain a balanced tone - Don't repeat the exact words from the original tweet 3. Output your response: Write your tweet response inside <response> tags. Do not include any explanation or reasoning outside of these tags. Remember, the goal is to sound like a real person, not an AI. Be authentic, imperfect, and true to the user profile provided. Here's the tweet you should reply to: <tweet>{{USER_INPUT}}</tweet>"
+special_prompts.rp = special_prompts.reply;
 
 
 // Ask the AI to execute javascript code in the user browser
-especial_prompts.javascript = "{{USER_INPUT}}";
-especial_prompts.js = especial_prompts.javascript;
+special_prompts.javascript = "{{USER_INPUT}}";
+special_prompts.js = special_prompts.javascript;
 
 
 // Code execution (python) - just for Gemini models
-especial_prompts.python = "{{USER_INPUT}}";
-especial_prompts.py = especial_prompts.python;
+special_prompts.python = "{{USER_INPUT}}";
+special_prompts.py = special_prompts.python;
 
 
 
 // Ask AI anything about the content of a YouTube video.
-// Ex: yt: summarize this video for me https://www.youtube.com/watch?v=aokwKFzbt2Y
-especial_prompts.youtube = "{{USER_INPUT}} {{ARG1}}";
-especial_prompts.yt = especial_prompts.youtube;
+// Eg: yt: summarize this video for me https://www.youtube.com/watch?v=aokwKFzbt2Y
+special_prompts.youtube = "{{USER_INPUT}} {{ARG1}}";
+special_prompts.yt = special_prompts.youtube;
+
+
+
+// Deep Thinking (just for Claude thinking models)
+// Eg: dt: Explain quantum entanglement
+special_prompts.dt = "{{USER_INPUT}} {{ARG1}}";
+
+
+
 
