@@ -37,7 +37,8 @@ let PLATFORM_DATA = {
             "gpt-4o",
             "gpt-4o-mini",
             "o1-preview",
-            "o1-mini"
+            "o1-mini",
+            "gpt-4.5-preview"
         ],
         name: "OpenAI",
         endpoint: "https://api.openai.com/v1/chat/completions"
