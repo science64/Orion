@@ -19,10 +19,10 @@ let js_code = '';
 let js_code_exec_finished = true;
 let js_code_exec_output = '';
 let original_code = '';
-let temp_safe_mode = false;
 let pre_function_text = '';
 let all_chunks = [];
 let has_chunk_error = false;
+let grounding_rendered_cnt = '';
 let proxy_url = window.location.origin + window.location.pathname + "cors-proxy.php";
 
 // Markdown to HTML
@@ -286,12 +286,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
     if (role === 'user') {
         div.classList.add('user');
         cnt = converter.makeHtml(full_content);
-        if (temp_safe_mode) {
-            div.innerText = cnt;
-        } else {
-            div.innerHTML = cnt;
-        }
-        temp_safe_mode = false;
+        div.innerHTML = cnt;
         if (base64String) {
             let media = mimeType.split("/")[0];
             if (media === 'image') {
@@ -320,12 +315,7 @@ function addConversation(role, content, add_to_document = true, do_scroll = true
             div.classList.add('bot');
 
             cnt = converter.makeHtml(full_content);
-            if (temp_safe_mode) {
-                div.innerText = cnt;
-            } else {
-                div.innerHTML = cnt;
-            }
-            temp_safe_mode = false;
+            div.innerHTML = cnt;
             genAudio(clen_content, div);
         } else {
             let lastBot = document.querySelectorAll(".bot")[document.querySelectorAll(".bot").length - 1];
@@ -1140,8 +1130,6 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
         // "topP": 0.95,
         // "maxOutputTokens": 8192,
     };
-    }
-    ];
 
     if (the_data) {
         data = the_data;
@@ -1167,7 +1155,20 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
             // code execution command
             data.tools = [{'code_execution': {}}];
         }
+        if (last_user_input.match(/^g:/i)) {
+            // Grounding With Google Search
+            if(!model.match(/^gemini-1/)){
+                data.tools = [{'google_search': {}}];
+            }else {
+                addWarning("Please use gemini 2.0 for grounding with google search!", false)
+            }
+
+        }
+
+
     }
+
+
 
 
     if (with_stream) {
@@ -2768,6 +2769,14 @@ async function geminiStreamChat(fileUri, data) {
         // toggleAiGenAnimation(false);
         //enableChat();
     } finally {
+        if(grounding_rendered_cnt){
+            const all_div_bots = document.querySelectorAll('.bot');
+            if(all_div_bots.length){
+                const last_div_bot = all_div_bots[all_div_bots.length - 1];
+                last_div_bot.innerHTML += grounding_rendered_cnt;
+                grounding_rendered_cnt = '';
+            }
+        }
         enableCopyForCode();
         enableChat();
         //toggleAnimation(true)
@@ -2817,6 +2826,12 @@ function processPartGemini(jsonData) {
             inlineData = `<img class="img_output" src="data:${inlineData.mimeType};base64,${inlineData.data}" alt="">`
         }
         story += inlineData;
+    }
+
+    if(jsonData.candidates[0]?.groundingMetadata?.searchEntryPoint?.renderedContent){
+        grounding_rendered_cnt = jsonData.candidates[0].groundingMetadata.searchEntryPoint.renderedContent;
+        grounding_rendered_cnt = grounding_rendered_cnt.replaceAll('class="container','class="g_container');
+        grounding_rendered_cnt = grounding_rendered_cnt.replaceAll('.container','.g_container');
     }
 
 
@@ -3379,7 +3394,6 @@ function deletePrompt() {
                 }
 
                 selectedOption.remove();
-                console.log(selectedOption)
                 document.querySelector("textarea.system_prompt").value = '';
                 savePrompt();
             }
