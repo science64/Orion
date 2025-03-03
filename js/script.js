@@ -1140,6 +1140,8 @@ function geminiChat(fileUri = '', with_stream = true, the_data = '') {
         // "topP": 0.95,
         // "maxOutputTokens": 8192,
     };
+    }
+    ];
 
     if (the_data) {
         data = the_data;
