@@ -556,6 +556,9 @@ code.hljs::-webkit-scrollbar-track {
     margin: 0;
     display: flex;
 }
+.g_container{
+    margin: 10px 0;
+}
 
 td, th {
     border-radius: 4px;
