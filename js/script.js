@@ -3457,7 +3457,7 @@ function welcome() {
     updateMessage();
 }
 
-welcome();
+//welcome();
 
 function updateChatPlaceholder (){
     let textarea_chat = document.querySelector("#ta_chat");
