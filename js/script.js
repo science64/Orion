@@ -475,7 +475,7 @@ function initTextareaAutoResize() {
         // Also adjust when the textarea gets focus
         textarea.addEventListener('focus', adjustHeight);
         
-        // Reset height when empty
+        // Reset height when empty and blurred
         textarea.addEventListener('blur', () => {
             if (textarea.value.trim() === '') {
                 textarea.style.height = '55px';
@@ -486,14 +486,43 @@ function initTextareaAutoResize() {
                 }
             }
         });
+        
+        // Ensure proper initial height if there's content
+        if (textarea.value.trim() !== '') {
+            adjustHeight();
+        }
     }
 }
 
+// Call this function when the document is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Your existing initialization code
-    
-    // Initialize the textarea auto-resize feature
+    // Initial call to set up the auto-resize
     initTextareaAutoResize();
+    
+    // Also ensure it's called when toggling between chats or creating new ones
+    const newChatButton = document.getElementById('new_chat');
+    if (newChatButton) {
+        const originalClickHandler = newChatButton.onclick;
+        newChatButton.onclick = function() {
+            if (originalClickHandler) {
+                originalClickHandler();
+            }
+            // Call our function after a short delay to ensure DOM is updated
+            setTimeout(initTextareaAutoResize, 100);
+        };
+    }
+    
+    // Ensure our function is called after chat messages are loaded
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+        // Create an observer to watch for changes in the chat messages
+        const observer = new MutationObserver(function(mutations) {
+            initTextareaAutoResize();
+        });
+        
+        // Start observing
+        observer.observe(chatMessages, { childList: true });
+    }
 });
 
 /**
