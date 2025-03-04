@@ -988,48 +988,45 @@ select {
 
 /* Improved chat wrap container */
 .chat-input .chat_wrap {
-    width: 70%; /* Narrower to match the look in the images */
-    max-width: 800px;
+    width: 90%; /* Increase from 70% to 90% for wider input */
+    max-width: 1000px; /* Increase from 800px to 1000px */
     margin: 0 auto;
     display: flex;
-    align-items: stretch; /* Important - makes children stretch to fill height */
+    align-items: flex-end; /* Changed from stretch to flex-end */
     justify-content: center;
     border-radius: 24px;
     overflow: hidden;
     box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--textarea-border);
     background-color: var(--textarea-bg);
+    padding: 8px; /* Added padding around elements */
 }
 
-/* Remove existing border from textarea */
+/* Update textarea styles to support better expansion */
 .chat-input textarea {
-    padding: 16px 18px;
+    padding: 12px 16px;
     color: var(--textarea-color);
-    border: none !important; /* Remove border completely */
+    border: none !important;
     display: block;
-    width: 85%; /* Adjust width proportion */
-    border-radius: 0; /* Remove border radius - container handles this */
-    min-height: 55px;
-    max-height: 150px;
+    width: 90%;
+    border-radius: 0;
+    min-height: 24px;
+    max-height: 300px;
     box-sizing: border-box;
     font-weight: 500;
     background-color: var(--textarea-bg);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 15px;
     line-height: 1.5;
-    resize: vertical;
-    overflow-y: auto;
-    transition: min-height 0.2s ease;
+    resize: none;
+    overflow-y: auto; /* Changed from hidden back to auto */
+    transition: height 0.2s ease;
 }
 
 /* Improve focus state */
 .chat-input textarea:focus {
     outline: none;
     box-shadow: none; /* Remove any box shadows */
-}
-
-.chat-input textarea[style*="height"] {
-    transition: height 0.2s ease;
 }
 
 /* Placeholder styling */
@@ -1039,16 +1036,22 @@ textarea#ta_chat::placeholder {
     opacity: 0.8;
 }
 
-/* Make the records and upload container match */
+/* Adjust the wrap_rec_and_up container */
 .wrap_rec_and_up {
     border: none !important; /* Remove any borders */
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: var(--textarea-bg);
-    min-height: 55px;
-    width: 15%; /* Adjust width proportion */
+    min-height: 24px; /* Reduced from 55px to 24px */
+    width: 10%; /* Adjust width proportion to match textarea change */
     box-sizing: border-box;
+    padding: 0 8px; /* Add some padding */
+}
+
+/* Make sure the height adjusts with content */
+.chat-input textarea[style*="height"] {
+    transition: height 0.2s ease;
 }
 
 /* Better styling for the upload button */
@@ -1419,26 +1422,20 @@ pre:has(code):before {
     }
 }
 
-/* Mobile responsiveness */
+/* Improvements for mobile screens */
 @media all and (max-width: 768px) {
     .chat-input .chat_wrap {
-        width: 90%;
+        width: 95%;
     }
 }
 
 @media all and (max-width: 480px) {
     .chat-input textarea {
-        width: 80%;
+        width: 85%;
     }
     
     .wrap_rec_and_up {
-        width: 20%;
-    }
-    
-    #voice_rec, #send {
-        width: 36px;
-        height: 36px;
-        background-size: 18px;
+        width: 15%;
     }
 }
 
