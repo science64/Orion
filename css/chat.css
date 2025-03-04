@@ -986,43 +986,46 @@ select {
     position: relative;
 }
 
-/* Improved chat wrap sizing */
+/* Improved chat wrap container */
 .chat-input .chat_wrap {
-    width: 90%; /* Increased from 87% */
-    margin: 0 auto; /* Centered instead of left-aligned */
-    box-sizing: border-box;
-    display: flex; /* Use flexbox for better alignment */
-    align-items: center;
+    width: 70%; /* Narrower to match the look in the images */
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: stretch; /* Important - makes children stretch to fill height */
     justify-content: center;
-}
-
-/* Enhanced textarea styling */
-.chat-input textarea {
-    padding: 16px 18px; /* Slightly more horizontal padding */
-    color: var(--textarea-color);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--textarea-border);
-    border-right: none !important;
-    display: block;
-    width: 80%; /* Increased width */
-    float: left;
-    border-bottom-left-radius: 24px;
-    border-top-left-radius: 24px;
-    min-height: 55px; /* Increased base height */
-    max-height: 150px; /* Set maximum height */
-    box-sizing: border-box;
-    font-weight: 500; /* Reduced from 600 for better readability */
     background-color: var(--textarea-bg);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* Improved font stack */
-    font-size: 15px; /* Explicit font size */
-    line-height: 1.5; /* Better line spacing */
-    resize: vertical; /* Allow only vertical resizing */
-    overflow-y: auto; /* Add scrollbar when needed */
-    transition: min-height 0.2s ease; /* Smooth height transition */
 }
 
-/* Better focus state */
+/* Remove existing border from textarea */
+.chat-input textarea {
+    padding: 16px 18px;
+    color: var(--textarea-color);
+    border: none !important; /* Remove border completely */
+    display: block;
+    width: 85%; /* Adjust width proportion */
+    border-radius: 0; /* Remove border radius - container handles this */
+    min-height: 55px;
+    max-height: 150px;
+    box-sizing: border-box;
+    font-weight: 500;
+    background-color: var(--textarea-bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    resize: vertical;
+    overflow-y: auto;
+    transition: min-height 0.2s ease;
+}
+
+/* Improve focus state */
 .chat-input textarea:focus {
-    min-height: 80px; /* Slightly taller when focused */
+    outline: none;
+    box-shadow: none; /* Remove any box shadows */
 }
 
 .chat-input textarea[style*="height"] {
@@ -1032,76 +1035,89 @@ select {
 /* Placeholder styling */
 textarea#ta_chat::placeholder {
     color: var(--textarea-placeholder-color);
-    font-weight: 400; /* Lighter weight for placeholder */
+    font-weight: 400;
     opacity: 0.8;
 }
 
 /* Make the records and upload container match */
 .wrap_rec_and_up {
-    border: 1px solid var(--textarea-border);
-    float: left;
-    border-left: none;
-    border-bottom-right-radius: 24px;
-    border-top-right-radius: 24px;
-    min-height: 55px; /* Match textarea height */
+    border: none !important; /* Remove any borders */
     display: flex;
     align-items: center;
     justify-content: center;
-    box-sizing: border-box;
     background-color: var(--textarea-bg);
+    min-height: 55px;
+    width: 15%; /* Adjust width proportion */
+    box-sizing: border-box;
 }
 
+/* Better styling for the upload button */
 .upload_picture {
     color: #fff;
-    margin-right: 2px;
-    padding: 0 25px;
-    float: left;
-    height: 50px;
-    box-sizing: border-box;
+    padding: 0 18px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-image: var(--upload-icon);
     background-repeat: no-repeat;
-    background-size: contain;
-    background-position-y: center;
+    background-size: 20px;
+    background-position: center;
     cursor: pointer;
     border: none;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
+.upload_picture:hover {
+    opacity: 1;
+}
+
+/* Send button styling */
 #send {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background-image: var(--send-btn-icon);
     background-repeat: no-repeat;
+    background-size: 20px;
     background-position: center;
-    background-size: 24px;
-    color: #fff9f9 !important;
     background-color: var(--send-btn-bg);
-    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
-    margin-right: 5px;
+    border: none;
+    margin: 0 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
 }
 
+#send:hover {
+    transform: scale(1.05);
+}
+
+/* Voice record button styling */
 #voice_rec {
     background-image: url('data:image/svg+xml;utf8, <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true" style="pointer-events: none; display: inherit;"><path d="M12 3c-1.66 0-3 1.37-3 3.07v5.86c0 1.7 1.34 3.07 3 3.07s3-1.37 3-3.07V6.07C15 4.37 13.66 3 12 3zm6.5 9h-1c0 3.03-2.47 5.5-5.5 5.5S6.5 15.03 6.5 12h-1c0 3.24 2.39 5.93 5.5 6.41V21h2v-2.59c3.11-.48 5.5-3.17 5.5-6.41z" fill="gray"></path></svg>');
     background-repeat: no-repeat;
-    background-size: contain;
+    background-size: 20px;
     background-position: center;
     cursor: pointer;
-    padding: 0 14px !important;
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background-color: transparent;
     border-radius: 50%;
-    background-color: var(--voice-rec-bg);
-    margin: 0 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
 }
 
 #voice_rec:hover {
-    background-image: url('data:image/svg+xml;utf8, <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" focusable="false" aria-hidden="true" style="pointer-events: none; display: inherit;"><path d="M12 3c-1.66 0-3 1.37-3 3.07v5.86c0 1.7 1.34 3.07 3 3.07s3-1.37 3-3.07V6.07C15 4.37 13.66 3 12 3zm6.5 9h-1c0 3.03-2.47 5.5-5.5 5.5S6.5 15.03 6.5 12h-1c0 3.24 2.39 5.93 5.5 6.41V21h2v-2.59c3.11-.48 5.5-3.17 5.5-6.41z" fill="red"></path></svg>');
+    opacity: 1;
 }
 
 .wrap_mic_icon {
-    margin-right: 5px;
-    padding-top: 3px;
-    float: left;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .save_prompt {
@@ -1403,25 +1419,26 @@ pre:has(code):before {
     }
 }
 
-/* Media queries for better mobile experience */
+/* Mobile responsiveness */
 @media all and (max-width: 768px) {
     .chat-input .chat_wrap {
-        width: 95%;
-    }
-    
-    .chat-input textarea {
-        width: 75%;
+        width: 90%;
     }
 }
 
 @media all and (max-width: 480px) {
     .chat-input textarea {
-        width: 70%;
-        padding: 12px 14px;
+        width: 80%;
     }
+    
+    .wrap_rec_and_up {
+        width: 20%;
+    }
+    
     #voice_rec, #send {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
+        background-size: 18px;
     }
 }
 
