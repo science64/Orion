@@ -43,14 +43,10 @@ user-friendly interface.
 - 📁 Upload a variety of documents (text, PDF, images, video) to Google Gemini for analysis and processing
 - 🧠 Awesome Prompts 150+ awesome prompts most of them from [Awesome ChatGPT Prompts](https://github.com/f/awesome-chatgpt-prompts) to select with one click.
 
-###### Show your support for this project
-<a href="https://www.buymeacoffee.com/eliaspereirah"><img src="https://img.buymeacoffee.com/button-api/?text=1 Dolar is All you Need&emoji=💵&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Comic&outline_colour=000000&coffee_colour=ffffff" /></a>
-
 ## API Key Management
 
 Your API keys are stored locally using `localStorage`, and requests are sent directly to the official provider's API
 (OpenAI, Anthropic, Google, Groq, Cerebras) without routing through any external proxy.
-
 
 ### API Keys
 Some companies offer free API access. Check their terms and conditions before you get started.
@@ -75,7 +71,6 @@ When you want to use this model's **d**eep **t**hinking, simply type ``dt: `` be
 Example: ``dt: Explain quantum entanglement``.
 
 This will give you easy control in switching between the two modes.
-
 
 ### Translation
 **Translate:** Translate text with ease using special command.
@@ -160,7 +155,3 @@ To do this, you will need to use this other project: https://github.com/EliasPer
 You can run it on localhost or on a remote server.
 
 After activating the mentioned project, go to "Options" -> "YouTube Captions" and point to the URL where you deployed the project, for example: http://localhost/YoutubeSubtitlesDownloader/
-
-
-
-<a href="https://www.buymeacoffee.com/eliaspereirah"><img src="https://img.buymeacoffee.com/button-api/?text=tools.buyCoffee()&emoji=🍓&slug=eliaspereirah&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff" /></a>
