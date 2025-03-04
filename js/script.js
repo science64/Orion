@@ -489,6 +489,13 @@ function initTextareaAutoResize() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Your existing initialization code
+    
+    // Initialize the textarea auto-resize feature
+    initTextareaAutoResize();
+});
+
 /**
  * Starts a new chat without any context from past conversation
  **/
