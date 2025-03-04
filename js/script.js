@@ -459,7 +459,7 @@ function initTextareaAutoResize() {
             textarea.style.height = '55px';
             
             // Calculate new height based on content (with max height limit)
-            const newHeight = Math.min(textarea.scrollHeight, 150);
+            const newHeight = Math.min(textarea.scrollHeight, 300);
             textarea.style.height = newHeight + 'px';
             
             // Adjust height of the wrap_rec_and_up container to match
