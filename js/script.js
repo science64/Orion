@@ -445,6 +445,50 @@ function removeChat(div, id, force = false) {
     }
 }
 
+
+function initTextareaAutoResize() {
+    const textarea = document.getElementById('ta_chat');
+    
+    if (textarea) {
+        // Set initial height
+        textarea.setAttribute('style', 'height: 55px;');
+        
+        // Function to adjust height based on content
+        const adjustHeight = () => {
+            // Reset height to calculate scroll height correctly
+            textarea.style.height = '55px';
+            
+            // Calculate new height based on content (with max height limit)
+            const newHeight = Math.min(textarea.scrollHeight, 150);
+            textarea.style.height = newHeight + 'px';
+            
+            // Adjust height of the wrap_rec_and_up container to match
+            const recAndUpContainer = document.querySelector('.wrap_rec_and_up');
+            if (recAndUpContainer) {
+                recAndUpContainer.style.height = newHeight + 'px';
+            }
+        };
+        
+        // Adjust height when typing
+        textarea.addEventListener('input', adjustHeight);
+        
+        // Also adjust when the textarea gets focus
+        textarea.addEventListener('focus', adjustHeight);
+        
+        // Reset height when empty
+        textarea.addEventListener('blur', () => {
+            if (textarea.value.trim() === '') {
+                textarea.style.height = '55px';
+                
+                const recAndUpContainer = document.querySelector('.wrap_rec_and_up');
+                if (recAndUpContainer) {
+                    recAndUpContainer.style.height = '55px';
+                }
+            }
+        });
+    }
+}
+
 /**
  * Starts a new chat without any context from past conversation
  **/
@@ -462,7 +506,7 @@ function newChat() {
     history.pushState({url: new_url}, '', new_url);
     removeScreenConversation();
     conversations.messages = []; // clean old conversation
-
+    initTextareaAutoResize();
 
 }
 
@@ -3306,17 +3350,14 @@ function loadExtraModels() {
 loadExtraModels();
 
 document.addEventListener('keydown', function (e) {
-
     let active_tagName = document.activeElement.tagName;
-
     if (e.shiftKey && e.key.toLowerCase() === 't') {
         // Shift + T to toggle between dark/light theme mode
         if (active_tagName !== 'INPUT' && active_tagName !== 'TEXTAREA') {
             themeToggle();
         }
     }
-
-
+    
     if (e.ctrlKey && e.key === 'q') {
         //Closes the current chat and starts a new one
         newChat();
@@ -3333,8 +3374,6 @@ document.addEventListener('keydown', function (e) {
             removeChat(div_topic, chat_id, true);
         }
     }
-
-
 });
 
 function loadUserAddedPrompts() {
@@ -3403,70 +3442,13 @@ function deletePrompt() {
 
 }
 
-
-function welcome() {
-    const welcomeMessages = [
-        {language: "English", message: "Welcome to Orion!"},
-        {language: "Portuguese", message: "Bem-vindo à Orion!"},
-        {language: "Spanish", message: "¡Bienvenido a Orion!"},
-        {language: "French", message: "Bienvenue à Orion!"},
-        {language: "German", message: "Willkommen bei Orion!"},
-        {language: "Italian", message: "Benvenuto a Orion!"},
-        {language: "Dutch", message: "Welkom bij Orion!"},
-        {language: "Russian", message: "Добро пожаловать в Орион!"},
-        {language: "Chinese", message: "欢迎来到猎户座！"},
-        {language: "Japanese", message: "オリオンへようこそ！"},
-        {language: "Korean", message: "오리온에 오신 것을 환영합니다!"},
-        {language: "Arabic", message: "مرحبا بكم في أوريون!"},
-        {language: "Hebrew", message: "ברוכים הבאים לאוריון!"},
-        {language: "Greek", message: "Καλώς ήρθατε στον Ωρίωνα!"},
-        {language: "Hindi", message: "ओरीयोन में आपका स्वागत है!"}
-    ];
-
-    let index = 0;
-
-    function typeMessage(message, element, speed = 90, callback) {
-        let i = 0;
-        element.innerHTML = "";
-
-        function type() {
-            if (i < message.length) {
-                element.innerHTML += message.charAt(i);
-                i++;
-                setTimeout(type, speed);
-            } else if (callback) {
-                setTimeout(callback, 5000);
-            }
-        }
-
-        type();
-    }
-
-    function updateMessage() {
-        const welcomeDiv = document.getElementById("welcome");
-        if (welcomeDiv) {
-            const message = welcomeMessages[index].message;
-            const fullMessage = `${message}`;
-            typeMessage(fullMessage, welcomeDiv, 90, () => {
-                index = (index + 1) % welcomeMessages.length;
-                setTimeout(updateMessage, 5000);
-            });
-        }
-    }
-
-    updateMessage();
-}
-
-//welcome();
-
-function updateChatPlaceholder (){
+function updateChatPlaceholder() {
     let textarea_chat = document.querySelector("#ta_chat");
-    if(model){
+    if (model) {
         textarea_chat.placeholder = `Ask ${model}`;
-    }else {
-       textarea_chat.placeholder = 'Ask me something';
+    } else {
+        textarea_chat.placeholder = 'Ask me something';
     }
-
 }
 updateChatPlaceholder();
 function themeToggle() {
