@@ -113,7 +113,7 @@ let PLATFORM_DATA = {
     },
     cerebras: {
         models: [
-            "llama-3.3-70b",
+            "llama-4-maverick-17b-128e-instruct",
             "qwen-3-235b-a22b-instruct-2507",
             "qwen-3-235b-a22b-thinking-2507",
             "qwen-3-32b",
@@ -3532,3 +3532,4 @@ new_url = new_url.split('?')[0];
 new_url = new_url.split("#")[0];
 new_url += "#" + chat_id;
 history.pushState({url: new_url}, '', new_url);
+
