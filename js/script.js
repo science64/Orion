@@ -113,7 +113,11 @@ let PLATFORM_DATA = {
     },
     cerebras: {
         models: [
-            "llama-3.3-70b"
+            "llama-3.3-70b",
+            "qwen-3-235b-a22b-instruct-2507",
+            "qwen-3-235b-a22b-thinking-2507",
+            "qwen-3-32b",
+            "qwen-3-coder-480b"
         ],
         name: "Cerebras",
         endpoint: "https://api.cerebras.ai/v1/chat/completions"
